@@ -1,0 +1,17 @@
+# Heavy binaries - attached to GitHub Releases, not stored in git
+ffmpeg.exe
+ffprobe.exe
+library/rife/
+library/python/
+library/python_failed/
+ClipShrinker.exe
+assets/
+dist/
+
+# Runtime files
+library/settings.json
+library/clipshrinker.log
+library/portable-python-log.txt
+__pycache__/
+*.pyc
+*.zip
