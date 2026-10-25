@@ -2,23 +2,27 @@
 
 **Trim, speed up, join and shrink game clips to an exact file size - fast, on your NVIDIA GPU.**
 
-ClipShrinker is a small Windows 11 tool for turning big ShadowPlay / OBS recordings into clips that fit
-Discord, forums or messengers. Set a size limit (say 50 MB), trim on a thumbnail timeline, and it encodes
+<img width="1502" height="1202" alt="image" src="https://github.com/user-attachments/assets/cde5d0d5-6b2b-445d-9182-fa9cda4459f0" />
+
+ClipShrinker is a small Windows 11 tool for turning big Shadowplay recordings into clips that fit
+Discord, forums or chat apps. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, and it encodes
 with NVENC, checks the result and re-encodes with a corrected bitrate until the file lands just under the limit.
 
 ## Features
 
-- **Size-targeted export** - give it a MB limit (or a fixed bitrate); it iterates until the file fits and is close to the limit
-- **Thumbnail timelines** per clip with draggable start/end handles and typed-in timestamps
-- **Speed sections** (fast-forward up to 100x, slow motion with RIFE frame interpolation)
+- **Size-targeted export** - give it a MB limit (or a fixed bitrate) and it iterates until the file fits the limit
+- **Thumbnail timelines** per clip with draggable trim handles and typed-in timestamps
+- **Speed sections** (fast-forward with custom multipliers)
+- **Slow motion sections** (with RIFE frame interpolation available)
 - **Zoom sections** to punch in on the action
-- **Join clips** with transitions (crossfade, fade through black, wipes, swipes) or hard cuts
-- **Centered crop** to 21:9, 16:9, 16:10 or 4:3
-- **Multiple audio tracks** - keep game and microphone separate or mix them; mute the mic
+- **Join clips** with transitions (crossfade, wipes, swipes or a glitch effect) or export separately
+- **Centered crop** to 21:9, 16:9, 16:10 or 4:3 for trimming superwide records
+- **Multiple audio tracks** - keep game and microphone separate or mix them
 - **HEVC / H.264 via NVENC**, HDR clips handled
 - **Live preview** with sound, crop, speed and zoom applied
-- Dark and light theme (Windows 11 style), remembered settings, project save/load
-- Portable: nothing is installed on your PC
+- **Dark and light theme** (Windows 11 style), session saving, project saving/loading
+- **Customizable shortcuts** for main features
+- **Portable:** nothing is installed on your PC
 
 ## Requirements
 
