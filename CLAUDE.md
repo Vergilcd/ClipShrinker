@@ -28,7 +28,7 @@ Owner: Vergil (does not build software himself - give one-click steps, test zips
 ## Testing in the sandbox
 - Linux uv Python 3.12 + `xvfb-run -a -s "-screen 0 1600x1000x24"`; see `tests/README.md`.
 - Thumbnails don't render in the sandbox (fake them). Nothing is verified on real Windows until the user tests.
-- GitHub release downloads from the sandbox may be blocked; if so ask the user to attach binaries.
+- Release assets CAN be downloaded in the sandbox via the REST API (commands in docs/DEVELOPMENT.md); `gh release ...` fails (GraphQL blocked). Release tag `binaries` holds binaries.zip (built from v1.0.5).
 
 ## Gotchas
 - Theme switches reset style fonts: restore via `apply_theme` / `self._small_font`.

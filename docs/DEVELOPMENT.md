@@ -12,6 +12,12 @@ Heavy binaries are not in git. Keep a folder (the *assets* dir) containing:
 
     python tools/build_release.py --assets path/to/assets --out dist
 
+Fetching the bundle (works from the Claude sandbox; `gh release download` does not, it needs GraphQL):
+
+    ID=$(gh api repos/Vergilcd/ClipShrinker/releases/tags/binaries --jq '.assets[]|select(.name=="binaries.zip").id')
+    gh api -H "Accept: application/octet-stream" repos/Vergilcd/ClipShrinker/releases/assets/$ID > binaries.zip
+    unzip -q binaries.zip -d assets
+
 Output: `dist/ClipShrinker_v<APP_VERSION>.zip` (version read from `library/video_shrinker.py`).
 
 The launcher is built with
