@@ -3267,6 +3267,7 @@ class App(tk.Tk):
         self.encoding = False
         self.active_row = None
         self.restore_var = tk.BooleanVar(value=self._saved("restore_session", False))
+        self.lite_var = tk.BooleanVar(value=self._saved("lite_resize", True))
         self.prefix_var = tk.StringVar(value=self.settings.get("prefix", "") if isinstance(self.settings.get("prefix", ""), str) else "")
         self.suffix_var = tk.StringVar(value=self.settings.get("suffix", "") if isinstance(self.settings.get("suffix", ""), str) else "")
         self.save_dir_var = tk.StringVar(value=self.settings.get("save_dir", "") if isinstance(self.settings.get("save_dir", ""), str) else "")
@@ -3399,14 +3400,59 @@ class App(tk.Tk):
                     self._normal_geo = self.geometry()
             except Exception:
                 pass
-            self._rs_note(e)
+            if self._rs_note(e):
+                self._lite_note()
+
+    # ---- lite resize: while the window edge is dragged, the heavy panels are swapped for empty ones
+    # (on Windows every widget is repainted on each size step: about 180 ms per step with all panels,
+    # about 30 ms without them). They come back when the dragging stops.
+    _lite_active, _lite_last, _lite_job, _lite_ph = False, 0.0, None, None
+
+    def _lite_note(self):
+        if not self.lite_var.get() or not getattr(self, "_revealed", False):
+            return
+        now = time.perf_counter()
+        prev, self._lite_last = self._lite_last, now
+        if not self._lite_active and prev and now - prev < 0.6 and self.state() == "normal":
+            self._lite_start()
+        if self._lite_active:
+            if self._lite_job:
+                self.after_cancel(self._lite_job)
+            self._lite_job = self.after(400, self._lite_stop)
+
+    def _lite_start(self):
+        try:
+            side = tk.Frame(self, width=self.side.winfo_width(), bg=self.pal["bg"])
+            main = tk.Frame(self, bg=self.pal["bg"])
+            self.side.pack_forget()
+            side.pack(side="right", fill="y", before=self._side_sep)
+            self.paned.pack_forget()
+            main.pack(fill="both", expand=True)
+            self._lite_ph, self._lite_active = (side, main), True
+        except tk.TclError:
+            self._lite_stop()
+
+    def _lite_stop(self):
+        self._lite_job = None
+        phs, self._lite_ph, self._lite_active = self._lite_ph, None, False
+        for ph in phs or ():
+            try:
+                ph.pack_forget()
+                ph.destroy()
+            except tk.TclError:
+                pass
+        if not self.side.winfo_manager():
+            self.side.pack(side="right", fill="y", before=self._side_sep)
+        if not self.paned.winfo_manager():
+            self.paned.pack(fill="both", expand=True)
+        self.after_idle(self._clamp_sash)
 
     def _rs_note(self, e):
         """Counts window size changes of one drag and writes a summary to the log when the drag is over."""
         rs = self.__dict__.setdefault("_rs", {"size": None, "t0": None, "t1": 0.0, "n": 0, "job": None})
         size = (e.width, e.height)
         if size == rs["size"]:
-            return
+            return False
         rs["size"] = size
         now = time.perf_counter()
         if rs["t0"] is None:
@@ -3417,6 +3463,7 @@ class App(tk.Tk):
         if rs["job"]:
             self.after_cancel(rs["job"])
         rs["job"] = self.after(700, self._rs_report)
+        return True
 
     def _rs_report(self):
         rs = self._rs
@@ -3491,6 +3538,7 @@ class App(tk.Tk):
                 "slow_interp": self.interp_var.get(), "hdr": bool(self.hdr_var.get()), "mode": self.mode_var.get(),
                 "trans": self.trans_var.get(), "tlen": self.tlen_var.get(), "sound": bool(self.sound_var.get()), "pv_vol": int(self.pv_vol_var.get()),
                 "zoomed": self.state() == "zoomed", "restore_session": bool(self.restore_var.get()),
+                "lite_resize": bool(self.lite_var.get()),
                 "prefix": self.prefix_var.get(), "suffix": self.suffix_var.get(), "save_dir": self.save_dir_var.get(), "keys": dict(self.keys),
             })
             if self._normal_geo:
@@ -3987,6 +4035,12 @@ class App(tk.Tk):
         tip(ttk.Checkbutton(opts, text="Restore the last session on start", variable=self.restore_var,
                             takefocus=False),
             "Reopen the clips (with trim markers and speed sections) that were open when the program was closed"
+            ).grid(row=r, column=0, columnspan=2, sticky="w", pady=3)
+        r += 1
+        tip(ttk.Checkbutton(opts, text="Hide the panels while resizing the window", variable=self.lite_var,
+                            takefocus=False),
+            "While you drag the window edge the side panel and the preview / clip list are hidden and shown again "
+            "when you let go. Much smoother on Windows, where the panels are slow to redraw"
             ).grid(row=r, column=0, columnspan=2, sticky="w", pady=3)
 
         r += 1
@@ -4531,7 +4585,8 @@ class App(tk.Tk):
         side = ttk.Frame(self, padding=0, width=self.SIDE_W)
         side.pack(side="right", fill="y", before=self.topbar)
         side.pack_propagate(False)
-        ttk.Separator(self, orient="vertical").pack(side="right", fill="y", before=self.topbar)
+        self._side_sep = ttk.Separator(self, orient="vertical")
+        self._side_sep.pack(side="right", fill="y", before=self.topbar)
         self.side = side
 
         # --- bottom part (always visible): summary, progress, buttons
