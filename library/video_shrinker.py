@@ -1207,7 +1207,7 @@ def make_preview_wav(path, start, dur, tag, pieces=None, mute_fast=True, naudio=
     return out
 
 
-APP_NAME, APP_VERSION = "ClipShrinker", "1.0.5"
+APP_NAME, APP_VERSION = "ClipShrinker", "1.0.6"
 SIDE_DIVIDERS = True                  # thin lines between the Export panel sections
 PV = {"vol": 1.0}                     # preview volume (0..1), set by the speaker slider
 
@@ -3756,6 +3756,9 @@ class App(tk.Tk):
         self._popup, self._menu_closed = None, 0.0
         for seq in ("<Button-1>", "<Button-3>"):             # a click anywhere else closes the open drop-down menu
             self.bind_all(seq, self._popup_outside, add="+")
+        self.bind_all("<Button-1>", self._release_focus, add="+")   # a click elsewhere leaves a field / drop-down
+        for cls in ("TCombobox", "TEntry", "TSpinbox"):
+            self.bind_class(cls, "<FocusOut>", self._clear_field_selection, add="+")
         self.bind("<FocusOut>", lambda e: self.after(120, self._popup_focus_check), add="+")
         self.bind("<Configure>", self._popup_moved, add="+")
         self.count_lbl = ttk.Label(top, text="Drag videos onto this window or click the drop zone below",
@@ -5194,6 +5197,30 @@ class App(tk.Tk):
         except Exception:
             pass
         pop.close()
+
+    _INPUT_CLASSES = ("TEntry", "Entry", "TSpinbox", "Spinbox", "TCombobox", "Text")
+
+    def _release_focus(self, e):
+        """Clicking on something that is not an input field takes the focus away from the field / drop-down
+        that had it (clicks on empty areas, labels and timelines do not move the keyboard focus by themselves)."""
+        try:
+            w = e.widget
+            if w.winfo_toplevel() is not self or "popdown" in str(w):
+                return
+            if w.winfo_class() in self._INPUT_CLASSES:
+                return
+            f = self.focus_get()
+            if f is not None and f is not self and f.winfo_class() in self._INPUT_CLASSES:
+                self.after_idle(self.focus_set)         # the field's own FocusOut commits typed values
+        except Exception:
+            pass
+
+    @staticmethod
+    def _clear_field_selection(e):
+        try:
+            e.widget.selection_clear()
+        except Exception:
+            pass
 
     def _popup_moved(self, e):
         """The window was moved / resized (also by dragging its title bar): the menu would stay behind."""

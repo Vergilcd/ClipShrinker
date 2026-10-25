@@ -4,6 +4,10 @@ Made with Claude (Anthropic) by Vergil. Open source (MIT) - see LICENSE.txt.
 Newest version first.
 
 
+NEW IN 1.0.6
+- Clicking anywhere outside a text field or drop-down in the sidebar now leaves it: the cursor stops
+  blinking, typed values are accepted and a chosen drop-down entry no longer stays highlighted.
+
 NEW IN 1.0.5
 - The remark under the Crop setting ("already narrower - no crop") is smaller and always one line, so the
   settings no longer move when it appears. The settings area also avoids repeated re-layouts when its
