@@ -15,6 +15,8 @@ NEW IN 1.0.8
   start (the red "Clear all" button style was created twice).
 - clipshrinker.log now also contains timing lines: where the start-up time goes ("[start-up ...]") and a
   summary after each window resize ("[resize] ..."). They are only used to find slow spots.
+- The license is now in a plain-MIT LICENSE file (GitHub shows "MIT" for the project again); the list of
+  third-party components moved to THIRD-PARTY-NOTICES.txt.
 
 NEW IN 1.0.7
 - The package no longer contains the developer helper Prepare-Portable-Python.bat (it only prepares

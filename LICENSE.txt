@@ -1,13 +1,3 @@
-Clip Shrinker - open source
-===========================
-
-Clip Shrinker is free and fully open source. Anyone can use it, edit it, fork it,
-share it and build on it - for personal or commercial use - with no strings attached
-other than keeping this notice.
-
-Made with Claude (Anthropic) by Vergil.
-
-
 MIT License
 
 Copyright (c) 2026 Vergil
@@ -28,10 +18,3 @@ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIG
 HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-Third-party components (each under its own licence)
----------------------------------------------------
-- ffmpeg / ffprobe (LGPL build) - see ffmpeg-LICENSE.txt
-- sv_ttk (Sun Valley theme) - MIT
-- RIFE ncnn Vulkan (optional download for smooth slow motion) - MIT

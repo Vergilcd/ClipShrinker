@@ -59,7 +59,7 @@ with nothing installed. If one of them is missing, a setup window downloads it o
 
 ## License
 
-MIT - see [LICENSE.txt](LICENSE.txt). ffmpeg is a slim LGPL build of the [FFmpeg](https://ffmpeg.org) project
+MIT - see [LICENSE](LICENSE) (third-party parts: [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)). ffmpeg is a slim LGPL build of the [FFmpeg](https://ffmpeg.org) project
 ([settings](ffmpeg-build-settings.txt), [license](ffmpeg-LICENSE.txt)). RIFE (ncnn) and sv_ttk keep their own licenses.
 
 Made by Vergil, built together with [Claude](https://claude.com).
