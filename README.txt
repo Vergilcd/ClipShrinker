@@ -1,4 +1,4 @@
-CLIP SHRINKER 1.0.7 (NVENC)
+CLIP SHRINKER 1.0.8 (NVENC)
 ===========================
 
 Start: double-click ClipShrinker.exe  (the program files live in the "library" folder - leave it next to the exe)
