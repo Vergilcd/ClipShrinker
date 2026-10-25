@@ -1,0 +1,8 @@
+Clip Shrinker - third-party components
+======================================
+
+ClipShrinker itself is MIT licensed (see LICENSE.txt). It uses these components, each under its own licence:
+
+- ffmpeg / ffprobe (LGPL build) - see ffmpeg-LICENSE.txt
+- sv_ttk (Sun Valley theme) - MIT
+- RIFE ncnn Vulkan (optional download for smooth slow motion) - MIT

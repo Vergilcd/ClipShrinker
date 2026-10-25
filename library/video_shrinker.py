@@ -164,6 +164,25 @@ try:
 except Exception:
     _LOG = None
 
+_T0 = time.perf_counter()
+
+
+def _process_age():
+    """Seconds since this process was created (Windows only): shows how long Python + antivirus took before our code ran."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+        k = ctypes.windll.kernel32
+        k.GetCurrentProcess.restype = wintypes.HANDLE
+        k.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+        ft = [wintypes.FILETIME() for _ in range(4)]
+        k.GetProcessTimes(k.GetCurrentProcess(), *[ctypes.byref(f) for f in ft])
+        born = ((ft[0].dwHighDateTime << 32) | ft[0].dwLowDateTime) / 1e7
+        return time.time() + 11644473600 - born
+    except Exception:
+        return None
+
+
 PREVIEW_W, PREVIEW_H = 640, 360     # initial preview size (the splitter makes it larger/smaller)
 MAX_PV = (1600, 900)                # largest frame the preview will render
 PLAY_FPS_CAP = 30
@@ -269,6 +288,49 @@ def _log(msg):
             _LOG.write(str(msg) + "\n")
         except Exception:
             pass
+
+
+def _mark(label):
+    """Start-up timing line in clipshrinker.log (seconds since this script started)."""
+    _log(f"[start-up {time.perf_counter() - _T0:5.2f} s] {label}")
+
+
+_RS_H = {}      # resize timing: seconds spent in the throttled redraw handlers, by name
+
+
+class Throttle:
+    """Calls fn(lead) at most every `delay` ms. The first call of a burst runs at once (lead=True), calls that
+    arrive meanwhile are merged into one more run when the delay is over (lead=False), so the end result is exact."""
+
+    def __init__(self, widget, fn, delay=30, name=None):
+        self.w, self.fn, self.delay, self.name = widget, fn, delay, name
+        self.job, self.dirty = None, False
+
+    def __call__(self, *_):
+        if self.job is None:
+            self._run(True)
+        else:
+            self.dirty = True
+
+    def _run(self, lead):
+        t = time.perf_counter()
+        try:
+            self.fn(lead)
+        except tk.TclError:
+            return
+        finally:
+            if self.name:
+                _RS_H[self.name] = _RS_H.get(self.name, 0.0) + time.perf_counter() - t
+        try:
+            self.job = self.w.after(self.delay, self._tail)
+        except tk.TclError:
+            self.job = None
+
+    def _tail(self):
+        self.job = None
+        if self.dirty:
+            self.dirty = False
+            self._run(False)
 
 
 def run_capture(cmd, binary=False):
@@ -1207,7 +1269,8 @@ def make_preview_wav(path, start, dur, tag, pieces=None, mute_fast=True, naudio=
     return out
 
 
-APP_NAME, APP_VERSION = "ClipShrinker", "1.0.7"
+APP_NAME, APP_VERSION = "ClipShrinker", "1.0.8"
+REPO_URL = "https://github.com/Vergilcd/ClipShrinker"
 SIDE_DIVIDERS = True                  # thin lines between the Export panel sections
 PV = {"vol": 1.0}                     # preview volume (0..1), set by the speaker slider
 
@@ -1890,7 +1953,7 @@ class StripedBar(tk.Canvas):
         super().__init__(parent, height=self.BH, highlightthickness=0, bd=0)
         self.app, self._v, self._off, self._job, self.done = app, 0.0, 0.0, None, False
         self.text, self.failed = None, False
-        self.bind("<Configure>", lambda e: self._draw())
+        self.bind("<Configure>", Throttle(self, lambda lead: self._draw(), name="progress bar"))
         self.recolor()
 
     def __setitem__(self, key, val):
@@ -2200,7 +2263,8 @@ class ClipRow(tk.Frame):
             en.bind("<Escape>", lambda e, w=which: self._tent_revert(w))
             self.tvars[which], self.tents[which] = v, en
         self.time_lbl = ttk.Label(body, text="", font=("Segoe UI", 7), style="RowCardMuted.TLabel")
-        self.canvas.bind("<Configure>", lambda e: (self.redraw(), self._sched_thumbs()))
+        self._cfg_thr = Throttle(self, lambda lead: self.redraw(total=lead), name="timeline")
+        self.canvas.bind("<Configure>", lambda e: (self._cfg_thr(), self._sched_thumbs()))
         self.canvas.bind("<Button-1>", self.on_down)
         self.canvas.bind("<B1-Motion>", self.on_move)
         self.canvas.bind("<ButtonRelease-1>", lambda e: setattr(self, "drag", None))
@@ -2853,11 +2917,12 @@ class ClipRow(tk.Frame):
                 return
 
     # -- drawing
-    def redraw(self):
-        try:
-            self.app._update_total()
-        except Exception:
-            pass
+    def redraw(self, total=True):
+        if total:                                           # (not needed while the window is being resized)
+            try:
+                self.app._update_total()
+            except Exception:
+                pass
         c = self.canvas
         c.delete("all")
         W = c.winfo_width()
@@ -3174,7 +3239,10 @@ class App(tk.Tk):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
         except Exception:
             pass
+        age = _process_age()
+        _mark("App starts" + (f" (the process itself was created {age:.2f} s ago)" if age is not None else ""))
         super().__init__()
+        _mark("Tk window created")
         try:
             self.attributes("-alpha", 0.0)                  # invisible while the theme is being set up
         except Exception:
@@ -3182,6 +3250,7 @@ class App(tk.Tk):
         self.settings = load_settings()
         self.pal, self.theme = PALETTE["dark"], "dark"
         self._init_theme()
+        _mark("theme ready")
         self.title(f"{APP_NAME} v{APP_VERSION}")
         try:
             self.iconbitmap(default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "clipshrinker.ico"))
@@ -3199,6 +3268,7 @@ class App(tk.Tk):
         self.encoding = False
         self.active_row = None
         self.restore_var = tk.BooleanVar(value=self._saved("restore_session", False))
+        self.lite_var = tk.BooleanVar(value=self._saved("lite_resize", True))
         self.prefix_var = tk.StringVar(value=self.settings.get("prefix", "") if isinstance(self.settings.get("prefix", ""), str) else "")
         self.suffix_var = tk.StringVar(value=self.settings.get("suffix", "") if isinstance(self.settings.get("suffix", ""), str) else "")
         self.save_dir_var = tk.StringVar(value=self.settings.get("save_dir", "") if isinstance(self.settings.get("save_dir", ""), str) else "")
@@ -3286,6 +3356,7 @@ class App(tk.Tk):
         self._resize_job = None
 
         self._build_ui()
+        _mark("interface built")
         self.bind("<space>", self._on_space)
         self.bind("<Control-o>", lambda e: self.open_project())
         self.bind("<Control-s>", lambda e: self.save_project())
@@ -3330,6 +3401,80 @@ class App(tk.Tk):
                     self._normal_geo = self.geometry()
             except Exception:
                 pass
+            if self._rs_note(e):
+                self._lite_note()
+
+    # ---- lite resize: while the window edge is dragged, the heavy panels are swapped for empty ones
+    # (on Windows every widget is repainted on each size step: about 180 ms per step with all panels,
+    # about 30 ms without them). They come back when the dragging stops.
+    _lite_active, _lite_last, _lite_job, _lite_ph = False, 0.0, None, None
+
+    def _lite_note(self):
+        if not self.lite_var.get() or not getattr(self, "_revealed", False):
+            return
+        now = time.perf_counter()
+        prev, self._lite_last = self._lite_last, now
+        if not self._lite_active and prev and now - prev < 0.6 and self.state() == "normal":
+            self._lite_start()
+        if self._lite_active:
+            if self._lite_job:
+                self.after_cancel(self._lite_job)
+            self._lite_job = self.after(400, self._lite_stop)
+
+    def _lite_start(self):
+        try:
+            side = tk.Frame(self, width=self.side.winfo_width(), bg=self.pal["bg"])
+            main = tk.Frame(self, bg=self.pal["bg"])
+            self.side.pack_forget()
+            side.pack(side="right", fill="y", before=self._side_sep)
+            self.paned.pack_forget()
+            main.pack(fill="both", expand=True)
+            self._lite_ph, self._lite_active = (side, main), True
+        except tk.TclError:
+            self._lite_stop()
+
+    def _lite_stop(self):
+        self._lite_job = None
+        phs, self._lite_ph, self._lite_active = self._lite_ph, None, False
+        for ph in phs or ():
+            try:
+                ph.pack_forget()
+                ph.destroy()
+            except tk.TclError:
+                pass
+        if not self.side.winfo_manager():
+            self.side.pack(side="right", fill="y", before=self._side_sep)
+        if not self.paned.winfo_manager():
+            self.paned.pack(fill="both", expand=True)
+        self.after_idle(self._clamp_sash)
+
+    def _rs_note(self, e):
+        """Counts window size changes of one drag and writes a summary to the log when the drag is over."""
+        rs = self.__dict__.setdefault("_rs", {"size": None, "t0": None, "t1": 0.0, "n": 0, "job": None})
+        size = (e.width, e.height)
+        if size == rs["size"]:
+            return False
+        rs["size"] = size
+        now = time.perf_counter()
+        if rs["t0"] is None:
+            rs["t0"], rs["n"] = now, 0
+            _RS_H.clear()
+        rs["n"] += 1
+        rs["t1"] = now
+        if rs["job"]:
+            self.after_cancel(rs["job"])
+        rs["job"] = self.after(700, self._rs_report)
+        return True
+
+    def _rs_report(self):
+        rs = self._rs
+        rs["job"], n = None, rs["n"]
+        span = rs["t1"] - rs["t0"]
+        if n >= 5 and span > 0:
+            parts = ", ".join(f"{k} {v * 1000:.0f} ms" for k, v in sorted(_RS_H.items())) or "none"
+            _log(f"[resize] {n} size changes in {span:.2f} s = {n / span:.0f} per second; "
+                 f"time in our redraw code: {parts}; clips loaded: {len(self.rows)}")
+        rs["t0"] = None
 
     def _virtual_screen(self):
         """Left, top, width, height of the whole desktop (all monitors)."""
@@ -3394,6 +3539,7 @@ class App(tk.Tk):
                 "slow_interp": self.interp_var.get(), "hdr": bool(self.hdr_var.get()), "mode": self.mode_var.get(),
                 "trans": self.trans_var.get(), "tlen": self.tlen_var.get(), "sound": bool(self.sound_var.get()), "pv_vol": int(self.pv_vol_var.get()),
                 "zoomed": self.state() == "zoomed", "restore_session": bool(self.restore_var.get()),
+                "lite_resize": bool(self.lite_var.get()),
                 "prefix": self.prefix_var.get(), "suffix": self.suffix_var.get(), "save_dir": self.save_dir_var.get(), "keys": dict(self.keys),
             })
             if self._normal_geo:
@@ -3408,6 +3554,7 @@ class App(tk.Tk):
         save_settings(d)
 
     def _finish_start(self):
+        _mark("start-up callbacks begin")
         try:
             self._theme_refresh()
             self.update_idletasks()
@@ -3415,6 +3562,7 @@ class App(tk.Tk):
             self._restore_sash()
             self.update_idletasks()
         finally:
+            _mark("themes refreshed, window will be shown")
             self.after(180, self._reveal)
 
     def _taskbar_props(self):
@@ -3439,6 +3587,9 @@ class App(tk.Tk):
             self.attributes("-alpha", 1.0)
         except Exception:
             pass
+        if not getattr(self, "_revealed", False):
+            self._revealed = True
+            _mark("window visible")
         self.after(700, self._prerender_settings)
 
     def _prerender_settings(self):
@@ -3493,10 +3644,11 @@ class App(tk.Tk):
             if theme not in imgs:
                 imgs[theme] = {k: tk.PhotoImage(data=v, format="png") for k, v in DANGER_SPRITES[theme].items()}
             im = imgs[theme]
-            st.element_create("DangerButton.button", "image", str(im["rest"]),
-                              ("pressed", str(im["pressed"])), ("active", "focus", str(im["focus-hover"])),
-                              ("active", str(im["hover"])), ("focus", str(im["focus"])),
-                              border=4, sticky="nsew")
+            if "DangerButton.button" not in st.element_names():      # (the theme is applied several times at start-up)
+                st.element_create("DangerButton.button", "image", str(im["rest"]),
+                                  ("pressed", str(im["pressed"])), ("active", "focus", str(im["focus-hover"])),
+                                  ("active", str(im["hover"])), ("focus", str(im["focus"])),
+                                  border=4, sticky="nsew")
             st.layout("Danger.TButton", [("DangerButton.button", {"children": [
                 ("DangerButton.padding", {"children": [("DangerButton.label", {"side": "left", "expand": 1})]})]})])
             st.configure("Danger.TButton", padding=(8, 2, 8, 3), anchor="center", foreground="#ffffff")
@@ -3514,6 +3666,7 @@ class App(tk.Tk):
             st = ttk.Style(self)
             self._danger_style(st, theme)
             st.configure("Muted.TLabel", foreground=pal["muted"])
+            st.configure("Link.TLabel", foreground=pal["accent_text"])
             st.configure("Sash", sashthickness=4, gripcount=30)      # longer grip (theme: 4 / 20)
             st.configure("SmallMuted.TLabel", foreground=pal["muted"])
             sf = getattr(self, "_small_font", None)             # (the theme resets the summary font: put it back)
@@ -3885,6 +4038,12 @@ class App(tk.Tk):
                             takefocus=False),
             "Reopen the clips (with trim markers and speed sections) that were open when the program was closed"
             ).grid(row=r, column=0, columnspan=2, sticky="w", pady=3)
+        r += 1
+        tip(ttk.Checkbutton(opts, text="Hide the panels while resizing the window", variable=self.lite_var,
+                            takefocus=False),
+            "While you drag the window edge the side panel and the preview / clip list are hidden and shown again "
+            "when you let go. Much smoother on Windows, where the panels are slow to redraw"
+            ).grid(row=r, column=0, columnspan=2, sticky="w", pady=3)
 
         r += 1
         heading("CLIP TRANSITIONS")
@@ -3990,7 +4149,7 @@ class App(tk.Tk):
         self.list_canvas.pack(side="left", fill="both", expand=True)
         self.add_strip = tk.Canvas(lst, height=34, highlightthickness=0, bg=self.pal["bg"], cursor="hand2")
         self._strip_before, self._strip_hover = self.list_canvas, False
-        self.add_strip.bind("<Configure>", lambda e: self._draw_strip())
+        self.add_strip.bind("<Configure>", Throttle(self, lambda lead: self._draw_strip(), name="add strip"))
         self.add_strip.bind("<Button-1>", lambda e: self.open_files())
         self.add_strip.bind("<Enter>", lambda e: self._set_strip_hover(True))
         self.add_strip.bind("<Leave>", lambda e: self._set_strip_hover(False))
@@ -4003,7 +4162,7 @@ class App(tk.Tk):
         self.empty_lbl = tk.Canvas(self.list_inner, height=180, highlightthickness=0, bg=self.pal["bg"],
                                    cursor="hand2")
         self._empty_hover = False
-        self.empty_lbl.bind("<Configure>", lambda e: self._draw_empty())
+        self.empty_lbl.bind("<Configure>", Throttle(self, lambda lead: self._draw_empty(), name="drop zone"))
         self.empty_lbl.bind("<Button-1>", lambda e: self.open_files())
         self.empty_lbl.bind("<Enter>", lambda e: self._set_empty_hover(True))
         self.empty_lbl.bind("<Leave>", lambda e: self._set_empty_hover(False))
@@ -4428,7 +4587,8 @@ class App(tk.Tk):
         side = ttk.Frame(self, padding=0, width=self.SIDE_W)
         side.pack(side="right", fill="y", before=self.topbar)
         side.pack_propagate(False)
-        ttk.Separator(self, orient="vertical").pack(side="right", fill="y", before=self.topbar)
+        self._side_sep = ttk.Separator(self, orient="vertical")
+        self._side_sep.pack(side="right", fill="y", before=self.topbar)
         self.side = side
 
         # --- bottom part (always visible): summary, progress, buttons
@@ -4737,6 +4897,15 @@ class App(tk.Tk):
             pass
         return False
 
+    @staticmethod
+    def _open_url(url):
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            if _LOG:
+                traceback.print_exc(file=_LOG)
+
     def show_about(self):
         """Version, changelog and licenses (read from the text files next to the program)."""
         if self._already_open("_about_win"):
@@ -4751,7 +4920,11 @@ class App(tk.Tk):
         box.pack(fill="both", expand=True)
         ttk.Label(box, text=f"{APP_NAME}  v{APP_VERSION}", font=("Segoe UI", 16, "bold")).pack(anchor="w")
         ttk.Label(box, text="Made with Claude (Anthropic) by Vergil. Free and open source (MIT license).",
-                  style="Muted.TLabel").pack(anchor="w", pady=(4, 12))
+                  style="Muted.TLabel").pack(anchor="w", pady=(4, 2))
+        link = ttk.Label(box, text=REPO_URL, style="Link.TLabel", cursor="hand2", font=("Segoe UI", 9, "underline"))
+        link.pack(anchor="w", pady=(0, 12))
+        link.bind("<Button-1>", lambda e: self._open_url(REPO_URL))
+        tip(link, "Open the project page on GitHub (source code, releases, bug reports)")
         ttk.Separator(box, orient="horizontal").pack(fill="x", pady=(0, 12))
         root = os.path.dirname(APP_DIR)                      # (library\.. = the folder with the txt files)
         lib = APP_DIR
@@ -5091,11 +5264,21 @@ class App(tk.Tk):
                                  "Put both files in the same folder as this program "
                                  "or add them to PATH.")
             return
-        r = run_capture([FFMPEG, "-hide_banner", "-encoders"])
-        if "h264_nvenc" not in (r.stdout or ""):
-            messagebox.showwarning("NVENC not available",
-                                   "This ffmpeg build has no NVENC encoder. "
-                                   "Update your NVIDIA driver or use a full ffmpeg build.")
+
+        def work():                                         # (in the background: the first ffmpeg start can take
+            t = time.perf_counter()                         # seconds while Windows scans the new files)
+            try:
+                out = run_capture([FFMPEG, "-hide_banner", "-encoders"]).stdout or ""
+            except Exception:
+                if _LOG:
+                    traceback.print_exc(file=_LOG)
+                return
+            _log(f"[start-up] ffmpeg check took {time.perf_counter() - t:.2f} s")
+            if "h264_nvenc" not in out:
+                self.after(0, lambda: messagebox.showwarning(
+                    "NVENC not available", "This ffmpeg build has no NVENC encoder. "
+                    "Update your NVIDIA driver or use a full ffmpeg build."))
+        threading.Thread(target=work, daemon=True).start()
 
     def set_status(self, text):
         """Editing feedback: shown for ~3 s over the bottom of the preview, then fades out."""

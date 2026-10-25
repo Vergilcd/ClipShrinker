@@ -8,7 +8,7 @@ import argparse, re, shutil, sys, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-ROOT_FILES = ["README.txt", "CHANGELOG.txt", "LICENSE.txt", "ffmpeg-LICENSE.txt", "ffmpeg-build-settings.txt"]
+ROOT_FILES = ["README.txt", "CHANGELOG.txt", "LICENSE.txt", "THIRD-PARTY-NOTICES.txt", "ffmpeg-LICENSE.txt", "ffmpeg-build-settings.txt"]
 LIB_FILES = ["video_shrinker.py", "clipshrinker.ico", "Setup.bat", "get-python.ps1"]
 
 

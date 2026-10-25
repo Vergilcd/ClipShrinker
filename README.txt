@@ -1,4 +1,4 @@
-CLIP SHRINKER 1.0.7 (NVENC)
+CLIP SHRINKER 1.0.8 (NVENC)
 ===========================
 
 Start: double-click ClipShrinker.exe  (the program files live in the "library" folder - leave it next to the exe)
@@ -25,6 +25,8 @@ the window position/size and the preview/clip-list divider are remembered when y
 and restored on the next start. To reset everything, delete library\settings.json.
 Resizing the window only changes the size of the clip list (timelines); the preview stays as it is
 (drag the divider above the clip list to make the preview bigger or smaller).
+While you drag the window edge, the side panel and the preview / clip list are hidden and come back when you
+let go (smoother resizing; Effects > App > "Hide the panels while resizing the window" switches this off).
 
 Use
 1. Add videos: "Add videos..." or drag & drop one or many files onto the window.
