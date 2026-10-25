@@ -35,3 +35,4 @@ Owner: Vergil (does not build software himself - give one-click steps, test zips
 - Popups: global click/Configure binds close PopupMenu; single-instance windows via `_already_open`.
 - Settings canvas `fit()` has re-entrancy guard + hysteresis; keep one-line labels in the sidebar.
 - .bat/.ps1 must keep CRLF (.gitattributes handles it).
+- README.md was edited by hand by the owner (screenshot, wording, feature list): edit it in place, never regenerate it.
