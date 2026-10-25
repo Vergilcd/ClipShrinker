@@ -2,7 +2,7 @@
 
 **Trim, speed up, join and shrink game clips to an exact file size - fast, on your NVIDIA GPU.**
 
-<img width="1502" height="1202" alt="image" src="https://github.com/user-attachments/assets/cde5d0d5-6b2b-445d-9182-fa9cda4459f0" />
+<img width="1502" height="1005" alt="image" src="https://github.com/user-attachments/assets/a223f8d1-245a-4072-9105-561aa27185d8" />
 
 ClipShrinker is a small Windows 11 tool for turning big Shadowplay recordings into clips that fit
 Discord, forums or chat apps. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, and it encodes
