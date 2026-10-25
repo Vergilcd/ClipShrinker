@@ -4,6 +4,10 @@ Made with Claude (Anthropic) by Vergil. Open source (MIT) - see LICENSE.txt.
 Newest version first.
 
 
+NEW IN 1.0.7
+- The package no longer contains the developer helper Prepare-Portable-Python.bat (it only prepares
+  the bundled Python and is not needed to run the program).
+
 NEW IN 1.0.6
 - Clicking anywhere outside a text field or drop-down in the sidebar now leaves it: the cursor stops
   blinking, typed values are accepted and a chosen drop-down entry no longer stays highlighted.

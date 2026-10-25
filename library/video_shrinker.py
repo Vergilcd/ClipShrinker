@@ -1207,7 +1207,7 @@ def make_preview_wav(path, start, dur, tag, pieces=None, mute_fast=True, naudio=
     return out
 
 
-APP_NAME, APP_VERSION = "ClipShrinker", "1.0.6"
+APP_NAME, APP_VERSION = "ClipShrinker", "1.0.7"
 SIDE_DIVIDERS = True                  # thin lines between the Export panel sections
 PV = {"vol": 1.0}                     # preview volume (0..1), set by the speaker slider
 
