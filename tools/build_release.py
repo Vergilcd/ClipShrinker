@@ -13,7 +13,7 @@ LIB_FILES = ["video_shrinker.py", "clipshrinker.ico", "Setup.bat", "get-python.p
 
 
 def version():
-    m = re.search(r'APP_VERSION\s*=\s*"([^"]+)"', (ROOT / "library/video_shrinker.py").read_text(encoding="utf-8"))
+    m = re.search(r'APP_NAME,\s*APP_VERSION\s*=\s*"[^"]*",\s*"([^"]+)"', (ROOT / "library/video_shrinker.py").read_text(encoding="utf-8"))
     return m.group(1) if m else sys.exit("APP_VERSION not found")
 
 
