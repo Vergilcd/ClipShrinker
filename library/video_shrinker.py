@@ -1270,6 +1270,7 @@ def make_preview_wav(path, start, dur, tag, pieces=None, mute_fast=True, naudio=
 
 
 APP_NAME, APP_VERSION = "ClipShrinker", "1.0.8"
+REPO_URL = "https://github.com/Vergilcd/ClipShrinker"
 SIDE_DIVIDERS = True                  # thin lines between the Export panel sections
 PV = {"vol": 1.0}                     # preview volume (0..1), set by the speaker slider
 
@@ -3665,6 +3666,7 @@ class App(tk.Tk):
             st = ttk.Style(self)
             self._danger_style(st, theme)
             st.configure("Muted.TLabel", foreground=pal["muted"])
+            st.configure("Link.TLabel", foreground=pal["accent_text"])
             st.configure("Sash", sashthickness=4, gripcount=30)      # longer grip (theme: 4 / 20)
             st.configure("SmallMuted.TLabel", foreground=pal["muted"])
             sf = getattr(self, "_small_font", None)             # (the theme resets the summary font: put it back)
@@ -4895,6 +4897,15 @@ class App(tk.Tk):
             pass
         return False
 
+    @staticmethod
+    def _open_url(url):
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            if _LOG:
+                traceback.print_exc(file=_LOG)
+
     def show_about(self):
         """Version, changelog and licenses (read from the text files next to the program)."""
         if self._already_open("_about_win"):
@@ -4909,7 +4920,11 @@ class App(tk.Tk):
         box.pack(fill="both", expand=True)
         ttk.Label(box, text=f"{APP_NAME}  v{APP_VERSION}", font=("Segoe UI", 16, "bold")).pack(anchor="w")
         ttk.Label(box, text="Made with Claude (Anthropic) by Vergil. Free and open source (MIT license).",
-                  style="Muted.TLabel").pack(anchor="w", pady=(4, 12))
+                  style="Muted.TLabel").pack(anchor="w", pady=(4, 2))
+        link = ttk.Label(box, text=REPO_URL, style="Link.TLabel", cursor="hand2", font=("Segoe UI", 9, "underline"))
+        link.pack(anchor="w", pady=(0, 12))
+        link.bind("<Button-1>", lambda e: self._open_url(REPO_URL))
+        tip(link, "Open the project page on GitHub (source code, releases, bug reports)")
         ttk.Separator(box, orient="horizontal").pack(fill="x", pady=(0, 12))
         root = os.path.dirname(APP_DIR)                      # (library\.. = the folder with the txt files)
         lib = APP_DIR

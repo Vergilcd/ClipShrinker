@@ -15,6 +15,7 @@ NEW IN 1.0.8
   Effects > App if you prefer to see everything while dragging.
 - The timelines, the "Drop videos here" box, the "Add videos" strip and the progress bar are redrawn at most about
   30 times per second, and the total length is no longer recalculated for every step.
+- The About window shows a clickable link to the project page on GitHub (github.com/Vergilcd/ClipShrinker).
 - Fixed: two harmless "Duplicate element DangerButton.button" errors were written to clipshrinker.log on every
   start (the red "Clear all" button style was created twice).
 - clipshrinker.log now also contains timing lines: where the start-up time goes ("[start-up ...]") and a
