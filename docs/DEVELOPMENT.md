@@ -24,7 +24,7 @@ The launcher is built with
 `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-H windowsgui -s -w"` in `launcher/`.
 
 ## Portable Python
-`Prepare-Portable-Python.bat` / `Setup.bat portable` downloads python-build-standalone (cpython 3.12,
+`tools/Prepare-Portable-Python.bat` (double-click; calls `Setup.bat portable`) downloads python-build-standalone (cpython 3.12,
 install_only) via `get-python.ps1`, verifies tkinter and trims unused files. The result goes to `library/python`.
 
 ## Internals cheat sheet
