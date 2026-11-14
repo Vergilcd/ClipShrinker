@@ -1,0 +1,49 @@
+{
+ "app": "Clip Shrinker",
+ "format": 1,
+ "active": 7,
+ "clips": [
+  {
+   "path": "C:\\clips\\a.mp4",
+   "start": "2",
+   "end": 99999,
+   "preset": 5,
+   "sections": [
+    {
+     "a": 1,
+     "b": 2,
+     "speed": 500
+    },
+    {
+     "a": 5,
+     "b": 4,
+     "speed": 2
+    },
+    {
+     "a": "x"
+    }
+   ],
+   "zooms": [
+    {
+     "a": 1,
+     "b": 3,
+     "x": -1,
+     "y": 2,
+     "w": 0.01
+    }
+   ]
+  },
+  "not a clip"
+ ],
+ "settings": {
+  "size": 50,
+  "res": "Huge",
+  "codec": "VP9",
+  "zoom_len": 0.6,
+  "zoom_vol": 999,
+  "fast_vol": true,
+  "vhs": "yes",
+  "hdr": false,
+  "trans": "Unknown"
+ }
+}

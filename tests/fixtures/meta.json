@@ -1,0 +1,222 @@
+{
+ "reference": "tools/reference/video_shrinker_1.0.8.py",
+ "reference_sha256": "61e353cd478dff8bdb08e37cadd54230c27aa49e1136156c59886258c65204cb",
+ "app_version": "1.0.8",
+ "python": "3.12.15",
+ "globals_defaults": {
+  "AUD": {
+   "fast": "fx",
+   "slow": "fx",
+   "deep": true,
+   "high": false,
+   "fast_vol": 70,
+   "slow_vol": 150
+  },
+  "VHS": {
+   "on": false
+  },
+  "SLOW": {
+   "blend": true,
+   "rife": false
+  },
+  "ZOOM": {
+   "motion": true,
+   "len": 0.4,
+   "sound": true,
+   "vol": 80,
+   "play": []
+  }
+ },
+ "constants": {
+  "ASPECTS": {
+   "Original (no crop)": null,
+   "21:9": 2.3333333333333335,
+   "16:9": 1.7777777777777777,
+   "16:10": 1.6,
+   "4:3": 1.3333333333333333
+  },
+  "TRANSITIONS": {
+   "Hard cut": null,
+   "Crossfade (gradient)": "fade",
+   "Fade through black": "fadeblack",
+   "Fade through white": "fadewhite",
+   "Glitch (digital)": "glitch",
+   "Gradient wipe, left to right": "smoothright",
+   "Gradient wipe, right to left": "smoothleft",
+   "Gradient wipe, upwards": "smoothup",
+   "Gradient wipe, downwards": "smoothdown",
+   "Swipe left (push)": "slideleft",
+   "Swipe right (push)": "slideright",
+   "Swipe up (push)": "slideup",
+   "Swipe down (push)": "slidedown",
+   "Circle open": "circleopen",
+   "Circle close": "circleclose",
+   "Circle crop": "circlecrop",
+   "Clock wipe (radial)": "radial",
+   "Diagonal wipe": "diagtl",
+   "Zoom in": "zoomin",
+   "Pixelize": "pixelize",
+   "Blur (horizontal)": "hblur",
+   "Distance": "distance"
+  },
+  "CODECS": [
+   "H.264 (h264_nvenc)",
+   "HEVC (hevc_nvenc)"
+  ],
+  "MAX_AUDIO": 4,
+  "MIX": "amix=inputs={n}:duration=longest:normalize=0,alimiter=limit=0.97:level=0",
+  "SPEED_MIN": 0.1,
+  "SPEED_MAX": 100.0,
+  "MIN_SECTION": 0.2,
+  "VHS_MIN": 0.15,
+  "ZOOM_MIN_W": 0.1,
+  "FAST_AUDIO": [
+   "VHS effect with sound",
+   "Normal sped-up sound",
+   "Mute"
+  ],
+  "SLOW_AUDIO": [
+   "Slow-mo effect with sound",
+   "Normal slow-mo sound",
+   "Mute"
+  ],
+  "SLOW_PITCH": [
+   "Slows down with the video (deep)",
+   "Stays the same (stretched)"
+  ],
+  "FAST_PITCH": [
+   "Speeds up with the video (high)",
+   "Stays the same (compressed)"
+  ],
+  "SLOW_INTERP": [
+   "Repeat frames",
+   "Frame blending",
+   "RIFE AI (smoothest, needs a GPU)"
+  ],
+  "ZOOM_FX": [
+   "Zoom motion",
+   "No effect (instant)"
+  ],
+  "ZOOM_AUDIO": [
+   "Whoosh sound",
+   "Mute"
+  ],
+  "RES_SIZE_MODE": [
+   "Auto",
+   "100%",
+   "75%",
+   "50%"
+  ],
+  "RES_BITRATE_MODE": [
+   "Original",
+   "75%",
+   "50%"
+  ],
+  "TICK_STEPS": [
+   0.5,
+   1,
+   2,
+   5,
+   10,
+   15,
+   30,
+   60,
+   120,
+   300,
+   600,
+   900,
+   1800,
+   3600,
+   7200
+  ],
+  "MIN_VIEW": 1.0,
+  "KEY_DEFAULTS": {
+   "trim_start": "1",
+   "trim_end": "2",
+   "speed": "s",
+   "slow": "d",
+   "zoom": "z",
+   "effects": "f2"
+  },
+  "RESERVED_KEYS": [
+   "1",
+   "2",
+   "backspace",
+   "d",
+   "delete",
+   "escape",
+   "f1",
+   "f2",
+   "kp_1",
+   "kp_2",
+   "kp_enter",
+   "m",
+   "return",
+   "s",
+   "space",
+   "tab"
+  ],
+  "RESERVED_PLAIN": [
+   "backspace",
+   "delete",
+   "escape",
+   "f1",
+   "m",
+   "return",
+   "space",
+   "tab"
+  ],
+  "RESERVED_CTRL": [
+   "ctrl+a",
+   "ctrl+e",
+   "ctrl+o",
+   "ctrl+s",
+   "ctrl+shift+e",
+   "ctrl+shift+s",
+   "ctrl+shift+z",
+   "ctrl+y",
+   "ctrl+z"
+  ],
+  "KEY_SHOWN": {
+   "exclam": "!",
+   "at": "@",
+   "numbersign": "#",
+   "dollar": "$",
+   "percent": "%",
+   "asciicircum": "^",
+   "ampersand": "&",
+   "asterisk": "*",
+   "parenleft": "(",
+   "parenright": ")",
+   "minus": "-",
+   "plus": "+",
+   "equal": "=",
+   "comma": ",",
+   "period": ".",
+   "slash": "/",
+   "backslash": "\\",
+   "semicolon": ";",
+   "apostrophe": "'",
+   "bracketleft": "[",
+   "bracketright": "]",
+   "grave": "`",
+   "space": "Space",
+   "return": "Enter",
+   "tab": "Tab",
+   "prior": "Page Up",
+   "next": "Page Down",
+   "escape": "Esc"
+  },
+  "THUMB_BATCH": 12,
+  "PV_W": 240,
+  "PV_H": 136,
+  "PV_FPS": 15,
+  "MAX_PV": [
+   1600,
+   900
+  ],
+  "PLAY_FPS_CAP": 30,
+  "APP_ID": "ClipShrinker.Desktop.App",
+  "PROJECT_EXT": ".clipproj"
+ }
+}

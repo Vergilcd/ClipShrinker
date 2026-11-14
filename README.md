@@ -36,30 +36,34 @@ with NVENC, checks the result and re-encodes with a corrected bitrate until the 
 
 Windows may show a SmartScreen warning because the exe is not code-signed: **More info -> Run anyway**.
 
-The release zip already contains a portable Python, a slim LGPL ffmpeg build and RIFE, so it runs on a PC
-with nothing installed. If one of them is missing, a setup window downloads it on first start.
+The release zip contains one self-contained `ClipShrinker.exe` (.NET built in), a slim LGPL ffmpeg build and
+RIFE, so it runs on a PC with nothing installed. If ffmpeg is missing, the program offers to download it once.
 
 ## Documentation
 
-- [README.txt](README.txt) - full user guide (also shown in the app's About window)
-- [CHANGELOG.txt](CHANGELOG.txt) - version history
+- [README.txt](dist/README.txt) - full user guide (also shown in the app's About window)
+- [CHANGELOG.txt](dist/CHANGELOG.txt) - version history
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) - how the repo, builds and tests work
 
 ## Repository layout
 
+Since 2.0.0 ClipShrinker is a C# / .NET 10 WPF app. The Python 1.0.x version is in the
+[v1.0.8](../../tree/v1.0.8) tag.
+
 | Path | Contents |
 |---|---|
-| `library/video_shrinker.py` | The whole application (Python / tkinter) |
-| `library/sv_ttk/` | Windows 11 theme (MIT) |
-| `library/Setup.bat`, `get-python.ps1` | First-run downloader for ffmpeg / portable Python |
-| `launcher/` | Go source of `ClipShrinker.exe` (tiny launcher) |
-| `tools/build_release.py` | Assembles the release zip |
+| `src/ClipShrinker.App/` | The WPF application (windows, view models, preview) |
+| `src/ClipShrinker.Core/` | Export engine, ffmpeg commands, projects and settings |
+| `src/ClipShrinker.Cli/` | Command-line front end used by the tests |
+| `tests/` | xUnit tests and the golden fixtures from 1.0.8 |
+| `tools/make_release.ps1` | Builds the exe and the release zip |
+| `tools/reference/`, `tools/dump_*.py` | Frozen 1.0.8 source and the scripts that make the fixtures |
 | `tools/ffmpeg-build/` | Recipe for the slim ffmpeg build |
-| `tests/` | Headless GUI/engine tests |
+| `dist/` | The text files shipped in the zip (README, CHANGELOG, licenses) |
 
 ## License
 
-MIT - see [LICENSE](LICENSE) (third-party parts: [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)). ffmpeg is a slim LGPL build of the [FFmpeg](https://ffmpeg.org) project
-([settings](ffmpeg-build-settings.txt), [license](ffmpeg-LICENSE.txt)). RIFE (ncnn) and sv_ttk keep their own licenses.
+MIT - see [LICENSE](LICENSE) (third-party parts: [THIRD-PARTY-NOTICES.txt](dist/THIRD-PARTY-NOTICES.txt)). ffmpeg is a slim LGPL build of the [FFmpeg](https://ffmpeg.org) project
+([settings](dist/ffmpeg-build-settings.txt), [license](dist/ffmpeg-LICENSE.txt)). RIFE (ncnn) keeps its own license.
 
 Made by Vergil, built together with [Claude](https://claude.com).

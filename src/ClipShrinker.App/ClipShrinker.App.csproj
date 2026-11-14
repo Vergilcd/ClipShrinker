@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ClipShrinker</AssemblyName>
+    <RootNamespace>ClipShrinker.App</RootNamespace>
+    <ApplicationIcon>Assets\clipshrinker.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>2.0.0</Version>
+    <Product>Clip Shrinker</Product>
+    <AssemblyTitle>Clip Shrinker</AssemblyTitle>
+    <Description>Trims, speeds up and shrinks game clips to a size limit with NVENC</Description>
+    <Copyright>Copyright (c) 2026 Vergil - MIT License</Copyright>
+    <!-- English only: no WPF / toolkit translation folders next to the exe -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- WPF0001: the Fluent ThemeMode API is marked experimental -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <!-- Release package (tools\make_release.ps1): one self-contained exe, no .NET install needed on the PC -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClipShrinker.Core\ClipShrinker.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\clipshrinker.ico" />
+  </ItemGroup>
+
+</Project>

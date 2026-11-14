@@ -1,0 +1,1680 @@
+{
+ "fake_info": {
+  "w": 1920,
+  "h": 1080,
+  "fps": 60.0,
+  "dur": 20.0,
+  "audio": true,
+  "naudio": 2,
+  "bitrate": 9000000.0,
+  "size": 22500000,
+  "trc": null,
+  "prim": "bt709",
+  "space": "bt709"
+ },
+ "presets_file": "presets.json",
+ "settings_file": "settings.json",
+ "defaults_no_settings": {
+  "hdr": true,
+  "fast_audio": "VHS effect with sound",
+  "slow_audio": "Slow-mo effect with sound",
+  "fast_vol": 70,
+  "slow_vol": 150,
+  "zoom_fx": "Zoom motion",
+  "zoom_snd": "Whoosh sound",
+  "zoom_len": "0.4",
+  "zoom_vol": 80,
+  "slow_pitch": "Slows down with the video (deep)",
+  "fast_pitch": "Stays the same (compressed)",
+  "vhs": true,
+  "slow_interp": "RIFE AI (smoothest, needs a GPU)",
+  "atrk": "Mix into one track",
+  "mute_mic": false,
+  "size": "50",
+  "crop": "16:9",
+  "res": "Auto",
+  "codec": "HEVC (hevc_nvenc)",
+  "bitrate": "",
+  "res_before": "Auto",
+  "audio": "128k",
+  "mode": "join",
+  "trans": "Gradient wipe, left to right",
+  "tlen": "0.4",
+  "prefix": "",
+  "suffix": ""
+ },
+ "defaults_from_settings": {
+  "hdr": true,
+  "fast_audio": "VHS effect with sound",
+  "slow_audio": "Slow-mo effect with sound",
+  "fast_vol": 70,
+  "slow_vol": 150,
+  "zoom_fx": "Zoom motion",
+  "zoom_snd": "Whoosh sound",
+  "zoom_len": "0.4",
+  "zoom_vol": 80,
+  "slow_pitch": "Slows down with the video (deep)",
+  "fast_pitch": "Stays the same (compressed)",
+  "vhs": true,
+  "slow_interp": "RIFE AI (smoothest, needs a GPU)",
+  "atrk": "Mix into one track",
+  "mute_mic": false,
+  "size": "50",
+  "crop": "16:9",
+  "res": "Auto",
+  "codec": "HEVC (hevc_nvenc)",
+  "bitrate": "",
+  "res_before": "Auto",
+  "audio": "128k",
+  "mode": "join",
+  "trans": "Gradient wipe, left to right",
+  "tlen": "0.4",
+  "prefix": "",
+  "suffix": ""
+ },
+ "projects": [
+  {
+   "file": "messy_values.clipproj",
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "preset": null,
+     "sections": [
+      {
+       "a": 1.0,
+       "b": 2.0,
+       "speed": 100.0
+      }
+     ],
+     "zooms": []
+    }
+   ],
+   "clips": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 2,
+     "bitrate": 9000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": [
+      [
+       0.0,
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       2.0,
+       100.0
+      ],
+      [
+       2.0,
+       20.0,
+       1.0
+      ]
+     ],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "hdr": false,
+    "fast_audio": "VHS effect with sound",
+    "slow_audio": "Slow-mo effect with sound",
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Whoosh sound",
+    "zoom_len": "0.6",
+    "zoom_vol": 200,
+    "slow_pitch": "Slows down with the video (deep)",
+    "fast_pitch": "Stays the same (compressed)",
+    "vhs": true,
+    "slow_interp": "RIFE AI (smoothest, needs a GPU)",
+    "atrk": "Mix into one track",
+    "mute_mic": false,
+    "size": "50",
+    "crop": "16:9",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "bitrate": "",
+    "res_before": "Auto",
+    "audio": "128k",
+    "mode": "join",
+    "trans": "Gradient wipe, left to right",
+    "tlen": "0.4",
+    "prefix": "",
+    "suffix": ""
+   }
+  },
+  {
+   "file": "minimal.clipproj",
+   "rows": [],
+   "clips": [],
+   "state": {
+    "hdr": true,
+    "fast_audio": "VHS effect with sound",
+    "slow_audio": "Slow-mo effect with sound",
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Whoosh sound",
+    "zoom_len": "0.4",
+    "zoom_vol": 80,
+    "slow_pitch": "Slows down with the video (deep)",
+    "fast_pitch": "Stays the same (compressed)",
+    "vhs": true,
+    "slow_interp": "RIFE AI (smoothest, needs a GPU)",
+    "atrk": "Mix into one track",
+    "mute_mic": false,
+    "size": "50",
+    "crop": "16:9",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "bitrate": "",
+    "res_before": "Auto",
+    "audio": "128k",
+    "mode": "join",
+    "trans": "Gradient wipe, left to right",
+    "tlen": "0.4",
+    "prefix": "",
+    "suffix": ""
+   }
+  },
+  {
+   "file": "two_clips.clipproj",
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.5,
+     "end": 18.25,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 2.0,
+       "b": 5.0,
+       "speed": 4.0
+      },
+      {
+       "a": 9.0,
+       "b": 11.0,
+       "speed": 0.5
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.0,
+       "x": 0.25,
+       "y": 0.2,
+       "w": 0.4
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "clips": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.5,
+     "end": 18.25,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 2,
+     "bitrate": 9000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": [
+      [
+       1.5,
+       2.0,
+       1.0
+      ],
+      [
+       2.0,
+       5.0,
+       4.0
+      ],
+      [
+       5.0,
+       9.0,
+       1.0
+      ],
+      [
+       9.0,
+       11.0,
+       0.5
+      ],
+      [
+       11.0,
+       18.25,
+       1.0
+      ]
+     ],
+     "zooms": [
+      [
+       3.0,
+       7.0,
+       0.25,
+       0.2,
+       0.4
+      ]
+     ]
+    },
+    {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 2,
+     "bitrate": 9000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   ],
+   "state": {
+    "hdr": true,
+    "fast_audio": "VHS effect with sound",
+    "slow_audio": "Slow-mo effect with sound",
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Whoosh sound",
+    "zoom_len": "0.4",
+    "zoom_vol": 80,
+    "slow_pitch": "Slows down with the video (deep)",
+    "fast_pitch": "Stays the same (compressed)",
+    "vhs": true,
+    "slow_interp": "Frame blending",
+    "atrk": "Keep separate tracks",
+    "mute_mic": false,
+    "size": "50",
+    "crop": "16:9",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "bitrate": "",
+    "res_before": "Auto",
+    "audio": "128k",
+    "mode": "join",
+    "trans": "Crossfade (gradient)",
+    "tlen": "0.4",
+    "prefix": "",
+    "suffix": ""
+   }
+  }
+ ],
+ "project_data": [
+  {
+   "project_path": null,
+   "active": 0,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ]
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     }
+    ],
+    "active": 0,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": null,
+   "active": 2,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ]
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     }
+    ],
+    "active": 2,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": "C:\\clips\\my project.clipproj",
+   "active": 0,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ],
+      "rel": "a.mp4"
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "sub\\b.mkv"
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "fwd slash\\d.mp4"
+     }
+    ],
+    "active": 0,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": "C:\\clips\\my project.clipproj",
+   "active": 2,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ],
+      "rel": "a.mp4"
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "sub\\b.mkv"
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "fwd slash\\d.mp4"
+     }
+    ],
+    "active": 2,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": "C:\\clips\\deeper\\x.clipproj",
+   "active": 0,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ],
+      "rel": "..\\a.mp4"
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "..\\sub\\b.mkv"
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "..\\fwd slash\\d.mp4"
+     }
+    ],
+    "active": 0,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": "C:\\clips\\deeper\\x.clipproj",
+   "active": 2,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ],
+      "rel": "..\\a.mp4"
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "..\\sub\\b.mkv"
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": [],
+      "rel": "..\\fwd slash\\d.mp4"
+     }
+    ],
+    "active": 2,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": "E:\\p.clipproj",
+   "active": 0,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ]
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     }
+    ],
+    "active": 0,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  },
+  {
+   "project_path": "E:\\p.clipproj",
+   "active": 2,
+   "rows": [
+    {
+     "path": "C:\\clips\\a.mp4",
+     "start": 1.0625,
+     "end": 18.2499,
+     "preset": "Discord",
+     "sections": [
+      {
+       "a": 9.0625,
+       "b": 11.0005,
+       "speed": 0.5
+      },
+      {
+       "a": 2.12345,
+       "b": 5.0,
+       "speed": 4.0
+      }
+     ],
+     "zooms": [
+      {
+       "a": 3.0,
+       "b": 7.00049,
+       "x": 0.12345,
+       "y": 5e-05,
+       "w": 0.40625
+      }
+     ]
+    },
+    {
+     "path": "C:\\clips\\sub\\b.mkv",
+     "start": 0.0,
+     "end": 9.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "D:\\other\\c.mov",
+     "start": 0.33333,
+     "end": 2.0,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    },
+    {
+     "path": "C:/clips/fwd slash/d.mp4",
+     "start": 0.0005,
+     "end": 1.0015,
+     "preset": null,
+     "sections": [],
+     "zooms": []
+    }
+   ],
+   "state": {
+    "size": "50",
+    "bitrate": "",
+    "res": "Auto",
+    "codec": "HEVC (hevc_nvenc)",
+    "crop": "16:9",
+    "audio": "128k",
+    "atrk": "Keep separate tracks",
+    "mutemic": true,
+    "fast_aud": "Mute",
+    "slow_aud": "Slow-mo effect with sound",
+    "pitch": "Stays the same (stretched)",
+    "fast_pitch": "Speeds up with the video (high)",
+    "vhs": true,
+    "fast_vol": 70,
+    "slow_vol": 150,
+    "zoom_fx": "Zoom motion",
+    "zoom_snd": "Mute",
+    "zoom_len": "0,6",
+    "zoom_vol": 80,
+    "interp": "Frame blending",
+    "hdr": false,
+    "mode": "join",
+    "trans": "Distance",
+    "tlen": "0.5"
+   },
+   "result": {
+    "app": "Clip Shrinker",
+    "format": 1,
+    "clips": [
+     {
+      "path": "C:\\clips\\a.mp4",
+      "start": 1.062,
+      "end": 18.25,
+      "preset": "Discord",
+      "sections": [
+       {
+        "a": 2.123,
+        "b": 5.0,
+        "speed": 4.0
+       },
+       {
+        "a": 9.062,
+        "b": 11.001,
+        "speed": 0.5
+       }
+      ],
+      "zooms": [
+       {
+        "a": 3.0,
+        "b": 7.0,
+        "x": 0.1235,
+        "y": 0.0001,
+        "w": 0.4062
+       }
+      ]
+     },
+     {
+      "path": "C:\\clips\\sub\\b.mkv",
+      "start": 0.0,
+      "end": 9.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "D:\\other\\c.mov",
+      "start": 0.333,
+      "end": 2.0,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     },
+     {
+      "path": "C:/clips/fwd slash/d.mp4",
+      "start": 0.001,
+      "end": 1.002,
+      "preset": null,
+      "sections": [],
+      "zooms": []
+     }
+    ],
+    "active": 2,
+    "settings": {
+     "size": "50",
+     "bitrate": "",
+     "res": "Auto",
+     "codec": "HEVC (hevc_nvenc)",
+     "crop": "16:9",
+     "audio": "128k",
+     "atrk": "Keep separate tracks",
+     "mute_mic": true,
+     "fast_audio": "Mute",
+     "slow_audio": "Slow-mo effect with sound",
+     "slow_pitch": "Stays the same (stretched)",
+     "fast_pitch": "Speeds up with the video (high)",
+     "vhs": true,
+     "fast_vol": 70,
+     "slow_vol": 150,
+     "zoom_fx": "Zoom motion",
+     "zoom_snd": "Mute",
+     "zoom_len": "0,6",
+     "zoom_vol": 80,
+     "slow_interp": "Frame blending",
+     "hdr": false,
+     "mode": "join",
+     "trans": "Distance",
+     "tlen": "0.5"
+    }
+   }
+  }
+ ]
+}

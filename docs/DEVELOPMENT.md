@@ -1,34 +1,30 @@
 # Development
 
+ClipShrinker 2.x is a C# / .NET 10 WPF app (`ClipShrinker.sln`). The Python 1.0.x version is in the `v1.0.8` tag.
+
 ## Workflow
-1. Branch from `main` (`git switch -c fix/something`), change code, bump version + changelog.
-2. Run the tests (`tests/README.md`), build a test zip (below), send it to the tester.
+1. Branch from `main` (`git switch -c fix/something`), change code, bump `AppVersion` in
+   `src/ClipShrinker.Core/Constants.cs` and add a `dist/CHANGELOG.txt` entry.
+2. Run the tests (below), build a release zip, send it to the tester.
 3. Push the branch, open a PR, merge. Tag `vX.Y.Z` and publish a Release with the zip.
 
+## Tests
+    dotnet test
+
+The tests compare the C# export commands, filters, projects and timeline maths with golden fixtures in
+`tests/fixtures`, generated from the frozen 1.0.8 source (`tools/reference/`) by `tools/dump_*.py`.
+`tools/make_test_clips.py` creates the sample clips in `tests/media` (not in git), and
+`tools/compare_exports.py` / `tools/reference_export.py` compare real exports with 1.0.8.
+`tools/gui_export_check.ps1` and `tools/gui_phase6_check.ps1` drive the running app.
+
 ## Building a release zip
-Heavy binaries are not in git. Keep a folder (the *assets* dir) containing:
-`ffmpeg.exe`, `ffprobe.exe`, `rife/`, `python/`, `ClipShrinker.exe`
-(the same bundle is attached to a GitHub Release as `binaries.zip`).
+Heavy binaries are not in git. The script expects a `Dev\library` folder next to the repo folder with
+`ffmpeg.exe`, `ffprobe.exe` and `rife\` (rife-ncnn-vulkan.exe, vcomp140.dll, LICENSE.txt, rife-v4.6\).
+The Release tag `binaries` on GitHub holds these in `binaries.zip`.
 
-    python tools/build_release.py --assets path/to/assets --out dist
+    powershell -ExecutionPolicy Bypass -File tools\make_release.ps1
 
-Fetching the bundle (works from the Claude sandbox; `gh release download` does not, it needs GraphQL):
+It publishes one self-contained `ClipShrinker.exe` (win-x64), copies the `dist\` texts and the library files into
+`..\Release\ClipShrinker\` and zips them as `..\Release\ClipShrinker-<version>.zip`.
 
-    ID=$(gh api repos/Vergilcd/ClipShrinker/releases/tags/binaries --jq '.assets[]|select(.name=="binaries.zip").id')
-    gh api -H "Accept: application/octet-stream" repos/Vergilcd/ClipShrinker/releases/assets/$ID > binaries.zip
-    unzip -q binaries.zip -d assets
-
-Output: `dist/ClipShrinker_v<APP_VERSION>.zip` (version read from `library/video_shrinker.py`).
-
-The launcher is built with
-`GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-H windowsgui -s -w"` in `launcher/`.
-
-## Portable Python
-`tools/Prepare-Portable-Python.bat` (double-click; calls `Setup.bat portable`) downloads python-build-standalone (cpython 3.12,
-install_only) via `get-python.ps1`, verifies tkinter and trims unused files. The result goes to `library/python`.
-
-## Internals cheat sheet
-- Timeline drawing: `ClipRow.redraw`; thumbnails: `ThumbPool`, `_sched_thumbs`, `_want_n1`.
-- Encode: `Encoder` (multi-pass size targeting), filtergraph builders for xfade/zoom/speed.
-- Sidebar: `_build_side`; theme: `apply_theme`, PALETTE.
-- Old v0.9.8 handoff (still mostly valid): `docs/HANDOFF_old.md`.
+The slim ffmpeg build recipe is in `tools/ffmpeg-build/`.
