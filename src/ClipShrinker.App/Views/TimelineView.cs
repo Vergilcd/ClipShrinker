@@ -23,7 +23,8 @@ public sealed class TimelineView : Canvas
     readonly Dictionary<SpeedSection, TextBox> speedBoxes = new(ReferenceEqualityComparer.Instance);
 
     static readonly Brush Bg = Frozen("#202020");
-    static readonly Brush Shade = Frozen(Color.FromArgb(191, 0, 0, 0));        // trimmed away (75 %)
+    static readonly Brush Shade = Frozen(Color.FromArgb(166, 0, 0, 0));        // trimmed away (65 %, plus the stripes)
+    static readonly Brush Hatch = MakeHatch();                                    // over the trimmed-away part
     static readonly Brush Yellow = Frozen("#FBBF24");
     static readonly Brush Dark111 = Frozen("#111111");
     static readonly Typeface Ui = new("Segoe UI");
@@ -41,6 +42,26 @@ public sealed class TimelineView : Canvas
         HookTimeBox(endBox, false);
         DataContextChanged += (_, _) => Attach(DataContext as ClipItemViewModel);
         SizeChanged += (_, _) => { if (vm is not null) vm.SetWidth(ActualWidth); UpdateClip(); Redraw(); };
+    }
+
+    /// <summary>Thick dark stripes slanted at 45 degrees (tile 16 px, stripe 5.5 px). The tile is in timeline
+    /// coordinates, so the stripes stay in place and line up across both trimmed-away ends.</summary>
+    static Brush MakeHatch()
+    {
+        const double t = 16;
+        var pen = new Pen(Frozen(Color.FromArgb(215, 0, 0, 0)), 5.5);
+        var g = new GeometryGroup();
+        foreach (double o in new[] { -t, 0, t })                        // the stripe and its neighbours poking into the tile
+            g.Children.Add(new LineGeometry(new Point(o - 1, t + 1), new Point(o + t + 1, -1)));
+        var d = new GeometryDrawing(null, pen, g);
+        var brush = new DrawingBrush(d)
+        {
+            TileMode = TileMode.Tile, Stretch = Stretch.None,
+            Viewbox = new Rect(0, 0, t, t), ViewboxUnits = BrushMappingMode.Absolute,
+            Viewport = new Rect(0, 0, t, t), ViewportUnits = BrushMappingMode.Absolute,
+        };
+        brush.Freeze();
+        return brush;
     }
 
     static SolidColorBrush Frozen(string hex) => Frozen((Color)ColorConverter.ConvertFromString(hex));
@@ -99,8 +120,13 @@ public sealed class TimelineView : Canvas
         if (x11 < W0) dc.DrawRectangle(Bg, null, R(x11, y0, W0, y1));
         double mid = (y0 + y1) / 2;
         double ty0 = Math.Max(y0, mid - ed.ThumbHeight / 2), ty1 = Math.Min(y1, mid + ed.ThumbHeight / 2);
-        if (xs > Math.Max(x00, 0)) dc.DrawRectangle(Shade, null, R(Math.Max(x00, 0), ty0, Math.Min(xs, W0), ty1));
-        if (xe < Math.Min(x11, W0)) dc.DrawRectangle(Shade, null, R(Math.Max(xe, 0), ty0, Math.Min(x11, W0), ty1));
+        foreach (var r in new[] { xs > Math.Max(x00, 0) ? R(Math.Max(x00, 0), ty0, Math.Min(xs, W0), ty1) : Rect.Empty,
+                                  xe < Math.Min(x11, W0) ? R(Math.Max(xe, 0), ty0, Math.Min(x11, W0), ty1) : Rect.Empty })
+        {
+            if (r.IsEmpty) continue;
+            dc.DrawRectangle(Shade, null, r);
+            dc.DrawRectangle(Hatch, null, r);
+        }
         double lineW = ov ? 3 : (act ? 4 : 3);               // section edges: about twice the 2 px playhead
 
         // speed sections: tinted strip and edge lines; the header (same colour as the lines) is drawn further down

@@ -68,7 +68,7 @@
             <TextBox Grid.Row="5" Grid.Column="1" Width="70" HorizontalAlignment="Left" Margin="0,3" Text="{Binding Tlen, UpdateSourceTrigger=PropertyChanged}" />
 
             <Separator Grid.Row="6" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-            <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="SPEED UP EFFECTS" Style="{StaticResource SectionText}" />
+            <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="SPEED UP" Style="{StaticResource SectionText}" />
             <TextBlock Grid.Row="8" Text="Sound:" Style="{StaticResource FxLabel}" />
             <ComboBox Grid.Row="8" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding FastAudioOptions}" SelectedItem="{Binding FastAudio}" />
             <TextBlock Grid.Row="9" Text="Volume:" Style="{StaticResource FxLabel}" />
@@ -82,7 +82,7 @@
             <CheckBox Grid.Row="11" Grid.ColumnSpan="2" Content="VHS visual effect on sped-up sections" IsChecked="{Binding Vhs}" Focusable="False" Margin="0,3" />
 
             <Separator Grid.Row="12" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-            <TextBlock Grid.Row="13" Grid.ColumnSpan="2" Text="SLOW MOTION EFFECTS" Style="{StaticResource SectionText}" />
+            <TextBlock Grid.Row="13" Grid.ColumnSpan="2" Text="SLOW MOTION" Style="{StaticResource SectionText}" />
             <TextBlock Grid.Row="14" Text="Sound:" Style="{StaticResource FxLabel}" />
             <ComboBox Grid.Row="14" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowAudioOptions}" SelectedItem="{Binding SlowAudio}" />
             <TextBlock Grid.Row="15" Text="Volume:" Style="{StaticResource FxLabel}" />
@@ -106,7 +106,7 @@
             </StackPanel>
 
             <Separator Grid.Row="19" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-            <TextBlock Grid.Row="20" Grid.ColumnSpan="2" Text="ZOOM EFFECTS" Style="{StaticResource SectionText}" />
+            <TextBlock Grid.Row="20" Grid.ColumnSpan="2" Text="ZOOM" Style="{StaticResource SectionText}" />
             <TextBlock Grid.Row="21" Text="Motion:" Style="{StaticResource FxLabel}" />
             <ComboBox Grid.Row="21" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding ZoomFxOptions}" SelectedItem="{Binding ZoomFx}" />
             <TextBlock Grid.Row="22" Text="Motion length (s):" Style="{StaticResource FxLabel}" />

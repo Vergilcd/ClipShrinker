@@ -48,6 +48,7 @@ public partial class MainWindow : Window, IDialogs
         PreviewImg.SizeChanged += (_, _) => DrawBracket();
         previewTimer.Tick += (_, _) => { previewTimer.Stop(); vm.PreviewResized(); };
         BuildBracket();
+        BuildTokenButtons();
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
     }
 
@@ -70,6 +71,7 @@ public partial class MainWindow : Window, IDialogs
     /// <summary>The frame is made at the box's size in real pixels (sharp at any display scaling).</summary>
     void PreviewBox_SizeChanged(object sender, SizeChangedEventArgs e)
     {
+        if (full is not null) return;                          // the full-screen preview sets the size meanwhile
         var dpi = VisualTreeHelper.GetDpi(this);
         vm.PreviewBox = (PreviewBox.ActualWidth * dpi.DpiScaleX, PreviewBox.ActualHeight * dpi.DpiScaleY);
         previewTimer.Stop();
@@ -222,6 +224,12 @@ public partial class MainWindow : Window, IDialogs
 
     void OnKey(object sender, KeyEventArgs e)
     {
+        if (HandleKey(e)) e.Handled = true;
+    }
+
+    /// <summary>A key press of this window or the full-screen preview: true = it was a shortcut.</summary>
+    bool HandleKey(KeyEventArgs e)
+    {
         var mods = Keyboard.Modifiers;
         bool ctrl = mods.HasFlag(ModifierKeys.Control), alt = mods.HasFlag(ModifierKeys.Alt);
         string? chord = KeyNames.Chord(e);
@@ -230,7 +238,7 @@ public partial class MainWindow : Window, IDialogs
         if (act is not null && (!Typing || WorksWhileTyping(act, chord!))) handled = RunShortcut(act, e);
         else if (!ctrl && !alt && !Typing && KeyNames.Name(e) is { } name) handled = vm.OnPresetKey(name);
         else handled = false;
-        if (handled) e.Handled = true;
+        return handled;
     }
 
     /// <summary>In a text field only a few shortcuts work (open, save, the windows), and only on keys the field
@@ -264,6 +272,7 @@ public partial class MainWindow : Window, IDialogs
                 vm.TogglePlay();
                 break;
             case "mute": vm.ToggleMute(); break;
+            case "fullscreen": ToggleFullScreen(); break;
             default: return vm.OnActionKey(act);
         }
         return true;
@@ -382,6 +391,7 @@ public partial class MainWindow : Window, IDialogs
         HintSlow.Text = $"{Text.ChordLabel(vm.Keys["slow"])} = slow down";
         HintZoom.Text = $"{Text.ChordLabel(vm.Keys["zoom"])} = zoom in";
         HintPlay.Text = $"{Text.ChordLabel(vm.Keys["play"])} = play / pause";
+        FullscreenButton.ToolTip = $"Full-screen preview ({Text.ChordLabel(vm.Keys["fullscreen"])}). Esc leaves it.";
     }
 
     async void OnDrop(object sender, DragEventArgs e)
@@ -410,6 +420,34 @@ public partial class MainWindow : Window, IDialogs
     }
 
     void Effects_Click(object sender, RoutedEventArgs e) => ToggleEffects();
+
+    // ------------------------------------------------------------------ full-screen preview
+    FullScreenWindow? full;
+
+    void Fullscreen_Click(object sender, RoutedEventArgs e) => ToggleFullScreen();
+
+    void ToggleFullScreen()
+    {
+        if (full is not null) { full.Close(); return; }
+        if (!vm.HasClips) return;
+        full = new FullScreenWindow(vm, this, HandleKey);
+        full.SizeChanged += (_, _) =>
+        {
+            if (full is null || full.WindowState != WindowState.Maximized) return;
+            var dpi = VisualTreeHelper.GetDpi(full);
+            vm.FullScreen = true;
+            vm.PreviewBox = (full.ActualWidth * dpi.DpiScaleX, full.ActualHeight * dpi.DpiScaleY);
+            vm.PreviewResized();
+        };
+        full.Closed += (_, _) =>
+        {
+            full = null;
+            vm.FullScreen = false;
+            PreviewBox_SizeChanged(this, null!);             // the frame at the normal size again
+            Activate();
+        };
+        full.Show();
+    }
 
     /// <summary>The Effects window is kept and only hidden, so it opens where it was (reference show_settings / hide_settings).</summary>
     void ToggleEffects()
@@ -450,6 +488,31 @@ public partial class MainWindow : Window, IDialogs
         presetsWin.Left = Left + Math.Max(20, ActualWidth - 640);
         presetsWin.Top = Top + 50;
         presetsWin.Show();
+    }
+
+    // ------------------------------------------------------------------ file name fields
+    TextBox? lastNameBox;                                      // Prefix or Suffix, whichever had the cursor last
+
+    void NameBox_Focus(object sender, KeyboardFocusChangedEventArgs e) => lastNameBox = sender as TextBox;
+
+    void BuildTokenButtons()
+    {
+        foreach (var (token, label, help) in NameTokens.All)
+        {
+            var b = new Button { Content = label, Style = (Style)FindResource("TokenButton"), ToolTip = $"{token}  -  {help}" };
+            b.Click += (_, _) => InsertToken(token);
+            TokenPanel.Children.Add(b);
+        }
+    }
+
+    /// <summary>Puts the field where the cursor is (replacing a selection) in the last used box (Prefix at first).</summary>
+    void InsertToken(string token)
+    {
+        var box = lastNameBox ?? PrefixBox;
+        int at = box.SelectionStart, len = box.SelectionLength;
+        box.Text = box.Text.Remove(at, len).Insert(at, token);
+        box.Focus();
+        box.Select(at + token.Length, 0);
     }
 
     void PickSaveDir_Click(object sender, RoutedEventArgs e)

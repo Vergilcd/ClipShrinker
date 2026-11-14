@@ -36,10 +36,11 @@ public static class ZoomArea
 public static class PreviewPlan
 {
     /// <summary>The preview frame size: the box, but at most 1600 x 900.</summary>
-    public static (int W, int H) Dims(double boxW, double boxH)
+    public static (int W, int H) Dims(double boxW, double boxH, bool fullScreen = false)
     {
         if (boxW < 50 || boxH < 50) (boxW, boxH) = (640, 360);
-        return ((int)Math.Min(boxW, C.MaxPvW), (int)Math.Min(boxH, C.MaxPvH));
+        var (mw, mh) = fullScreen ? (C.FullPvW, C.FullPvH) : (C.MaxPvW, C.MaxPvH);
+        return ((int)Math.Min(boxW, mw), (int)Math.Min(boxH, mh));
     }
 
     /// <summary>The crop of a clip for the preview, or null when the clip is already narrower than the ratio.</summary>
@@ -62,6 +63,16 @@ public static class PreviewPlan
     /// <summary>Where playback starts: at the playhead (if it is inside the trim and not right at the end), else at the start.</summary>
     public static double StartTime(TimelineClip c, double playhead) =>
         c.Start <= playhead && playhead < c.End - 0.25 ? playhead : c.Start;
+
+    /// <summary>2.1: what Play does. Inside the trim it loops the trimmed part from the playhead (as before);
+    /// with the playhead outside the trim it plays once from the playhead to the end of the video and stops.</summary>
+    public static (double T0, double End, bool Once) PlayRange(TimelineClip c, double playhead)
+    {
+        double dur = c.Info.Dur;
+        bool outside = playhead < c.Start || playhead >= c.End;
+        if (outside && playhead < dur - 0.25) return (playhead, dur, true);
+        return (StartTime(c, playhead), c.End, false);
+    }
 
     /// <summary>The effect settings the preview uses: the current choices of the Effects window. An unreadable zoom
     /// length keeps 0.4; it is limited to 0.1 - 2 s like the reference's live ZOOM["len"].</summary>

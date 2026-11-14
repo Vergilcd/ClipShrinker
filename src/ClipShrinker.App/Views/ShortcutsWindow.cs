@@ -28,7 +28,8 @@ public sealed class ShortcutsWindow : Window
         [
             ("GENERAL", [K("shortcuts"), K("effects"), K("export"), K("open"), K("save"), K("save_as"),
                          K("undo"), K("redo"), K("redo_alt")]),
-            ("PREVIEW", [K("play"), K("mute")]),
+            ("PREVIEW", [K("play"), K("mute"), K("fullscreen"),
+                         ("With the playhead outside the trimmed part, Play plays to the end of the video once.", "")]),
             // ("text", "") = a plain tip line across the column (mouse actions, nothing to rebind)
             ("TRIMMING", [K("trim_start"), K("trim_end"),
                           ("Trim with the keys above or by dragging the trim handles.", ""),

@@ -135,6 +135,7 @@ public static class Text
         ["shortcuts"] = "Show this window", ["export"] = "Start the export", ["open"] = "Open a project",
         ["save"] = "Save the project", ["save_as"] = "Save the project under a new name", ["undo"] = "Undo",
         ["redo"] = "Redo", ["redo_alt"] = "Redo (second key)", ["play"] = "Play / pause (loops the trimmed part)",
+        ["fullscreen"] = "Full-screen preview on / off",
         ["mute"] = "Mute / unmute the preview sound", ["select_all"] = "Select all clips",
         ["delete"] = "Remove the selected section, or else the selected clips",
         ["delete_section"] = "Remove the selected section only",

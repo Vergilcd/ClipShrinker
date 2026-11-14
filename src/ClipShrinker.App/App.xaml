@@ -139,14 +139,81 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <!-- The small red buttons in a clip's title bar: Reset zoom and remove (X) -->
-            <Style x:Key="HeadDangerButton" TargetType="Button" BasedOn="{StaticResource DangerButton}">
-                <Setter Property="Padding" Value="9,0,9,0" />
-                <Setter Property="Height" Value="20" />
-                <Setter Property="MinWidth" Value="26" />
-                <Setter Property="Margin" Value="4,0,0,0" />
+            <!-- The small buttons in a clip's title bar: Reset zoom and remove (X). Dark grey with white text
+                 (light mode: white with black text); the X keeps a red cross (HeadRemoveButton). -->
+            <Style x:Key="HeadButton" TargetType="Button">
+                <Setter Property="Background" Value="{DynamicResource CsHeadBtn}" />
+                <Setter Property="Foreground" Value="{DynamicResource CsHeadBtnText}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource CsHeadBtnBorder}" />
+                <Setter Property="Padding" Value="11,0,11,0" />
+                <Setter Property="Height" Value="24" />
+                <Setter Property="MinWidth" Value="31" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Margin" Value="5,0,0,0" />
                 <Setter Property="Focusable" Value="False" />
+                <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" CornerRadius="4" BorderThickness="1" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CsHeadBtnHover}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CsHeadBtnPressed}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.5" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="HeadRemoveButton" TargetType="Button" BasedOn="{StaticResource HeadButton}">
+                <Setter Property="Foreground" Value="{DynamicResource CsHeadX}" />
+            </Style>
+            <!-- The round buttons on the preview (play, sound, full screen): white on a see-through dark disc -->
+            <Style x:Key="OverlayButton" TargetType="Button">
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="Width" Value="34" />
+                <Setter Property="Height" Value="34" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" CornerRadius="17" Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#55FFFFFF" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!-- The small "insert a name field" buttons under Prefix / Suffix -->
+            <Style x:Key="TokenButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="Padding" Value="6,1,6,2" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Margin" Value="0,0,4,4" />
+                <Setter Property="Focusable" Value="False" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

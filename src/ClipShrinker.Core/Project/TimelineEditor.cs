@@ -22,6 +22,9 @@ public sealed class TimelineEditor
     /// <summary>Height of the active timeline (the reference uses 133 px with a gap under the thumbnails).</summary>
     public double ActiveHeight { get; init; } = TlH;
 
+    /// <summary>Height of an inactive clip's thin strip (the reference: 42 px; 2.1 draws it 25 % higher).</summary>
+    public double CompactHeight { get; init; } = CompactTlH;
+
     /// <summary>Height of the thumbnails (the reference: 72 px, under the lanes).</summary>
     public double ThumbHeight { get; init; } = ThumbH;
 
@@ -36,7 +39,7 @@ public sealed class TimelineEditor
     public static TimelineEditor EdgeToEdge(TimelineClip clip)
     {
         const double h = LaneH + ZLaneH + 4 + ThumbH;
-        return new TimelineEditor(clip) { Pad = 0, ActiveHeight = h, ThumbHeight = h, Overlay = true };
+        return new TimelineEditor(clip) { Pad = 0, ActiveHeight = h, ThumbHeight = h, Overlay = true, CompactHeight = 52 };
     }
 
     /// <summary>Top of the overview bar (overlay layout, only while zoomed in).</summary>
@@ -98,7 +101,7 @@ public sealed class TimelineEditor
 
     public double LaneHeight => Active ? LaneH + ZLaneH : CompactLaneH;
     /// <summary>Height of the canvas; also the bottom of the drawing area.</summary>
-    public double Height => Active ? ActiveHeight : CompactTlH;
+    public double Height => Active ? ActiveHeight : CompactHeight;
 
     // ------------------------------------------------------------------ mapping and zoom
     public double X(double t, double W) => Pad + (W - 2 * Pad) * (t - ViewA) / ViewLen;
