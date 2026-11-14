@@ -1,27 +1,27 @@
 # ClipShrinker
 
-**Trim, speed up, join and shrink game clips to an exact file size - fast, on your NVIDIA GPU.**
+**Trim, join and shrink game clips to an exact file size on your NVIDIA GPU.**
 
-<img width="1502" height="1005" alt="image" src="https://github.com/user-attachments/assets/a223f8d1-245a-4072-9105-561aa27185d8" />
+<img width="1393" height="1177" alt="image" src="https://github.com/user-attachments/assets/0718291d-3bd0-43b9-bfc8-532d40db1456" />
 
-ClipShrinker is a small Windows 11 tool for turning big Shadowplay recordings into clips that fit
-Discord, forums or chat apps. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, and it encodes
-with NVENC, checks the result and re-encodes with a corrected bitrate until the file lands just under the limit.
+ClipShrinker is a small Windows tool for turning big gameplay recordings into clips that fit
+Discord. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, then encode with NVENC, 
+the app checks the result and re-encodes with a corrected bitrate until the file lands just under the limit.
 
 ## Features
 
-- **Size-targeted export** - give it a MB limit (or a fixed bitrate) and it iterates until the file fits the limit
-- **Thumbnail timelines** per clip with draggable trim handles and typed-in timestamps
+- **Size-targeted export** - give a MB limit (or a fixed bitrate) and the export iterates until the size fits the limit
+- **Thumbnail timelines** per clip with draggable trim handles or typed-in timestamps
 - **Speed sections** (fast-forward with custom multipliers)
 - **Slow motion sections** (with RIFE frame interpolation available)
-- **Zoom sections** to punch in on the action
+- **Zoom sections** to focus on details
 - **Join clips** with transitions (crossfade, wipes, swipes or a glitch effect) or export separately
-- **Centered crop** to 21:9, 16:9, 16:10 or 4:3 for trimming superwide records
+- **Centered crop** to 21:9, 16:9, 16:10 or 4:3 for trimming superwide clips
 - **Multiple audio tracks** - keep game and microphone separate or mix them
 - **HEVC / H.264 via NVENC**, HDR clips handled
-- **Live preview** with sound, crop, speed and zoom applied
-- **Dark and light theme** (Windows 11 style), session saving, project saving/loading
-- **Customizable shortcuts** for main features
+- **Live preview** with sound, crop, and effects applied
+- **Dark and light theme** (Windows Fluent style), session saving, project saving/loading
+- **Customizable shortcuts** for all features
 - **Portable:** nothing is installed on your PC
 
 ## Requirements
