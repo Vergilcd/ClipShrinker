@@ -1,0 +1,13 @@
+{
+ "presets": [
+  {
+   "name": "ok",
+   "mbps": 5,
+   "key": "a"
+  },
+  {
+   "name": "bad",
+   "mbps": "fast"
+  }
+ ]
+}

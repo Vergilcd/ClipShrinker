@@ -1,0 +1,4448 @@
+[
+ {
+  "name": "size target, first pass fits",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 60.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 60.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47808750,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6582k",
+     "-maxrate",
+     "6582k",
+     "-bufsize",
+     "13164k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 1 - 6583 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47808750
+   }
+  ],
+  "status": [
+   "pass 1 - 6583 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47808750
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "size target, overshoots then fits",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    1.1,
+    1.04,
+    0.97
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 60.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 60.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 48828000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6582k",
+     "-maxrate",
+     "6582k",
+     "-bufsize",
+     "13164k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 1 - 6583 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 55357500
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1440:810:force_original_aspect_ratio=decrease:flags=lanczos,pad=1440:810:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6132k",
+     "-maxrate",
+     "6132k",
+     "-bufsize",
+     "12264k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part2.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 2 - 6133 kbps, 1440x810",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 48828000
+   }
+  ],
+  "status": [
+   "pass 1 - 6583 kbps, 1920x1080",
+   "pass 2 - 6133 kbps, 1440x810"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 48828000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "size target, constant overshoot is corrected",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    1.5
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 60.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 60.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 51648750,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6582k",
+     "-maxrate",
+     "6582k",
+     "-bufsize",
+     "13164k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 1 - 6583 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 75487500
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1440:810:force_original_aspect_ratio=decrease:flags=lanczos,pad=1440:810:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "4463k",
+     "-maxrate",
+     "4463k",
+     "-bufsize",
+     "8926k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part2.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 2 - 4463 kbps, 1440x810",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 51648750
+   }
+  ],
+  "status": [
+   "pass 1 - 6583 kbps, 1920x1080",
+   "pass 2 - 4463 kbps, 1440x810"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 51648750
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "size target, never fits -> error",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    1.5,
+    1.8,
+    2.16,
+    2.592,
+    3.1104,
+    3.73248
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 60.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 60.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "error": "RuntimeError: Could not get under 50 MB. Lower the size limit or trim the clips shorter.",
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6582k",
+     "-maxrate",
+     "6582k",
+     "-bufsize",
+     "13164k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 1 - 6583 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 75487500
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1440:810:force_original_aspect_ratio=decrease:flags=lanczos,pad=1440:810:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "4463k",
+     "-maxrate",
+     "4463k",
+     "-bufsize",
+     "8926k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part2.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 2 - 4463 kbps, 1440x810",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 61978500
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1440:810:force_original_aspect_ratio=decrease:flags=lanczos,pad=1440:810:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "3697k",
+     "-maxrate",
+     "3697k",
+     "-bufsize",
+     "7394k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part3.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 3 - 3697 kbps, 1440x810",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 61965000
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=960:540:force_original_aspect_ratio=decrease:flags=lanczos,pad=960:540:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "2815k",
+     "-maxrate",
+     "2815k",
+     "-bufsize",
+     "5630k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part4.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 4 - 2815 kbps, 960x540",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 57211920
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=960:540:force_original_aspect_ratio=decrease:flags=lanczos,pad=960:540:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "2326k",
+     "-maxrate",
+     "2326k",
+     "-bufsize",
+     "4652k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part5.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 5 - 2326 kbps, 960x540",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 57246912
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=960:540:force_original_aspect_ratio=decrease:flags=lanczos,pad=960:540:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "1919k",
+     "-maxrate",
+     "1919k",
+     "-bufsize",
+     "3838k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part6.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 6 - 1919 kbps, 960x540",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 57302899
+   }
+  ],
+  "status": [
+   "pass 1 - 6583 kbps, 1920x1080",
+   "pass 2 - 4463 kbps, 1440x810",
+   "pass 3 - 3697 kbps, 1440x810",
+   "pass 4 - 2815 kbps, 960x540",
+   "pass 5 - 2326 kbps, 960x540",
+   "pass 6 - 1919 kbps, 960x540"
+  ],
+  "progress": [],
+  "files_left": {},
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "size target, undershoots a lot",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.6,
+    0.8,
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 60.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 60.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 51642000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6582k",
+     "-maxrate",
+     "6582k",
+     "-bufsize",
+     "13164k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 1 - 6583 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 30195000
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "11349k",
+     "-maxrate",
+     "11349k",
+     "-bufsize",
+     "22698k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part2.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 2 - 11350 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 68862000
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "8479k",
+     "-maxrate",
+     "8479k",
+     "-bufsize",
+     "16958k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part3.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 3 - 8480 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 61324875
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "60.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=60.000,atrim=duration=60.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "7120k",
+     "-maxrate",
+     "7120k",
+     "-bufsize",
+     "14240k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part4.mp4"
+    ],
+    "duration": 60.0,
+    "label": "pass 4 - 7120 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 51642000
+   }
+  ],
+  "status": [
+   "pass 1 - 6583 kbps, 1920x1080",
+   "pass 2 - 11350 kbps, 1920x1080",
+   "pass 3 - 8480 kbps, 1920x1080",
+   "pass 4 - 7120 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 51642000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "capped by the source bitrate",
+  "st": {
+   "target_mb": 200.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.5
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 10.0,
+     "bitrate": 4000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 10.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 4000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 2580000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "10.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1440:810:force_original_aspect_ratio=decrease:flags=lanczos,pad=1440:810:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=10.000,atrim=duration=10.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "4000k",
+     "-maxrate",
+     "4000k",
+     "-bufsize",
+     "8000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 10.0,
+    "label": "pass 1 - 4000 kbps, 1440x810",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 2580000
+   }
+  ],
+  "status": [
+   "pass 1 - 4000 kbps, 1440x810"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 2580000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "too small for the length",
+  "st": {
+   "target_mb": 1.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {},
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 600.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 600.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 8000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "error": "RuntimeError: That size is too small for this length of video. Trim it shorter or raise the size limit.",
+  "runs": [],
+  "status": [],
+  "progress": [],
+  "files_left": {},
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "fixed bitrate",
+  "st": {
+   "target_mb": null,
+   "bitrate_mbps": 12.5,
+   "res_mode": "Original",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {},
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 30.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 30.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 8000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47355000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "12500k",
+     "-maxrate",
+     "12500k",
+     "-bufsize",
+     "25000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "12.5 Mbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47355000
+   }
+  ],
+  "status": [
+   "12.5 Mbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47355000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "fixed bitrate, 50% resolution, h264",
+  "st": {
+   "target_mb": null,
+   "bitrate_mbps": 4.0,
+   "res_mode": "50%",
+   "codec": "h264_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {},
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 30.0,
+     "w": 2560,
+     "h": 1440
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 30.0,
+     "w": 2560,
+     "h": 1440,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 8000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 15480000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1280:720:force_original_aspect_ratio=decrease:flags=lanczos,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "h264_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "4000k",
+     "-maxrate",
+     "4000k",
+     "-bufsize",
+     "8000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "4 Mbps, 1280x720",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 15480000
+   }
+  ],
+  "status": [
+   "4 Mbps, 1280x720"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 15480000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "fixed bitrate, CUDA decode fails once",
+  "st": {
+   "target_mb": null,
+   "bitrate_mbps": 8.0,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "fail_hw": true
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 30.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 30.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 8000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 30480000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "8000k",
+     "-maxrate",
+     "8000k",
+     "-bufsize",
+     "16000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "8 Mbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": false
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "8000k",
+     "-maxrate",
+     "8000k",
+     "-bufsize",
+     "16000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "8 Mbps, 1920x1080 (no hw decode)",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 30480000
+   }
+  ],
+  "status": [
+   "8 Mbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 30480000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "size target, CUDA decode fails once",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "fail_hw": true,
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 30.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 30.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47812312,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "13293k",
+     "-maxrate",
+     "13293k",
+     "-bufsize",
+     "26586k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "pass 1 - 13294 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": false
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "13293k",
+     "-maxrate",
+     "13293k",
+     "-bufsize",
+     "26586k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "pass 1 - 13294 kbps, 1920x1080 (no hw decode)",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47812312
+   }
+  ],
+  "status": [
+   "pass 1 - 13294 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47812312
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "ffmpeg always fails",
+  "st": {
+   "target_mb": null,
+   "bitrate_mbps": 8.0,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "fail_all": true
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 30.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 30.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 8000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "error": "RuntimeError: ffmpeg failed:\nsimulated ffmpeg error",
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "8000k",
+     "-maxrate",
+     "8000k",
+     "-bufsize",
+     "16000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "8 Mbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": false
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-ss",
+     "0.000",
+     "-t",
+     "30.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=30.000,atrim=duration=30.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "8000k",
+     "-maxrate",
+     "8000k",
+     "-bufsize",
+     "16000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 30.0,
+    "label": "8 Mbps, 1920x1080 (no hw decode)",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": false
+   }
+  ],
+  "status": [
+   "8 Mbps, 1920x1080"
+  ],
+  "progress": [],
+  "files_left": {},
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "join 3 with crossfade",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": "fade",
+   "T": 0.5,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    1.02,
+    0.96
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   },
+   {
+    "row": {
+     "path": "C:\\clips\\b.mkv",
+     "end": 15.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 15.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   },
+   {
+    "row": {
+     "path": "C:\\clips\\c.mov",
+     "start": 3.0,
+     "end": 12.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\c.mov",
+     "start": 3.0,
+     "end": 12.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 51338130,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "15.000",
+     "-i",
+     "C:\\clips\\b.mkv",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "3.000",
+     "-t",
+     "9.000",
+     "-i",
+     "C:\\clips\\c.mov",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0];[1:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v1];[1:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=15.000,atrim=duration=15.000,asetpts=PTS-STARTPTS[ab1_0];[ab1_0]anull[a1_0];[2:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v2];[2:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=9.000,atrim=duration=9.000,asetpts=PTS-STARTPTS[ab2_0];[ab2_0]anull[a2_0];[v0][v1]xfade=transition=fade:duration=0.500:offset=19.500[vx1];[vx1][v2]xfade=transition=fade:duration=0.500:offset=34.000[vx2];[a0_0][a1_0]acrossfade=d=0.500:c1=tri:c2=tri[ax1_0];[ax1_0][a2_0]acrossfade=d=0.500:c1=tri:c2=tri[ax2_0]",
+     "-map",
+     "[vx2]",
+     "-map",
+     "[ax2_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "9236k",
+     "-maxrate",
+     "9236k",
+     "-bufsize",
+     "18472k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 43.0,
+    "label": "pass 1 - 9236 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 51338130
+   }
+  ],
+  "status": [
+   "pass 1 - 9236 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 51338130
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "join 2 glitch, crop 21:9, mixed audio",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": 2.3333333333333335,
+   "xfade": "glitch",
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": true
+  },
+  "fake": {
+   "overshoot": [
+    0.93
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "w": 3440,
+     "h": 1440,
+     "naudio": 2,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 3440,
+     "h": 1440,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 2,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   },
+   {
+    "row": {
+     "path": "C:\\clips\\b.mkv",
+     "naudio": 1,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 51642063,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\b.mkv",
+     "-filter_complex",
+     "[0:v:0]crop=3360:1440,scale=2520:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=2520:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[0:a:1]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_1];[ab0_0][ab0_1]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.97:level=0[abm0];[abm0]anull[a0_0];[1:v:0]scale=2520:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=2520:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v1];[1:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab1_0];[ab1_0]anull[a1_0];[v0][v1]xfade=transition=fadefast:duration=0.400:offset=19.600[vx1g];[vx1g]rgbashift=rh=-22:bh=22:edge=smear:enable='between(t,19.600,20.000)',rgbashift=rh=44:gv=-22:bh=-44:edge=smear:enable='between(t,19.728,19.872)',noise=alls=28:allf=t:enable='between(t,19.660,19.940)',lutyuv=y='val*1.35':enable='between(t,19.776,19.816)',split=2[gl1m0][gl1s];[gl1s]split=6[gl1s0][gl1s1][gl1s2][gl1s3][gl1s4][gl1s5];[gl1s0]crop=2520:108:0:416[gl1c0];[gl1m0][gl1c0]overlay=x=-429:y=416:enable='between(t,19.723,19.804)'[gl1m1];[gl1s1]crop=2520:36:0:694[gl1c1];[gl1m1][gl1c1]overlay=x=368:y=694:enable='between(t,19.695,19.766)'[gl1m2];[gl1s2]crop=2520:118:0:454[gl1c2];[gl1m2][gl1c2]overlay=x=537:y=454:enable='between(t,19.683,19.775)'[gl1m3];[gl1s3]crop=2520:94:0:138[gl1c3];[gl1m3][gl1c3]overlay=x=-339:y=138:enable='between(t,19.727,19.827)'[gl1m4];[gl1s4]crop=2520:140:0:810[gl1c4];[gl1m4][gl1c4]overlay=x=-551:y=810:enable='between(t,19.661,19.716)'[gl1m5];[gl1s5]crop=2520:46:0:132[gl1c5];[gl1m5][gl1c5]overlay=x=-308:y=132:enable='between(t,19.836,19.905)'[vx1];[a0_0][a1_0]acrossfade=d=0.400:c1=tri:c2=tri[ax1_0]",
+     "-map",
+     "[vx1]",
+     "-map",
+     "[ax1_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "10040k",
+     "-maxrate",
+     "10040k",
+     "-bufsize",
+     "20080k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 39.6,
+    "label": "pass 1 - 10040 kbps, 2520x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 46808388
+   },
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\b.mkv",
+     "-filter_complex",
+     "[0:v:0]crop=3360:1440,scale=2520:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=2520:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[0:a:1]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_1];[ab0_0][ab0_1]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.97:level=0[abm0];[abm0]anull[a0_0];[1:v:0]scale=2520:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=2520:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v1];[1:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab1_0];[ab1_0]anull[a1_0];[v0][v1]xfade=transition=fadefast:duration=0.400:offset=19.600[vx1g];[vx1g]rgbashift=rh=-22:bh=22:edge=smear:enable='between(t,19.600,20.000)',rgbashift=rh=44:gv=-22:bh=-44:edge=smear:enable='between(t,19.728,19.872)',noise=alls=28:allf=t:enable='between(t,19.660,19.940)',lutyuv=y='val*1.35':enable='between(t,19.776,19.816)',split=2[gl1m0][gl1s];[gl1s]split=6[gl1s0][gl1s1][gl1s2][gl1s3][gl1s4][gl1s5];[gl1s0]crop=2520:108:0:416[gl1c0];[gl1m0][gl1c0]overlay=x=-429:y=416:enable='between(t,19.723,19.804)'[gl1m1];[gl1s1]crop=2520:36:0:694[gl1c1];[gl1m1][gl1c1]overlay=x=368:y=694:enable='between(t,19.695,19.766)'[gl1m2];[gl1s2]crop=2520:118:0:454[gl1c2];[gl1m2][gl1c2]overlay=x=537:y=454:enable='between(t,19.683,19.775)'[gl1m3];[gl1s3]crop=2520:94:0:138[gl1c3];[gl1m3][gl1c3]overlay=x=-339:y=138:enable='between(t,19.727,19.827)'[gl1m4];[gl1s4]crop=2520:140:0:810[gl1c4];[gl1m4][gl1c4]overlay=x=-551:y=810:enable='between(t,19.661,19.716)'[gl1m5];[gl1s5]crop=2520:46:0:132[gl1c5];[gl1m5][gl1c5]overlay=x=-308:y=132:enable='between(t,19.836,19.905)'[vx1];[a0_0][a1_0]acrossfade=d=0.400:c1=tri:c2=tri[ax1_0]",
+     "-map",
+     "[vx1]",
+     "-map",
+     "[ax1_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "11090k",
+     "-maxrate",
+     "11090k",
+     "-bufsize",
+     "22180k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part2.mp4"
+    ],
+    "duration": 39.6,
+    "label": "pass 2 - 11090 kbps, 2520x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 51642063
+   }
+  ],
+  "status": [
+   "pass 1 - 10040 kbps, 2520x1080",
+   "pass 2 - 11090 kbps, 2520x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 51642063
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "join 2 hard cut (T still subtracted)",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   },
+   {
+    "row": {
+     "path": "C:\\clips\\b.mkv",
+     "end": 15.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 15.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47813523,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "15.000",
+     "-i",
+     "C:\\clips\\b.mkv",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0];[1:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v1];[1:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=15.000,atrim=duration=15.000,asetpts=PTS-STARTPTS[ab1_0];[ab1_0]anull[a1_0];[v0][a0_0][v1][a1_0]concat=n=2:v=1:a=1[vout][aout0]",
+     "-map",
+     "[vout]",
+     "-map",
+     "[aout0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "11509k",
+     "-maxrate",
+     "11509k",
+     "-bufsize",
+     "23018k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 34.6,
+    "label": "pass 1 - 11509 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47813523
+   }
+  ],
+  "status": [
+   "pass 1 - 11509 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47813523
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "join, transition longer than allowed",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": "fade",
+   "T": 2.0,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 1.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 1.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   },
+   {
+    "row": {
+     "path": "C:\\clips\\b.mkv",
+     "end": 10.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 10.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47814841,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "1.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "10.000",
+     "-i",
+     "C:\\clips\\b.mkv",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=1.000,atrim=duration=1.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0];[1:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v1];[1:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=10.000,atrim=duration=10.000,asetpts=PTS-STARTPTS[ab1_0];[ab1_0]anull[a1_0];[v0][v1]xfade=transition=fade:duration=0.450:offset=0.550[vx1];[a0_0][a1_0]acrossfade=d=0.450:c1=tri:c2=tri[ax1_0]",
+     "-map",
+     "[vx1]",
+     "-map",
+     "[ax1_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "38038k",
+     "-maxrate",
+     "38038k",
+     "-bufsize",
+     "76076k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 10.55,
+    "label": "pass 1 - 38038 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47814841
+   }
+  ],
+  "status": [
+   "pass 1 - 38038 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47814841
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "join, transition too short -> hard cut",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": "fade",
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 0.1,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 0.1,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   },
+   {
+    "row": {
+     "path": "C:\\clips\\b.mkv",
+     "end": 10.0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\b.mkv",
+     "start": 0.0,
+     "end": 10.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47814283,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "0.100",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "10.000",
+     "-i",
+     "C:\\clips\\b.mkv",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=0.100,atrim=duration=0.100,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0];[1:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v1];[1:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=10.000,atrim=duration=10.000,asetpts=PTS-STARTPTS[ab1_0];[ab1_0]anull[a1_0];[v0][a0_0][v1][a1_0]concat=n=2:v=1:a=1[vout][aout0]",
+     "-map",
+     "[vout]",
+     "-map",
+     "[aout0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "39738k",
+     "-maxrate",
+     "39738k",
+     "-bufsize",
+     "79476k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 10.1,
+    "label": "pass 1 - 39739 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47814283
+   }
+  ],
+  "status": [
+   "pass 1 - 39739 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47814283
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "speed sections + vhs + RIFE not installed",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": true,
+   "slow_interp": "RIFE AI (smoothest, needs a GPU)",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "bitrate": 60000000.0,
+     "sections": [
+      {
+       "a": 2.0,
+       "b": 5.0,
+       "speed": 4.0
+      },
+      {
+       "a": 9.0,
+       "b": 11.0,
+       "speed": 0.5
+      }
+     ]
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": [
+      [
+       0.0,
+       2.0,
+       1.0
+      ],
+      [
+       2.0,
+       5.0,
+       4.0
+      ],
+      [
+       5.0,
+       9.0,
+       1.0
+      ],
+      [
+       9.0,
+       11.0,
+       0.5
+      ],
+      [
+       11.0,
+       20.0,
+       1.0
+      ]
+     ],
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47813885,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,setpts=PTS-STARTPTS[b0];[b0]split=5[c0s0][c0s1][c0s2][c0s3][c0s4];[c0s0]trim=start=0.0000:end=2.0000,setpts=(PTS-STARTPTS)/1.00000[c0p0];[c0s1]trim=start=2.0000:end=5.0000,setpts=(PTS-STARTPTS)/4.00000[c0p1_r];[c0p1_r]noise=alls=10:allf=t,rgbashift=rh=-2:bh=2,hue=s=1.2,noise=alls=60:allf=t+u:enable='lt(t,0.350)+gt(t,0.400)',rgbashift=rh=-9:bh=9:enable='lt(t,0.350)+gt(t,0.400)',hue=s=0.5:enable='lt(t,0.350)+gt(t,0.400)',lutyuv=y='val+16':enable='lt(t,0.350)+gt(t,0.400)'[c0p1_f];color=c=white:s=1920x54:r=30:d=1.250,format=rgba,colorchannelmixer=aa=0.16[c0p1_k];[c0p1_f][c0p1_k]overlay=x=0:y='mod(t*486,1134)-54':eof_action=pass:format=yuv420[c0p1];[c0s2]trim=start=5.0000:end=9.0000,setpts=(PTS-STARTPTS)/1.00000[c0p2];[c0s3]trim=start=9.0000:end=11.0000,setpts=(PTS-STARTPTS)/0.50000,framerate=fps=60/1:interp_start=0:interp_end=255:scene=100[c0p3];[c0s4]trim=start=11.0000:end=20.0000,setpts=(PTS-STARTPTS)/1.00000[c0p4];[c0p0][c0p1][c0p2][c0p3][c0p4]concat=n=5:v=1:a=0[m0];[m0]fps=60/1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]asplit=5[d0_0a0][d0_0a1][d0_0a2][d0_0a3][d0_0a4];[d0_0a0]atrim=start=0.0000:end=2.0000,asetpts=PTS-STARTPTS[d0_0q0];[d0_0a1]atrim=start=2.0000:end=5.0000,asetpts=PTS-STARTPTS,atempo=2.0,atempo=2.00000[d0_0q1_m];anoisesrc=d=0.375:c=pink:r=48000:a=0.34,highpass=f=250,lowpass=f=7000,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q1_x_n0];aevalsrc='0.214*sin(2*PI*(220*t+2600*t*t/0.375))|0.214*sin(2*PI*(220*t+2600*t*t/0.375))':s=48000:d=0.375,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q1_x_t0];[d0_0q1_x_n0][d0_0q1_x_t0]amix=inputs=2:normalize=0,afade=t=in:d=0.03,afade=t=out:st=0.255:d=0.12[d0_0q1_x_b0];anoisesrc=d=0.375:c=pink:r=48000:a=0.34,highpass=f=250,lowpass=f=7000,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q1_x_n1];aevalsrc='0.214*sin(2*PI*(2800*t-1300*t*t/0.375))|0.214*sin(2*PI*(2800*t-1300*t*t/0.375))':s=48000:d=0.375,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q1_x_t1];[d0_0q1_x_n1][d0_0q1_x_t1]amix=inputs=2:normalize=0,afade=t=in:d=0.03,afade=t=out:st=0.255:d=0.12,adelay=375|375[d0_0q1_x_b1];[d0_0q1_m][d0_0q1_x_b0][d0_0q1_x_b1]amix=inputs=3:duration=first:normalize=0[d0_0q1_x];[d0_0q1_x]volume=0.70[d0_0q1];[d0_0a2]atrim=start=5.0000:end=9.0000,asetpts=PTS-STARTPTS[d0_0q2];[d0_0a3]atrim=start=9.0000:end=11.0000,asetpts=PTS-STARTPTS,asetrate=24000,aresample=48000[d0_0q3_m];aevalsrc='0.12*sin(2*PI*(260*t-215*t*t/(2*0.600)))*exp(-3*t/0.600)+0.18*sin(2*PI*48*t)*exp(-9*t)|0.12*sin(2*PI*(260*t-215*t*t/(2*0.600)))*exp(-3*t/0.600)+0.18*sin(2*PI*48*t)*exp(-9*t)':s=48000:d=0.600,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q3_x_t0];anoisesrc=d=0.600:c=brown:r=48000:a=0.09,lowpass=f=500,afade=t=out:d=0.600,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q3_x_n0];[d0_0q3_x_t0][d0_0q3_x_n0]amix=inputs=2:normalize=0,afade=t=in:d=0.01,afade=t=out:st=0.520:d=0.08[d0_0q3_x_b0];aevalsrc='0.13*sin(2*PI*(45*t+215*t*t/(2*0.600)))*sin(PI*t/0.600)|0.13*sin(2*PI*(45*t+215*t*t/(2*0.600)))*sin(PI*t/0.600)':s=48000:d=0.600,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q3_x_t1];anoisesrc=d=0.600:c=brown:r=48000:a=0.09,lowpass=f=700,afade=t=in:d=0.600,aformat=sample_fmts=fltp:channel_layouts=stereo[d0_0q3_x_n1];[d0_0q3_x_t1][d0_0q3_x_n1]amix=inputs=2:normalize=0,afade=t=in:d=0.01,afade=t=out:st=0.520:d=0.08,adelay=3400|3400[d0_0q3_x_b1];[d0_0q3_m][d0_0q3_x_b0][d0_0q3_x_b1]amix=inputs=3:duration=first:normalize=0[d0_0q3_x];[d0_0q3_x]volume=1.50[d0_0q3];[d0_0a4]atrim=start=11.0000:end=20.0000,asetpts=PTS-STARTPTS[d0_0q4];[d0_0q0][d0_0q1][d0_0q2][d0_0q3][d0_0q4]concat=n=5:v=0:a=1[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "20259k",
+     "-maxrate",
+     "20259k",
+     "-bufsize",
+     "40518k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 19.75,
+    "label": "pass 1 - 20260 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47813885
+   }
+  ],
+  "status": [
+   "RIFE is not installed - using frame blending for slow motion",
+   "pass 1 - 20260 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47813885
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": true
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": true
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "HDR tonemap on",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": true,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0,
+     "w": 3840,
+     "h": 2160,
+     "bitrate": 60000000.0,
+     "trc": "smpte2084",
+     "prim": "bt2020",
+     "space": "bt2020nc"
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 3840,
+     "h": 2160,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": "smpte2084",
+     "prim": "bt2020",
+     "space": "bt2020nc",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47813500,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=2880:1620:force_original_aspect_ratio=decrease:flags=lanczos,pad=2880:1620:(ow-iw)/2:(oh-ih)/2,setsar=1,zscale=tin=smpte2084:pin=2020:min=2020_ncl:t=linear:p=2020:npl=203,format=gbrpf32le,zscale=p=709,tonemap=tonemap=mobius:param=0.8:desat=0,zscale=t=709:m=709:r=tv,format=yuv420p,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "20004k",
+     "-maxrate",
+     "20004k",
+     "-bufsize",
+     "40008k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-colorspace",
+     "bt709",
+     "-color_primaries",
+     "bt709",
+     "-color_trc",
+     "bt709",
+     "-color_range",
+     "tv",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 20.0,
+    "label": "pass 1 - 20005 kbps, 2880x1620",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47813500
+   }
+  ],
+  "status": [
+   "pass 1 - 20005 kbps, 2880x1620"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47813500
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "HDR tonemap off",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0,
+     "w": 3840,
+     "h": 2160,
+     "bitrate": 60000000.0,
+     "trc": "smpte2084",
+     "prim": "bt2020",
+     "space": "bt2020nc"
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 3840,
+     "h": 2160,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 60000000.0,
+     "trc": "smpte2084",
+     "prim": "bt2020",
+     "space": "bt2020nc",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47813500,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=2880:1620:force_original_aspect_ratio=decrease:flags=lanczos,pad=2880:1620:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "20004k",
+     "-maxrate",
+     "20004k",
+     "-bufsize",
+     "40008k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-color_trc",
+     "smpte2084",
+     "-color_primaries",
+     "bt2020",
+     "-colorspace",
+     "bt2020nc",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 20.0,
+    "label": "pass 1 - 20005 kbps, 2880x1620",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47813500
+   }
+  ],
+  "status": [
+   "pass 1 - 20005 kbps, 2880x1620"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47813500
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "two audio tracks kept (metadata names)",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0,
+     "naudio": 2,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 2,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47813500,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[0:a:1]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_1];[ab0_0]anull[a0_0];[ab0_1]anull[a0_1]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-map",
+     "[a0_1]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "19876k",
+     "-maxrate",
+     "19876k",
+     "-bufsize",
+     "39752k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-metadata:s:a:0",
+     "handler_name=Game audio",
+     "-metadata:s:a:1",
+     "handler_name=Microphone",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 20.0,
+    "label": "pass 1 - 19877 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47813500
+   }
+  ],
+  "status": [
+   "pass 1 - 19877 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47813500
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "no audio",
+  "st": {
+   "target_mb": 50.0,
+   "bitrate_mbps": null,
+   "res_mode": "Auto",
+   "codec": "hevc_nvenc",
+   "audio_k": "64k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {
+   "overshoot": [
+    0.95
+   ]
+  },
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0,
+     "naudio": 0,
+     "bitrate": 60000000.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": false,
+     "naudio": 0,
+     "bitrate": 60000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 47813500,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0]",
+     "-map",
+     "[v0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "20132k",
+     "-maxrate",
+     "20132k",
+     "-bufsize",
+     "40264k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 20.0,
+    "label": "pass 1 - 20133 kbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 47813500
+   }
+  ],
+  "status": [
+   "pass 1 - 20133 kbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 47813500
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ },
+ {
+  "name": "per-clip preset override",
+  "st": {
+   "target_mb": null,
+   "bitrate_mbps": 6.0,
+   "res_mode": "Original",
+   "codec": "hevc_nvenc",
+   "audio_k": "128k",
+   "ratio": null,
+   "xfade": null,
+   "T": 0.4,
+   "tonemap": false,
+   "fast_audio": "VHS effect with sound",
+   "slow_audio": "Slow-mo effect with sound",
+   "slow_pitch": "Slows down with the video (deep)",
+   "fast_pitch": "Stays the same (compressed)",
+   "vhs": false,
+   "slow_interp": "Frame blending",
+   "fast_vol": 70,
+   "slow_vol": 150,
+   "zoom_fx": "Zoom motion",
+   "zoom_snd": "Whoosh sound",
+   "zoom_len": "0.4",
+   "zoom_vol": 80,
+   "mix_audio": false
+  },
+  "fake": {},
+  "clips": [
+   {
+    "row": {
+     "path": "C:\\clips\\a.mp4",
+     "end": 20.0
+    },
+    "clip": {
+     "path": "C:\\clips\\a.mp4",
+     "start": 0.0,
+     "end": 20.0,
+     "w": 1920,
+     "h": 1080,
+     "fps": 60.0,
+     "audio": true,
+     "naudio": 1,
+     "bitrate": 8000000.0,
+     "trc": null,
+     "prim": "bt709",
+     "space": "bt709",
+     "pieces": null,
+     "zooms": []
+    }
+   }
+  ],
+  "out": "C:\\out\\result.mp4",
+  "result": 15320000,
+  "runs": [
+   {
+    "cmd": [
+     "ffmpeg",
+     "-y",
+     "-hide_banner",
+     "-nostats",
+     "-progress",
+     "pipe:1",
+     "-hwaccel",
+     "cuda",
+     "-ss",
+     "0.000",
+     "-t",
+     "20.000",
+     "-i",
+     "C:\\clips\\a.mp4",
+     "-filter_complex",
+     "[0:v:0]scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[v0];[0:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,apad=whole_dur=20.000,atrim=duration=20.000,asetpts=PTS-STARTPTS[ab0_0];[ab0_0]anull[a0_0]",
+     "-map",
+     "[v0]",
+     "-map",
+     "[a0_0]",
+     "-c:v",
+     "hevc_nvenc",
+     "-preset",
+     "p5",
+     "-tune",
+     "hq",
+     "-rc",
+     "vbr",
+     "-b:v",
+     "6000k",
+     "-maxrate",
+     "6000k",
+     "-bufsize",
+     "12000k",
+     "-spatial-aq",
+     "1",
+     "-pix_fmt",
+     "yuv420p",
+     "-tag:v",
+     "hvc1",
+     "-c:a",
+     "aac",
+     "-b:a",
+     "128k",
+     "-movflags",
+     "+faststart",
+     "C:\\out\\result.mp4.part1.mp4"
+    ],
+    "duration": 20.0,
+    "label": "6 Mbps, 1920x1080",
+    "pbase": 0.0,
+    "pspan": 100.0,
+    "ok": true,
+    "size": 15320000
+   }
+  ],
+  "status": [
+   "6 Mbps, 1920x1080"
+  ],
+  "progress": [
+   100.0
+  ],
+  "files_left": {
+   "C:\\out\\result.mp4": 15320000
+  },
+  "globals_after": {
+   "AUD": {
+    "fast": "fx",
+    "slow": "fx",
+    "deep": true,
+    "high": false,
+    "fast_vol": 70,
+    "slow_vol": 150
+   },
+   "VHS": {
+    "on": false
+   },
+   "SLOW": {
+    "blend": true,
+    "rife": false
+   },
+   "ZOOM": {
+    "motion": true,
+    "len": 0.4,
+    "sound": true,
+    "vol": 80,
+    "play": []
+   }
+  }
+ }
+]

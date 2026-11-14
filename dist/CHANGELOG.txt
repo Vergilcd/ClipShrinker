@@ -1,0 +1,446 @@
+CLIP SHRINKER CHANGELOG
+=======================
+Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
+Newest version first.
+
+
+2.0.0
+Rewritten in C# (.NET 10, WPF) for a faster, smoother Windows interface. Exports match 1.0.8 exactly: same
+ffmpeg commands, size search and file names, checked against 1.0.8 with automated tests.
+- No more Python. ClipShrinker.exe is one self-contained program with .NET built in, next to the library folder
+  (ffmpeg, ffprobe, RIFE). It starts faster, shows no hidden window at start-up and resizes smoothly with every
+  panel visible, so the "Hide the panels while resizing" option is gone.
+- Thumbnails, sound preparation and playback run on their own threads, so the window stays responsive.
+- If ffmpeg is missing, the program offers the one-time download itself. Setup.bat is gone.
+- New timeline look: thumbnails fill the timeline edge to edge. Speed sections get a short header band on top,
+  zoom sections at the bottom, in the colour of their edge lines. Thinner edge lines, a hand cursor over
+  anything draggable, rounded corners, and red "Reset zoom" and remove buttons. Clicking inside a zoom section
+  selects it, as with speed sections.
+- The preview zoom bracket can be dragged from anywhere inside it (move cursor).
+- Every keyboard shortcut can be changed in the Shortcuts window (F1). Keys show as keycaps like in PowerToys:
+  click one and press the new key. A key that's already taken says where it's used and can't be saved; "Reset"
+  restores the default. Only Esc, Enter and Tab are fixed, so undo/redo, save, open, export, play, mute,
+  select all and delete can now be changed too. The window also lists the mouse actions as short tips.
+- Bitrate presets show and record their hotkey the same way, with lines between presets and a red delete button.
+- New "Preset (all clips)" drop-down under "or Bitrate" gives every clip the same preset at once ("Auto bitrate"
+  resets them all).
+- Audio bitrate per track is now 128k, 192k, 256k or 320k. 48k to 96k were removed; a saved lower value
+  becomes 128k.
+- Loading many videos or a project shows a small window with a progress ring and counter until thumbnails are
+  ready.
+- Export: the progress bar moves smoothly, its text has no outline (black in light mode), and the stop button is
+  red while exporting.
+- Dark mode is an on/off switch at the top right. Light mode has grey clip title bars and summary panel.
+- The bitrate preset list in a clip's title bar stays readable when hovered on the blue (active) title bar.
+- The divider under the preview has a visible grip; the clip list's scroll bar sits on the sidebar divider.
+- Fixed: the Resolution list looked empty after opening a project with a fixed bitrate.
+- Settings, presets, projects (.clipproj) and the last session from 1.0.x still load.
+
+
+1.0.8
+- Faster first start: the NVENC check (one ffmpeg run) now happens in the background instead of holding up the
+  window. On the very first start, Windows scanning the freshly unpacked Python and ffmpeg files could keep the
+  window hidden for several seconds.
+- Much smoother resizing: while you drag the window edge, the side panel and preview/clip list are hidden behind
+  an empty panel and come back when you let go. Windows repainted every widget on each size step (about 180 ms
+  with all panels, about 30 ms without), which made dragging choppy; it now runs at about 20 to 30 steps per
+  second. Turn it off with "Hide the panels while resizing the window" in Effects > App.
+- Timelines, the "Drop videos here" box, the "Add videos" strip and the progress bar redraw at most about 30
+  times per second, and the total length is no longer recalculated on every step.
+- The About window links to the GitHub project page (github.com/Vergilcd/ClipShrinker).
+- Fixed: two harmless "Duplicate element DangerButton.button" errors were logged to clipshrinker.log on every
+  start (the red "Clear all" style was created twice).
+- clipshrinker.log now has timing lines for start-up ("[start-up ...]") and a summary after each resize
+  ("[resize] ..."), only for finding slow spots.
+- The license is now a plain MIT LICENSE file, so GitHub shows "MIT" again. Third-party components moved to
+  THIRD-PARTY-NOTICES.txt.
+
+1.0.7
+- Removed the developer helper Prepare-Portable-Python.bat from the package. It only prepared the bundled
+  Python and isn't needed to run the program.
+
+1.0.6
+- Clicking anywhere outside a sidebar text field or drop-down now leaves it: the cursor stops blinking, typed
+  values are accepted, and a chosen drop-down entry no longer stays highlighted.
+
+1.0.5
+- The note under Crop ("already narrower - no crop") is smaller and always one line, so the settings don't shift
+  when it appears. The settings area also avoids repeated re-layouts when its scrollbar comes and goes (a
+  possible cause of doubled-up drawing seen on one computer).
+
+1.0.4
+- The Shortcuts window uses two columns and is about half as tall (it was cut off on 1080p screens).
+
+1.0.3
+- The bundled Python is about 9 MB smaller on disk (about 3 MB smaller download). Removed: sqlite3, unittest,
+  turtle, Tix, Tcl time-zone data, Tk demos and the Python self-test files.
+
+1.0.2
+- Fixed: the Project menu stayed open at its old position when the window was moved. It now closes when the
+  window moves, is resized or loses focus.
+- Fixed: the Shortcuts and About windows could be opened many times. Now only one of each opens; the button or
+  F1 brings it to the front.
+
+1.0.1
+- Fixed: the Project menu stayed open until the Project button was clicked again. It now closes when you click
+  elsewhere or switch windows.
+
+1.0.0 (first release)
+- The bottom of the Export panel (Summary, progress bar, Export button) sits on a darker panel with a thin line
+  on top, with even gaps above the Summary, above the progress bar and between the bar and the Export button.
+- Panel headings are now EXPORT SETTINGS and AUDIO SETTINGS.
+- Fixed: the Summary text got larger after switching between dark and light mode.
+- The About window is bigger and resizable. The Shortcuts window no longer shows the version.
+- The changelog moved from the readme into CHANGELOG.txt (also shown in the About window).
+
+
+0.9.32
+- "About" button at the top right with the version, changelog, licenses and readme.
+
+0.9.31
+- The portable Python (library\python) ships with the package, so nothing needs installing or downloading.
+
+0.9.30
+- The portable Python comes from python-build-standalone (includes tkinter).
+
+0.9.29
+- The portable Python download is more reliable and writes a log (library\portable-python-log.txt).
+
+0.9.28
+- library\Prepare-Portable-Python.bat downloads the portable Python into library\python, for making a folder
+  that needs no download on other PCs.
+
+0.9.27
+- Portable Python support: the program looks in library\python first. With no Python at all, setup downloads
+  a portable one there (no installation, no winget).
+- Clip title format: name, resolution, fps, size, original length, then length after edit.
+
+0.9.26
+- Taller thumbnails (no text line under the timeline). The clip title ends with "Length after edit". Smaller
+  trim time boxes.
+
+0.9.25
+- Thumbnail order: the open clip first (using all workers), then the rest from top to bottom.
+
+0.9.24
+- Faster thumbnails (up to 8 at a time), and no gaps between thumbnails after widening the window.
+
+0.9.23
+- The film strip stays inside the grey area, with no thumbnails before the start or after the end of the video.
+
+0.9.22
+- A moved trim handle gets a time box (green left of the start handle, red right of the end handle). Type a
+  time and press Enter to jump there; Esc cancels. Zoom handles can be dragged anywhere in the strip. The dark
+  trimmed area reaches the thumbnail edges.
+
+0.9.21
+- Thinner trim handles with smaller flags, matching the thumbnail height. The trimmed area is darker.
+
+0.9.20
+- Trim handles have flags (triangles top and bottom). Zoom sections have handle bars and are grey until
+  selected, then white. Speed and zoom handle bars are slimmer.
+
+0.9.19
+- Window title: "ClipShrinker v0.9.19", plus the project name when one is open.
+- Clip title bar: "Auto bitrate" instead of "Auto", "Reset zoom" instead of "Fit", and a bigger remove (X) icon.
+- The Start / End / Length line sits closer to the thumbnails.
+- Fixed: the zoom bracket stayed on the preview when the playhead was outside every zoom section. It now only
+  shows while the playhead is inside one.
+
+0.9.18
+- Clip timelines fill the whole card (no light or grey frame), with Start / End / Length shown inside the
+  timeline at the bottom.
+- Window title is just "ClipShrinker" (plus the project name). The version moved to the bottom of the
+  Shortcuts window.
+- A little more space between the divider and the first clip.
+
+0.9.17
+- Fixed: dragging the divider too far could push the preview over the buttons below it. The button row is now
+  fixed under the preview, and the divider stops at a sensible minimum for both preview and clip list.
+- The divider is back to its original thickness (the grip stays longer).
+
+0.9.16
+- Thin grey lines between sections in the Export panel, Effects window and Shortcuts window.
+
+0.9.15
+- The Play button is just a play/pause icon. The "drag the divider" hint is gone; the divider is thicker with a
+  longer grip instead.
+- Shortcuts, Effects, Bitrate presets and the preset editor open centred on the main window.
+- "Open effect settings" (F2) can be rebound like the trim and effect keys.
+
+0.9.14
+- Preview sound: a speaker button (click or M to mute/unmute) and a volume slider next to Play. The slider only
+  affects the preview, not the export.
+- Buttons rearranged: Shortcuts (new keyboard icon) next to Project; Bitrate presets, Effects (magic wand) and
+  Clear all under the preview. The Dark mode switch moved into the Export panel header, and the panel now runs
+  from the top of the window.
+- Effects window sections: Clip transitions (Transition effect), Speed up effects, Slow motion effects, Zoom
+  effects.
+- Fixed: section headers are blue again (the theme had turned them white).
+
+0.9.13
+- Export panel summary: clips and length, codec / resolution / crop, size limit or bitrate, and file name,
+  separated by thin lines in a smaller font. The length now subtracts transition overlaps ("when joined").
+- One Export button, which turns into a red Abort button while exporting.
+- The status bar is gone. Export steps and results show in small text under the progress bar, and the bar
+  itself says "Done in 3 minutes 53 seconds" (or Failed / Aborted). Open folder sits next to the bar.
+- Editing messages (trim set, section added, ...) appear over the bottom of the preview for 3 seconds, then fade.
+- "Presets" is now "Bitrate presets", next to Clear all under the preview. "Effects & settings" is now "Effect
+  settings", in one column with App at the top. The clip count at the top is gone (it's in the summary).
+
+0.9.12
+- New layout: an Export panel on the right holds every export setting (size limit or fixed bitrate,
+  resolution, codec, crop, HDR tone-map, audio bitrate and tracks, mute microphone, file name prefix/suffix,
+  save folder), a summary (length after edits, size or estimated size, codec, example file name, save folder),
+  the progress bar and the Export / Cancel buttons. It scrolls when the window is too short.
+- New file name prefix (prefix_clip_suffix.mp4).
+- The old Settings window is now "Effects & settings": clip effects, sped-up, slow-mo and zoom sections, app.
+- The default window is wider (1500 px) to fit the panel; minimum width is 1150 px.
+
+0.9.11
+- New defaults: audio tracks mixed into one, sped-up volume 70%, slow-mo volume 150%, zoom sound 80%, zoom
+  motion 0.4 s. Saved settings are kept; delete library\settings.json to get the new defaults. Double-clicking a
+  volume slider resets it to its default.
+- The Settings window is prepared in the background at start-up and fades in only once fully drawn.
+- The transition hover preview is 25% larger.
+
+0.9.10
+- New "Glitch (digital)" transition: RGB split, jumping picture bands, noise and a flash while switching clips.
+- Transition list cut to 22 (removed dissolve, grey fade, hard wipes, cover/reveal, open/close and squeeze).
+- Play buttons next to the Sped-up, Slow-mo and Zoom volume sliders in Settings play a short sample (normal
+  sound, the effect, then normal again) so you can judge the level. They use the selected clip's sound at the
+  playhead, or a test melody when no clip with sound is loaded.
+- Settings, Shortcuts and Presets open fully drawn with a dark title bar (no light flash in dark mode).
+
+0.9.9
+- 30 clip transitions, up from 6 (cut to 22 in 0.9.10): dissolve, fades through white or grey, wipes in 4
+  directions, pushes up/down, circle open/close, clock wipe, diagonal, squeeze, zoom in, pixelize, blur and more.
+- Hover over an entry in the Transition list (Settings > Clip effects) for a small looping preview. It uses
+  your first two clips as they'd be joined, or plain colours when no clip is loaded.
+- Deleting the selected clip now selects the next one (or the previous one if it was last), not the first.
+- The total at the top includes speed-up and slow-mo sections, so it's the real length after edits.
+- The status line shows how long the export took, e.g. "Export finished in 3 minutes 53 seconds".
+
+0.9.8
+- Default save folder (Settings > Export settings): when set, exports go there without asking, as
+  name_suffix.mp4. If the name exists, it becomes "name (2).mp4"; nothing is overwritten. Empty means the
+  program asks as before.
+- Settings in two columns: Export settings (size, bitrate, resolution, codec, HDR tone-map, file name suffix,
+  default save folder), Aspect ratio, Audio and App on the left; Clip effects and Sped-up, Slow-mo and Zoom
+  sections on the right.
+- New "Pitch" option for sped-up sections. "Speeds up with the video (high)" raises the pitch like a sped-up
+  tape; "Stays the same (compressed)" is the old behaviour and the default.
+
+0.9.7
+- Rebindable shortcuts: in the Shortcuts window, click the key for set trim start/end, speed-up, slow-down or
+  zoom, then press the new key, with Shift, Ctrl or Alt if you like (e.g. Shift + S). "Default" restores the
+  original. The hints under the preview follow your choice.
+- Settings > App: "File name suffix" (exports become name_suffix.mp4; empty uses the codec name, e.g.
+  name_HEVC.mp4 or name_H264.mp4) and "Default save folder" (exports go there without asking).
+- RIFE AI is the default slow-motion smoothing, and the transition length defaults to 0.4 s (new installs only;
+  saved settings are kept). The label reads "Transition length (s)".
+- Saving a project suggests the first clip's name.
+- The AV1 export from 0.9.6 is removed again.
+
+0.9.6
+- Much smaller program: ffmpeg is a slim custom build with only the parts the program uses and no DLL files.
+  The download shrank from 69 MB to about 27 MB (about 53 MB on disk with RIFE). RIFE slow-motion smoothing
+  (library\rife, rife-v4.6 model, MIT license in library\rife\LICENSE.txt) is included, no download needed.
+- Preview sound works with the slim ffmpeg.
+
+0.9.5
+- The experimental tracked zoom from 0.9.3 / 0.9.4 is removed; zoom sections work as in 0.9.2.
+- "Download RIFE" fetches only what the program uses (the program, vcomp140.dll and the rife-v4.6 model, about
+  12 MB instead of the 430 MB release zip) and shows the size and a progress bar. If a partial download isn't
+  possible, it falls back to the whole zip. An old, big RIFE install still works; delete every folder in
+  library\rife except rife-v4.6 to free about 400 MB.
+- The launcher no longer requires the ffmpeg DLL files, so a slim ffmpeg.exe / ffprobe.exe in the library
+  folder works.
+
+0.9.2
+- Zoom sections (hotkey Z, white, in a thin lane under the speed lane) zoom into part of the picture between two
+  bars. Drag the white bracket on the preview to pick the area: inside to move, corners to resize. The bracket
+  size sets the zoom level, up to 10x. Zoom sections can overlap speed and slow-motion sections. Their edges and
+  bar snap to the playhead like other bars, and Delete or right-click removes one.
+- Settings > ZOOM SECTIONS (third column): Motion (smooth zoom in/out, 0.5 s each by default, or an instant
+  cut), motion length, Sound (a short whoosh when the zoom starts and ends) and its volume.
+- The preview shows the zoom while playing; the bracket shows when paused.
+- New hint under the preview: Z = zoom in (white, on a dark box in the light look so it stays readable).
+
+0.9.0
+- Snapping: drag a trim handle, or the edge or bar of a speed or slow-motion section, near the yellow playhead
+  line (where you stopped playback) and it snaps to that exact spot. So: stop playback where you want the cut,
+  then drag the handle next to the yellow line.
+
+0.8.7
+- Hints under the preview use the timeline colours: S = speed up (blue), D = slow down (pink). A down arrow
+  points to "drag the divider below to resize".
+- Settings: the heading is "SLOW-MO SECTIONS", with twice as much space between sections.
+- Shortcuts window regrouped (General, Preview, Trimming, Speed & slow motion, Clips) with shorter descriptions
+  and the same heading style as Settings.
+- A little more space between the export row and the status bar; status text is one size smaller.
+
+0.8.6
+- Volume slider (0 to 200%) under the sound setting for sped-up and slow-motion sections. It applies to preview
+  and export; double-click it to reset to 100%.
+- "SLOW-MOTION SECTIONS" is now "SLOW-MO SECTIONS" in Settings; the preview hint says "D = slow down".
+- The export progress bar has rounded corners and is exactly as tall as the buttons.
+- The scroll bar next to the clips only appears when the clips don't fit.
+
+0.8.5
+- Rounder look: clip cards, their thumbnail strips and the dashed drop boxes have rounded corners.
+- The Project menu is a roomy, borderless drop-down with rounded corners.
+- Icons on the top buttons: key (Shortcuts), film strip (Presets), cog (Settings).
+- "Sound" next to Play is now "Preview sound".
+- The "Export settings" window is now just "Settings", in two roomier columns. Left: Size & quality, Picture,
+  Clip join effects (was "Joining clips"), App. Right: Audio, Sped-up sections, Slow-motion sections.
+- LICENSE.txt: Clip Shrinker is fully open source (MIT), so you can edit it, fork it and share it. Made with
+  Claude (Anthropic) by Vergil.
+
+0.8.2
+- "Clear all" uses the theme's own rounded button style in red, matching the blue Export button.
+
+0.8.1
+- "Clear all" is a rounded red button again.
+
+0.8.0 (bitrate presets, export question)
+- New "Presets" button (left of Settings): bitrate profiles with a name, a bitrate in Mbps and an optional
+  hotkey, saved in presets.json next to the program. Edit or X changes or deletes one; "+ Add profile" adds one.
+- Every clip has a bitrate drop-down in its title bar: Auto (the size/bitrate from Settings) or a preset. A
+  preset's hotkey applies it to the selected clips (or the active clip). The per-clip bitrate is used when clips
+  are exported as separate files; a joined video follows the size/bitrate in Settings. The choice is saved in
+  projects and covered by undo/redo.
+- "Each clip as its own file / Join into one video" is no longer a setting: Export asks when there are several
+  clips. Transition and length stay in Settings, since they only matter when joining.
+- The progress bar is solid again (blue, green when finished). "Clear all" is red.
+- Closing the program asks only: Save / Close without saving / Cancel.
+
+0.7.6
+- New 192k audio bitrate option (128k stays the default).
+- New defaults for fresh installs: crop 16:9, join all clips into one video, transition "Gradient wipe, left to
+  right". Your saved settings still win.
+
+0.7.5
+- New "Pitch" setting for slow-motion sound. "Slows down with the video (deep)" is classic tape-style slowdown
+  (like Movie Studio's "classic" time stretch with the lock): slower and deeper, with no stretching artifacts.
+  "Stays the same (stretched)" is the old behaviour. It applies to the slow-mo effect and normal slow-mo sound.
+  The "Cut high notes" idea was dropped.
+
+0.7.4
+- The "Download RIFE" button hides once RIFE is installed.
+
+0.7.2
+- Progress bar stripes use the window's own grey (white in light mode) and run to both ends with no end caps.
+
+0.7.1
+- Slow-motion sections with "Slow-mo effect with sound" also get a deep, muffled sound.
+- The progress bar is as tall as the buttons, shows the percentage in the middle, has darker stripes and turns
+  green when the export finishes.
+- The RIFE note in Settings is on its own line, so the window stays narrow.
+
+0.7.0 (RIFE AI slow motion, export polish)
+- Slow-motion sections can be smoothed with RIFE (AI frame interpolation, rife-ncnn-vulkan by nihui, MIT
+  licence) under Settings > Slow-motion sections > Smoothing: Repeat frames / Frame blending / RIFE. The first
+  time, click "Download RIFE" there (about 30 MB, once, into library\rife). If that fails, unzip the Windows
+  release from github.com/nihui/rife-ncnn-vulkan/releases into library\rife yourself. It needs a Vulkan-capable
+  graphics card (any recent NVIDIA card works).
+- RIFE runs during export: the sections render first, and the bar shows "Slow motion (RIFE) 1/2 ...". The
+  preview still uses frame blending. If RIFE is missing or fails, that section falls back to frame blending and
+  the reason goes to clipshrinker.log.
+- Temporary frames go in the Windows temp folder and are removed after the export. A 0.25x section of a long 4K
+  clip needs a few GB free while it runs.
+- "Export..." is now "Export", and Ctrl+E starts it.
+- New striped progress bar, with "Open folder" to its right.
+- The status line starts with a check mark when an export finishes and a cross when it's cancelled or fails.
+
+0.6.0 (sound modes, bullet time, safer close)
+- Settings has two new groups, "Sped-up sections" and "Slow-motion sections", each with a Sound drop-down:
+  effect with sound / normal sound / mute. The VHS visual effect has its own checkbox.
+- New deep "bullet time" sound for slow-motion sections: a sub thump and falling rumble at the start, a rising
+  swell as it speeds back up at the end. The VHS sound is another 25% quieter.
+- Closing with clips in the timeline asks first: save the project, close without saving, or keep working. With
+  an empty timeline it just closes.
+- Export no longer pops up a window. The usual finished sound plays, the result (including failed files) shows
+  in the bottom bar, and an "Open folder" button appears next to Cancel and selects the saved file.
+
+0.5.9 (slow-motion sections, VHS sound option)
+- D adds a slow-motion section (pink, starting at 0.5x). It works like the blue speed section: type any
+  multiplier below 1 (e.g. 0.25), or 1 or more to turn it blue.
+- Slow-motion video blends neighbouring frames instead of repeating them (Settings > "Smooth slow-motion"). It
+  isn't true interpolation, so very slow sections can look a bit ghosty. The sound is slowed with pitch kept.
+- The VHS rewind effect now only applies to speed-up sections, and the tape sound has its own switch (Settings >
+  "VHS rewind sound effect"). It's also 25% quieter.
+
+0.5.8 (VHS rewind effect)
+Sped-up sections get a VHS rewind look and sound, in preview and export:
+- noise, colour bleed and a rolling tracking band while the section runs
+- a stronger glitch burst and a rising tape-wind whoosh when the section starts, and a falling one when it
+  returns to normal speed
+- no effect on sections shorter than 0.15 s (after speeding up)
+Toggle it in Settings > "VHS rewind effect on sped-up sections" (on by default, saved in projects).
+
+0.5.7 (tidier top bar)
+No 'Add videos' button: drop videos onto the window or click the drop zone (a slim strip below the clip list
+once clips are loaded). 'Clear all' moved under the preview. Undo/redo are icon buttons (Ctrl+Z,
+Ctrl+Shift+Z). The Shortcuts window is split into General / Preview / Timeline. New: M mutes/unmutes the
+preview.
+
+0.5.6 (undo / redo)
+Undo/Redo buttons in the top bar, plus Ctrl+Z and Ctrl+Y (or Ctrl+Shift+Z), for removing, adding and
+reordering clips, clear all, opening a project, trim markers, speed sections and their multipliers. Removed
+clips stay hidden with their thumbnails, so undo brings them back instantly. The last 60 steps are kept.
+
+0.5.5 (selecting clips)
+Shift+click a clip's title line or strip to select everything between it and the active clip; Ctrl+click adds
+or removes single clips; Ctrl+A selects all. Selected clips get the blue title bar like the active one. Delete
+removes all selected clips (and the active one), or just the speed section if one is selected. A selected speed
+section shows as a light cyan bar.
+
+0.5.4 (projects)
+Project button (top left), Ctrl+O, Ctrl+S and Ctrl+Shift+S open and save projects (*.clipproj) with the clips in
+order, trim markers, speed sections and export settings. Dropping a project file on the window opens it. If a
+clip has moved, the program also looks for it relative to the project file's folder.
+Settings > APP > 'Restore the last session on start' (off by default) reopens the last session's clips.
+
+0.5.3 (faster thumbnails)
+A clip's thumbnails come from a single ffmpeg run (one quick key-frame seek per thumbnail) instead of one program
+start per thumbnail. Up to 4 clips are processed at once, the active clip first, then the rest in list order.
+Thumbnails appear one by one as they're ready.
+
+0.5.2
+Hotkeys 1 / 2 set the trim start/end marker at the playhead, while playing or scrubbing (markers can still be
+dragged). While playing, a moved end marker takes effect immediately. The '?' button is now 'Shortcuts'.
+
+0.5.1
+While you drag a clip by its title line, a small card with its thumbnail and name follows the pointer. The
+active clip's title bar is accent blue so it stands out from the thin strips.
+
+0.5.0
+Reorder clips by dragging their title line up or down (the arrow buttons are gone). Title line buttons are
+bigger. Inactive clip strips show full-height trim markers and speed sections, without the playhead.
+
+0.4.9 (was 4.8)
+Version numbers changed to 0.x while the tool is in development; the earlier 4.x versions correspond to 0.4.x.
+The title line buttons (Fit, up, down, remove) are flat and borderless, matching the card colour with no
+rounded corners sticking out. They highlight on hover; the remove button is red.
+
+4.7 (clip card tidy-up)
+No more white lines across the timelines. Smaller title, buttons and info text. Clicking a clip's title line
+selects it. The remove button is red and set apart from the arrows.
+
+4.6 (compact clip strips)
+Only the active clip shows its full timeline; the others are thin strips (title, trim handles, speed sections),
+so many clips fit without much scrolling. Click a strip to make it active: it expands, the playhead jumps to the
+clicked point, and the list scrolls to keep it visible.
+
+4.5 (settings window)
+All export settings moved into their own window (Settings button or F2), so the preview gets the whole upper area
+and the clip list more room. Changes apply and save immediately, and the bottom bar summarises the current
+settings (size/bitrate, codec, crop, join).
+
+4.3 / 4.4 (smoother preview for 4K clips)
+Playing from any point shows the picture immediately. Preview audio streams continuously (no temporary files,
+gaps or dropouts) and starts exactly with the first frame. Preview decoding and downscaling run on the GPU when
+possible (no crop, HDR tone-mapping or speed sections active), with an automatic fallback if the GPU path isn't
+available. Preview timings go to clipshrinker.log in the library folder, which helps if anything still feels
+slow.

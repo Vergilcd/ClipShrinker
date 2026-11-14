@@ -1,0 +1,43 @@
+{
+ "presets": [
+  {
+   "name": "Discord",
+   "mbps": 4,
+   "key": "q"
+  },
+  {
+   "name": "High",
+   "mbps": 25.5,
+   "key": "W"
+  },
+  {
+   "name": "Reserved key",
+   "mbps": 8,
+   "key": "space"
+  },
+  {
+   "name": "Discord",
+   "mbps": 9,
+   "key": "e"
+  },
+  {
+   "name": "",
+   "mbps": 5,
+   "key": "r"
+  },
+  {
+   "name": "Zero",
+   "mbps": 0,
+   "key": "t"
+  },
+  {
+   "name": "  Padded  ",
+   "mbps": "12",
+   "key": ""
+  },
+  {
+   "name": "No key",
+   "mbps": 3
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+{
+ "app": "Clip Shrinker",
+ "format": 1,
+ "active": 1,
+ "clips": [
+  {
+   "path": "C:\\clips\\a.mp4",
+   "start": 1.5,
+   "end": 18.25,
+   "preset": "Discord",
+   "sections": [
+    {
+     "a": 2.0,
+     "b": 5.0,
+     "speed": 4.0
+    },
+    {
+     "a": 9.0,
+     "b": 11.0,
+     "speed": 0.5
+    }
+   ],
+   "zooms": [
+    {
+     "a": 3.0,
+     "b": 7.0,
+     "x": 0.25,
+     "y": 0.2,
+     "w": 0.4
+    }
+   ],
+   "rel": "..\\clips\\a.mp4"
+  },
+  {
+   "path": "C:\\clips\\b.mkv",
+   "start": 0.0,
+   "end": 9.0,
+   "preset": null,
+   "sections": [],
+   "zooms": []
+  }
+ ],
+ "settings": {
+  "size": "50",
+  "bitrate": "",
+  "res": "Auto",
+  "codec": "HEVC (hevc_nvenc)",
+  "crop": "16:9",
+  "audio": "128k",
+  "atrk": "Keep separate tracks",
+  "mute_mic": false,
+  "fast_audio": "VHS effect with sound",
+  "slow_audio": "Slow-mo effect with sound",
+  "slow_pitch": "Slows down with the video (deep)",
+  "fast_pitch": "Stays the same (compressed)",
+  "vhs": true,
+  "fast_vol": 70,
+  "slow_vol": 150,
+  "zoom_fx": "Zoom motion",
+  "zoom_snd": "Whoosh sound",
+  "zoom_len": "0.4",
+  "zoom_vol": 80,
+  "slow_interp": "Frame blending",
+  "hdr": true,
+  "mode": "join",
+  "trans": "Crossfade (gradient)",
+  "tlen": "0.4"
+ }
+}

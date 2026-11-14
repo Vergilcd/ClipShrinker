@@ -1,0 +1,11 @@
+Clip Shrinker - third-party components
+======================================
+
+ClipShrinker itself is MIT licensed (see LICENSE.txt). It uses these components, each under its own licence:
+
+- ffmpeg / ffprobe (LGPL build) - see ffmpeg-LICENSE.txt
+- RIFE ncnn Vulkan (smooth slow motion, in library\rife) - MIT, see library\rife\LICENSE.txt
+- .NET runtime and WPF (built into ClipShrinker.exe) - MIT, Copyright (c) .NET Foundation and Contributors
+  (https://github.com/dotnet/runtime, https://github.com/dotnet/wpf)
+- CommunityToolkit.Mvvm - MIT, Copyright (c) .NET Foundation and Contributors
+  (https://github.com/CommunityToolkit/dotnet)

@@ -1,0 +1,92 @@
+{
+ "load_presets": {
+  "presets.json": [
+   {
+    "name": "Discord",
+    "mbps": 4.0,
+    "key": "q"
+   },
+   {
+    "name": "High",
+    "mbps": 25.5,
+    "key": "w"
+   },
+   {
+    "name": "Reserved key",
+    "mbps": 8.0,
+    "key": ""
+   },
+   {
+    "name": "Padded",
+    "mbps": 12.0,
+    "key": ""
+   },
+   {
+    "name": "No key",
+    "mbps": 3.0,
+    "key": ""
+   }
+  ],
+  "presets_broken.json": [],
+  "presets_badtype.json": [
+   {
+    "name": "ok",
+    "mbps": 5.0,
+    "key": "a"
+   }
+  ],
+  "missing file": []
+ },
+ "projects": [
+  "two_clips.clipproj",
+  "messy_values.clipproj",
+  "minimal.clipproj"
+ ],
+ "note": "Project loading lives in the Tk App (load_project / _load_clips / _apply_project_settings), so it is not run here. The .clipproj files are inputs for the C# loader; see README for the rules.",
+ "settings_parsed": {
+  "theme": "dark",
+  "size": "50",
+  "bitrate": "",
+  "crop": "16:9",
+  "res": "Auto",
+  "res_before_bitrate": "Auto",
+  "codec": "HEVC (hevc_nvenc)",
+  "audio": "128k",
+  "atrk": "Mix into one track",
+  "mute_mic": false,
+  "fast_audio": "VHS effect with sound",
+  "slow_audio": "Slow-mo effect with sound",
+  "slow_pitch": "Slows down with the video (deep)",
+  "fast_pitch": "Stays the same (compressed)",
+  "vhs": true,
+  "fast_vol": 70,
+  "slow_vol": 150,
+  "zoom_fx": "Zoom motion",
+  "zoom_snd": "Whoosh sound",
+  "zoom_len": "0.4",
+  "zoom_vol": 80,
+  "slow_interp": "RIFE AI (smoothest, needs a GPU)",
+  "hdr": true,
+  "mode": "join",
+  "trans": "Gradient wipe, left to right",
+  "tlen": "0.4",
+  "sound": true,
+  "pv_vol": 100,
+  "zoomed": false,
+  "restore_session": false,
+  "lite_resize": true,
+  "prefix": "",
+  "suffix": "",
+  "save_dir": "",
+  "keys": {
+   "trim_start": "1",
+   "trim_end": "2",
+   "speed": "s",
+   "slow": "d",
+   "zoom": "z",
+   "effects": "f2"
+  },
+  "geometry": "1200x800+100+100",
+  "sash": 412
+ }
+}

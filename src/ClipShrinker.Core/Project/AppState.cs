@@ -1,0 +1,210 @@
+using System.Text.Json.Nodes;
+using ClipShrinker.Core.Settings;
+using static ClipShrinker.Core.Py.PyJson;
+
+namespace ClipShrinker.Core.Project;
+
+/// <summary>
+/// The export-related values of the main window, as text like the Tk variables held them
+/// (reference App.__init__ lines 3289-3342 and 4013-4022, _apply_project_settings, _bitrate_changed, start_export).
+/// </summary>
+public sealed class AppState
+{
+    /// <summary>2.0: 128k and up (1.0.8 also had 48k / 64k / 96k; a saved lower value falls back to 128k).</summary>
+    public static readonly string[] AudioRates = ["128k", "192k", "256k", "320k"];
+    public static readonly string[] AudioTrackModes = ["Keep separate tracks", "Mix into one track"];
+    public static readonly string[] ExportModes = ["separate", "join"];
+
+    public string Size = "50", Bitrate = "", Res = "Auto", ResBeforeBitrate = "Auto", Codec = "HEVC (hevc_nvenc)";
+    public string Crop = "16:9", Audio = "128k", Atrk = "Mix into one track", Mode = "join";
+    public string Trans = "Gradient wipe, left to right", Tlen = "0.4";
+    public string FastAudio = C.FastAudio[0], SlowAudio = C.SlowAudio[0];
+    public string SlowPitch = C.SlowPitch[0], FastPitch = C.FastPitch[1];
+    public string ZoomFx = C.ZoomFx[0], ZoomSnd = C.ZoomAudio[0], ZoomLen = "0.4", SlowInterp = C.SlowInterp[2];
+    public bool MuteMic, Vhs = true, Hdr = true;
+    public int FastVol = 70, SlowVol = 150, ZoomVol = 80;
+    public string Prefix = "", Suffix = "";
+
+    static IEnumerable<string> ResModes => C.ResSizeMode.Concat(C.ResBitrateMode);
+
+    /// <summary>Start-up values from settings.json (the _saved / _saved_int rules), then _bitrate_changed().</summary>
+    public static AppState FromSettings(JsonObject? s)
+    {
+        s ??= [];
+        string Saved(string key, string def, IEnumerable<string>? allowed = null) =>
+            s.TryGetPropertyValue(key, out var v) ? (Str(v) is { } x && (allowed is null || allowed.Contains(x)) ? x : def) : def;
+        bool SavedB(string key, bool def) => s.TryGetPropertyValue(key, out var v) ? Bool(v) ?? def : def;
+        int SavedI(string key, int def) =>
+            s.TryGetPropertyValue(key, out var v) && IsPlainInt(v) ? (int)Math.Max(0, Math.Min(200, AsLong(v!))) : def;
+        var a = new AppState
+        {
+            Hdr = SavedB("hdr", true),
+            FastAudio = Saved("fast_audio", C.FastAudio[0], C.FastAudio),
+            SlowAudio = Saved("slow_audio", C.SlowAudio[0], C.SlowAudio),
+            FastVol = SavedI("fast_vol", 70), SlowVol = SavedI("slow_vol", 150),
+            ZoomFx = Saved("zoom_fx", C.ZoomFx[0], C.ZoomFx),
+            ZoomSnd = Saved("zoom_snd", C.ZoomAudio[0], C.ZoomAudio),
+            ZoomLen = s.TryGetPropertyValue("zoom_len", out var zl) ? PyStr(zl) : "0.4",
+            ZoomVol = SavedI("zoom_vol", 80),
+            SlowPitch = Saved("slow_pitch", C.SlowPitch[0], C.SlowPitch),
+            FastPitch = Saved("fast_pitch", C.FastPitch[1], C.FastPitch),
+            Vhs = SavedB("vhs", true),
+            SlowInterp = Saved("slow_interp", C.SlowInterp[2], C.SlowInterp),
+            Atrk = Saved("atrk", "Mix into one track", AudioTrackModes),
+            MuteMic = SavedB("mute_mic", false),
+            Size = Saved("size", "50"),
+            Crop = Saved("crop", "16:9", C.Aspects.Select(x => x.Name)),
+            Res = Saved("res", "Auto", ResModes),
+            Codec = Saved("codec", "HEVC (hevc_nvenc)", C.Codecs),
+            Bitrate = Saved("bitrate", ""),
+            ResBeforeBitrate = Saved("res_before_bitrate", "Auto", C.ResSizeMode),
+            Audio = Saved("audio", "128k", AudioRates),
+            Mode = Saved("mode", "join", ExportModes),
+            Trans = Saved("trans", "Gradient wipe, left to right", C.Transitions.Select(x => x.Name)),
+            Tlen = Saved("tlen", "0.4"),
+            Prefix = Saved("prefix", ""),
+            Suffix = Saved("suffix", ""),
+        };
+        a.BitrateChanged();
+        return a;
+    }
+
+    /// <summary>Fixed bitrate in Mbps from the entry, or null when it is empty / not a positive number.</summary>
+    public double? BitrateMbps()
+    {
+        var v = Py.Py.ParseFloat(Bitrate.Trim().Replace(",", "."));
+        return v is { } x && x > 0 ? x : null;
+    }
+
+    /// <summary>Bitrate mode switches the resolution list (Original / 75% / 50%), size mode switches it back.</summary>
+    public void BitrateChanged()
+    {
+        if (BitrateMbps() is not null)
+        {
+            if (!C.ResBitrateMode.Contains(Res)) { ResBeforeBitrate = Res; Res = "Original"; }
+        }
+        else if (!C.ResSizeMode.Contains(Res))
+            Res = C.ResSizeMode.Contains(ResBeforeBitrate) ? ResBeforeBitrate : "Auto";
+    }
+
+    /// <summary>The "settings" object of a project (reference _apply_project_settings).</summary>
+    public void ApplyProject(JsonObject? st)
+    {
+        if (st is null) return;
+        bool Put(ref string field, string key, IEnumerable<string>? allowed = null)
+        {
+            if (Str(st[key]) is { } v && (allowed is null || allowed.Contains(v))) { field = v; return true; }
+            return false;
+        }
+        Put(ref Size, "size");
+        if (Put(ref Bitrate, "bitrate")) BitrateChanged();          // the Tk trace on the bitrate entry
+        Put(ref Res, "res", ResModes);
+        Put(ref Codec, "codec", C.Codecs);
+        Put(ref Crop, "crop", C.Aspects.Select(x => x.Name));
+        Put(ref Audio, "audio", AudioRates);
+        Put(ref Atrk, "atrk", AudioTrackModes);
+        Put(ref Mode, "mode", ExportModes);
+        Put(ref Trans, "trans", C.Transitions.Select(x => x.Name));
+        Put(ref Tlen, "tlen");
+        Put(ref FastAudio, "fast_audio", C.FastAudio);
+        Put(ref SlowAudio, "slow_audio", C.SlowAudio);
+        Put(ref SlowPitch, "slow_pitch", C.SlowPitch);
+        Put(ref FastPitch, "fast_pitch", C.FastPitch);
+        Put(ref ZoomFx, "zoom_fx", C.ZoomFx);
+        Put(ref ZoomSnd, "zoom_snd", C.ZoomAudio);
+        if (IsStr(st["zoom_len"]) || IsNumber(st["zoom_len"])) ZoomLen = PyStr(st["zoom_len"]);
+        if (IsPlainInt(st["zoom_vol"])) ZoomVol = (int)Math.Max(0, Math.Min(200, AsLong(st["zoom_vol"]!)));
+        if (IsPlainInt(st["fast_vol"])) FastVol = (int)Math.Max(0, Math.Min(200, AsLong(st["fast_vol"]!)));
+        if (IsPlainInt(st["slow_vol"])) SlowVol = (int)Math.Max(0, Math.Min(200, AsLong(st["slow_vol"]!)));
+        Put(ref SlowInterp, "slow_interp", C.SlowInterp);
+        if (Bool(st["mute_mic"]) is { } mm) MuteMic = mm;
+        if (Bool(st["vhs"]) is { } vh) Vhs = vh;
+        if (Bool(st["hdr"]) is { } hd) Hdr = hd;
+        BitrateChanged();
+    }
+
+    public double? Ratio => C.Aspects.FirstOrDefault(x => x.Name == Crop).Ratio;
+
+    /// <summary>The export settings start_export builds. Error = the message box text when the input is invalid.</summary>
+    public ExportSettings? ToExportSettings(bool join, out string? error)
+    {
+        error = null;
+        double? bitrate = null, targetMb = null;
+        if (Bitrate.Trim().Length > 0)
+        {
+            bitrate = BitrateMbps();
+            if (bitrate is null)
+            {
+                error = "Enter the bitrate in Mbps, e.g. 20 (or clear the field to use the file size limit).";
+                return null;
+            }
+        }
+        else
+        {
+            var t = Py.Py.ParseFloat(Size.Replace(",", "."));
+            if (t is not { } tm || !(tm > 0)) { error = "Enter the max file size in MB, e.g. 50"; return null; }
+            targetMb = tm;
+        }
+        double tlen = Py.Py.ParseFloat(Tlen.Replace(",", ".")) ?? 0.4;
+        return new ExportSettings
+        {
+            TargetMb = targetMb, BitrateMbps = bitrate, ResMode = Res, Codec = Text.CodecKey(Codec), AudioK = Audio,
+            Ratio = Ratio, Xfade = join ? C.TransitionMode(Trans) : null, T = tlen, Tonemap = Hdr,
+            FastAudio = FastAudio, SlowAudio = SlowAudio, SlowPitch = SlowPitch, FastPitch = FastPitch, Vhs = Vhs,
+            SlowInterp = SlowInterp, FastVol = FastVol, SlowVol = SlowVol, ZoomFx = ZoomFx, ZoomSnd = ZoomSnd,
+            ZoomLen = ZoomLen.Replace(",", "."), ZoomVol = ZoomVol, MixAudio = Atrk.StartsWith("Mix"),
+        };
+    }
+
+    /// <summary>Settings that replace the global ones for one separately exported clip (its bitrate preset).</summary>
+    public ExportSettings ClipOverride(ExportSettings st, Preset? p) =>
+        p is null ? st : st with { BitrateMbps = p.Mbps, TargetMb = null, ResMode = Res == "Auto" ? "Original" : Res };
+
+    /// <summary>The four SUMMARY lines of the export panel (reference _update_summary).</summary>
+    public string[] SummaryLines(IReadOnlyList<ExportClip> clips)
+    {
+        int n = clips.Count;
+        double total = Py.Py.Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
+        double? br = Bitrate.Trim().Length > 0 ? BitrateMbps() : null;
+        string crop = Crop.Split(' ')[0];
+        bool joined = n > 1 && !string.IsNullOrEmpty(C.TransitionMode(Trans));
+        if (joined)                                          // transitions overlap the clips
+        {
+            double T = Py.Py.ParseFloat(Tlen.Replace(",", ".")) is { } t ? Py.Py.Max(0.1, Py.Py.Min(3.0, t)) : 0.4;
+            total -= (n - 1) * T;
+        }
+        string l1 = n > 0 ? $"{n} clip{(n != 1 ? "s" : "")}  ·  {Text.FmtTime(total)}" + (joined ? " when joined" : "") : "No clips yet";
+        string l2 = $"{Text.CodecShort(Codec)}  ·  {Res} resolution  ·  " + (crop == "Original" ? "no crop" : $"crop {crop}");
+        string l3;
+        if (br is { } b)
+        {
+            string ak0 = Audio.TrimEnd('k');
+            long ak = ak0.Length > 0 ? long.Parse(ak0, System.Globalization.CultureInfo.InvariantCulture) : 128;
+            double mb = Py.Py.Max(total, 0) * (b * 1e6 + ak * 1000) / 8 / 1048576;
+            l3 = $"Fixed {Py.Py.G(b)} Mbps video" + (n > 0 ? $"  ·  about {Py.Py.F(mb, 0)} MB in total" : "");
+        }
+        else l3 = $"Max {(Size.Trim() is { Length: > 0 } s ? s : "?")} MB per file";
+        string l4 = OutStem(n > 0 ? ExportPlanner.Stem(clips[0].Path) : "clip") + ".mp4";
+        return [l1, l2, l3, l4];
+    }
+
+    /// <summary>Writes these values into settings.json's object (the AppState part of save_all_settings);
+    /// other keys are kept.</summary>
+    public void WriteTo(JsonObject d)
+    {
+        d["size"] = Size; d["bitrate"] = Bitrate; d["crop"] = Crop; d["res"] = Res; d["res_before_bitrate"] = ResBeforeBitrate;
+        d["codec"] = Codec; d["audio"] = Audio; d["atrk"] = Atrk; d["mute_mic"] = MuteMic;
+        d["fast_audio"] = FastAudio; d["slow_audio"] = SlowAudio; d["slow_pitch"] = SlowPitch; d["fast_pitch"] = FastPitch;
+        d["vhs"] = Vhs; d["fast_vol"] = FastVol; d["slow_vol"] = SlowVol; d["zoom_fx"] = ZoomFx; d["zoom_snd"] = ZoomSnd;
+        d["zoom_len"] = ZoomLen; d["zoom_vol"] = ZoomVol; d["slow_interp"] = SlowInterp; d["hdr"] = Hdr; d["mode"] = Mode;
+        d["trans"] = Trans; d["tlen"] = Tlen; d["prefix"] = Prefix; d["suffix"] = Suffix;
+    }
+
+    /// <summary>clip -> prefix_clip_tag (the output file name without extension).</summary>
+    public string OutStem(string stem)
+    {
+        string pre = Text.CleanSuffix(Prefix);
+        string tag = Text.CleanSuffix(Suffix) is { Length: > 0 } s ? s : (Codec.Contains("HEVC") ? "HEVC" : "H264");
+        return (pre.Length > 0 ? pre + "_" : "") + $"{stem}_{tag}";
+    }
+}
