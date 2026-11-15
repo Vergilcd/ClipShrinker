@@ -341,8 +341,13 @@
                              AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
                              ToolTip="Added after the clip name with an underscore, e.g. clip_suffix.mp4 (empty = nothing). May hold dynamic labels like {codec}." />
 
-                    <TextBlock Grid.Row="18" Text="Save folder:" Style="{StaticResource FieldLabel}" />
-                    <StackPanel Grid.Row="18" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                    <CheckBox Grid.Row="18" Grid.ColumnSpan="2" Content="Keep original file name" Focusable="False" Margin="0,4"
+                              AutomationProperties.Name="Keep original file name"
+                              IsChecked="{Binding KeepName}" IsEnabled="{Binding KeepNameEnabled}"
+                              ToolTip="Ticked: prefix_clip_suffix.mp4. Unticked: only the prefix and suffix with their dynamic labels, e.g. 2026-11-15_HEVC.mp4. Needs text in Prefix or Suffix." />
+
+                    <TextBlock Grid.Row="19" Text="Save folder:" Style="{StaticResource FieldLabel}" />
+                    <StackPanel Grid.Row="19" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                         <TextBox Width="146" AutomationProperties.Name="Save folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Exports are saved here without asking (empty = a save dialog asks every time)" />
                         <Button Content="..." Margin="6,0,0,0" Padding="10,4" MinWidth="0" Focusable="False" Click="PickSaveDir_Click" ToolTip="Choose the folder" />

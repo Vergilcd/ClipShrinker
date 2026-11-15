@@ -4,6 +4,14 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.3.0
+- New "Keep original file name" tick under Suffix, ticked by default (file names as before). Unticked, the
+  clip's name is left out and only the prefix and suffix with their dynamic labels name the file, e.g.
+  2026-11-15_HEVC.mp4. Files that would get the same name get " (2)", " (3)" and so on.
+- The tick is greyed out (and counts as ticked) while Prefix and Suffix are both empty, since the file would
+  have no name.
+
+
 2.2.2
 - Softer stripes over the trimmed-away parts of a timeline: 15% black in dark mode and 7% white in light mode
   instead of strong black, and they follow the Dark mode switch.

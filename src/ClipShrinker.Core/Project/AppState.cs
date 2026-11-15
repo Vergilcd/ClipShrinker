@@ -24,6 +24,8 @@ public sealed class AppState
     public bool MuteMic, Vhs = true, Hdr = true;
     public int FastVol = 70, SlowVol = 150, ZoomVol = 80;
     public string Prefix = "", Suffix = "";
+    /// <summary>2.3: the clip's own name stays in the exported file name (off = only the prefix and suffix).</summary>
+    public bool KeepName = true;
 
     static IEnumerable<string> ResModes => C.ResSizeMode.Concat(C.ResBitrateMode);
 
@@ -64,6 +66,7 @@ public sealed class AppState
             Tlen = Saved("tlen", "0.4"),
             Prefix = Saved("prefix", ""),
             Suffix = Saved("suffix", ""),
+            KeepName = SavedB("keep_name", true),
         };
         a.BitrateChanged();
         return a;
@@ -198,18 +201,27 @@ public sealed class AppState
         d["vhs"] = Vhs; d["fast_vol"] = FastVol; d["slow_vol"] = SlowVol; d["zoom_fx"] = ZoomFx; d["zoom_snd"] = ZoomSnd;
         d["zoom_len"] = ZoomLen; d["zoom_vol"] = ZoomVol; d["slow_interp"] = SlowInterp; d["hdr"] = Hdr; d["mode"] = Mode;
         d["trans"] = Trans; d["tlen"] = Tlen; d["prefix"] = Prefix; d["suffix"] = Suffix;
+        d["keep_name"] = KeepName;
     }
 
     /// <summary>clip -> prefix_clip_suffix (the output file name without extension). The prefix and suffix may hold
     /// dynamic labels ({date}, {time}, {preset}, {res}, {size}, {codec}, see NameTokens), filled in for this file.
-    /// 2.2: an empty suffix adds nothing (1.0.8 - 2.1 added the codec name; {codec} does that now).</summary>
+    /// 2.2: an empty suffix adds nothing (1.0.8 - 2.1 added the codec name; {codec} does that now).
+    /// 2.3: without "Keep original file name" the name is only prefix_suffix (the clip name is left out).</summary>
     public string OutStem(string stem, NameContext? ctx = null)
     {
         ctx ??= new NameContext(DateTime.Now);
         string pre = Text.CleanSuffix(NameTokens.Expand(Prefix, this, ctx));
         string suf = Text.CleanSuffix(NameTokens.Expand(Suffix, this, ctx));
+        if (!KeepsName && string.Join("_", new[] { pre, suf }.Where(x => x.Length > 0)) is { Length: > 0 } only) return only;
         return (pre.Length > 0 ? pre + "_" : "") + stem + (suf.Length > 0 ? "_" + suf : "");
     }
+
+    /// <summary>Prefix or suffix has text, so the clip name may be left out (otherwise the name would be empty).</summary>
+    public bool HasNameText => Text.CleanSuffix(Prefix).Length > 0 || Text.CleanSuffix(Suffix).Length > 0;
+
+    /// <summary>The clip name is used: ticked, or nothing else to name the file by.</summary>
+    public bool KeepsName => KeepName || !HasNameText;
 
     /// <summary>HEVC / H264: the {codec} label.</summary>
     public string CodecTag => Codec.Contains("HEVC") ? "HEVC" : "H264";
