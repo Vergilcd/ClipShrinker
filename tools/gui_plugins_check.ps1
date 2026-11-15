@@ -70,6 +70,7 @@ Check (Has $win "Speed Up") "effect buttons under the preview"
 Check (Has $win "Bitrate presets") "Bitrate presets button (on by default)"
 Check (-not (HasButton $win "Picture")) "no Picture button on the preview (Picture adjustments off by default)"
 Check (Has $win "Save session on exit") "Save session on exit in the Export panel"
+Check (-not (Has $win "Transition")) "no Transition button with one clip"
 Shot $win "1_main"
 function Key($vk) { [W]::keybd_event($vk, 0, 0, [IntPtr]::Zero); [W]::keybd_event($vk, 0, 2, [IntPtr]::Zero); Start-Sleep -Milliseconds 400 }
 [W]::SetForegroundWindow([IntPtr]$win.Current.NativeWindowHandle) | Out-Null; Start-Sleep -Milliseconds 400
@@ -112,6 +113,11 @@ $sat.SetFocus(); $sat.GetCurrentPattern([System.Windows.Automation.ValuePattern]
 Check ((Range "Saturation") -eq -100) "typed -100% moved the saturation slider"
 $br = Find $win $A::NameProperty "Brightness %"
 Check ($br.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq "+60%") "the slider shows +60% in its box"
+$dn = Find $win $A::NameProperty "Denoise %"                       # 2.5: denoise 0 .. 100, no negative values
+$dn.SetFocus(); $dn.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("-20"); Key 13
+Check ((Range "Denoise") -eq 0) "typed -20 gives denoise 0"
+$dn.SetFocus(); $dn.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("45 %"); Key 13
+Check ((Range "Denoise") -eq 45) "typed 45 % moved the denoise slider"
 Start-Sleep 2
 Shot $win "3b_picture_overlay"
 Invoke (Find $win $A::NameProperty "Full screen")                 # full screen (the card is open there too)
@@ -122,7 +128,7 @@ Shot $fs "3c_fullscreen"
 Key 0x1B
 Start-Sleep 1
 Invoke (Find $win $A::NameProperty "Reset")
-Check ((Range "Brightness") -eq 0 -and (Range "Saturation") -eq 0) "Reset"
+Check ((Range "Brightness") -eq 0 -and (Range "Saturation") -eq 0 -and (Range "Denoise") -eq 0) "Reset"
 Invoke (Find $win $A::NameProperty "Plugins")
 $pw = Win "Plugins"
 
@@ -162,6 +168,41 @@ $proc.WaitForExit(10000) | Out-Null
 $s = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json
 Check ($s.plugins.'timeline-effects' -eq $false -and $s.plugins.'picture-adjust' -eq $true -and $s.plugins.'bitrate-presets' -eq $true) "plugin switches saved"
 
+
+"6. Transition drop-down (2.5: app feature, shown with 2 or more clips; Timeline effects is still off)"
+$proj2 = Join-Path $dir "two.clipproj"
+Copy-Item "$Root\tests\media\projects\join_hardcut_mix_mutemic.clipproj" $proj2
+$proc = Start-Process $Exe -ArgumentList "`"$proj2`"" -PassThru
+do { Start-Sleep -Milliseconds 300; $proc.Refresh() } until ($proc.MainWindowHandle -ne 0)
+Start-Sleep 4
+$win = $A::FromHandle($proc.MainWindowHandle)
+Check (Has $win "Clear all clips") "Clear all clips button"
+Check (-not (HasButton $win "Effects")) "Effects button still hidden (plugin off)"
+$tb = Find $win $A::NameProperty "Transition"
+Check (-not $tb.Current.IsOffscreen) "Transition button with 2+ clips"
+Toggle $tb
+$combo = Find $A::RootElement $A::NameProperty "Transition effect"
+Check ($combo -ne $null) "the drop-down shows the transition effect"
+$len = Find $A::RootElement $A::NameProperty "Transition length"
+$len.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("0.8"); Start-Sleep -Milliseconds 400
+$combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand(); Start-Sleep -Milliseconds 600
+$item = Find $combo $A::NameProperty "Crossfade (gradient)"
+$item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select(); Start-Sleep -Milliseconds 400
+$combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse(); Start-Sleep -Milliseconds 400
+Shot $win "6_transition"
+Check ($combo.GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()[0].Current.Name -eq "Crossfade (gradient)") "picked Crossfade (gradient)"
+Invoke (Find $win $A::NameProperty "Clear all clips")
+Start-Sleep 1
+$tbs = @($win.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Transition"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.Button' -and -not $_.Current.IsOffscreen })
+Check ($tbs.Count -eq 0) "Transition button hidden after Clear all clips"
+$proc.CloseMainWindow() | Out-Null
+Start-Sleep 2
+$closeBox = $null; $sw = [Diagnostics.Stopwatch]::StartNew()
+while (-not $closeBox -and $sw.Elapsed.TotalSeconds -lt 6) { Start-Sleep -Milliseconds 300; $closeBox = $A::RootElement.FindFirst($TS::Descendants, (New-Object $P($A::NameProperty, "Close Clip Shrinker"))) }
+if ($closeBox) { Invoke (Find $closeBox $A::NameProperty "Close without saving") }
+$proc.WaitForExit(10000) | Out-Null
+$s = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json
+Check ($s.trans -eq "Crossfade (gradient)" -and $s.tlen -eq "0.8") "transition and length saved"
 Restore-Lib
 ""
 "screenshots: $Shots"

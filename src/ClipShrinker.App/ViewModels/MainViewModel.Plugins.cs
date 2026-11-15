@@ -118,7 +118,11 @@ public sealed partial class MainViewModel
                 if (Core.Py.PyJson.Str(k) is { } s) pluginsKnown.Add(s);
         foreach (var id in PluginIds.Builtin)
         {
-            if (!Directory.Exists(AppPaths.PluginDir(id)) && !pluginsKnown.Contains(id))
+            bool there = Directory.Exists(AppPaths.PluginDir(id));
+            // 2.5: a built-in plugin from an older app version gets this version's plugin.json + changelog
+            bool older = there && PluginManifest.Read(AppPaths.PluginDir(id)) is { } cur && EmbeddedManifest(id) is { } emb
+                         && PluginManifest.CompareVersions(cur.Version, emb.Version) < 0;
+            if ((!there && !pluginsKnown.Contains(id)) || older)
             {
                 try { WriteBuiltinFiles(id); }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException) { Debug.WriteLine($"plugin {id}: {e.Message}"); }
@@ -191,7 +195,7 @@ public sealed partial class MainViewModel
     /// <summary>A slider or typed value changed: the preview shows it (playback restarts with the new filter).</summary>
     void SetPic(ref int field, int value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
     {
-        value = PictureAdjust.Clamp(value);
+        value = name == nameof(PicDenoise) ? PictureAdjust.ClampDenoise(value) : PictureAdjust.Clamp(value);
         if (field == value) { OnPropertyChanged(name + "Text"); return; }   // (a typed "250" shows "+100%" again)
         field = value;
         OnPropertyChanged(name);
@@ -203,12 +207,14 @@ public sealed partial class MainViewModel
     public int PicBright { get => S.PicBright; set => SetPic(ref S.PicBright, value); }
     public int PicContrast { get => S.PicContrast; set => SetPic(ref S.PicContrast, value); }
     public int PicSat { get => S.PicSat; set => SetPic(ref S.PicSat, value); }
+    public int PicDenoise { get => S.PicDenoise; set => SetPic(ref S.PicDenoise, value); }
 
     /// <summary>The value boxes next to the sliders: "+25%"; "25", "25%" or "-40 %" can be typed (Enter confirms).
     /// Text that is not a number puts the old value back.</summary>
     public string PicBrightText { get => PictureAdjust.FormatPercent(PicBright); set => PicBright = PictureAdjust.ParsePercent(value) ?? PicBright; }
     public string PicContrastText { get => PictureAdjust.FormatPercent(PicContrast); set => PicContrast = PictureAdjust.ParsePercent(value) ?? PicContrast; }
     public string PicSatText { get => PictureAdjust.FormatPercent(PicSat); set => PicSat = PictureAdjust.ParsePercent(value) ?? PicSat; }
+    public string PicDenoiseText { get => PictureAdjust.FormatDenoise(PicDenoise); set => PicDenoise = PictureAdjust.ParseDenoise(value) ?? PicDenoise; }
 
     /// <summary>The Picture card over the preview is open (shared by the main window and full screen).</summary>
     [ObservableProperty]
@@ -224,7 +230,7 @@ public sealed partial class MainViewModel
     public bool PictureChanged => S.PictureChanged;
 
     [RelayCommand]
-    void ResetPicture() => PicBright = PicContrast = PicSat = 0;
+    void ResetPicture() => PicBright = PicContrast = PicSat = PicDenoise = 0;
 
     // ------------------------------------------------------------------ Plugins window commands
     [RelayCommand]

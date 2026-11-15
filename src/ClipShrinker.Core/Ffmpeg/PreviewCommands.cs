@@ -15,7 +15,7 @@ public static class PreviewCommands
         string vf = (crop is { } c ? $"crop={I(c.W)}:{I(c.H)}," : "") +
                     $"scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease" + (trc is not null ? "," + Geometry.TonemapChain(trc) : "")
                     + (picture is not null ? "," + picture : "");
-        return [Ffmpeg, "-v", "error", "-ss", F(t, 3), "-i", path, "-frames:v", "1",
+        return [Ffmpeg, "-v", "error", .. Plugins.PictureAdjust.HwArgs([picture]), "-ss", F(t, 3), "-i", path, "-frames:v", "1",
                 "-vf", vf, "-f", "image2pipe", "-vcodec", "png", "-"];
     }
 
@@ -49,6 +49,7 @@ public static class PreviewCommands
             ? Timing.ZoomSpans(fx.ZoomPlay, pcs, crop?.W ?? w, crop?.H ?? h, w, h) : [];
         bool plain = Timing.IsPlain(pieces);
         bool gpu = hwdec == 2 && plain && crop is null && trc is null && zs.Count == 0 && fx.PictureVf is null;
+        cmd.AddRange(Plugins.PictureAdjust.HwArgs([fx.PictureVf]));
         if (gpu) cmd.AddRange(["-hwaccel", "cuda", "-hwaccel_output_format", "cuda"]);
         else if (hwdec != 0) cmd.AddRange(["-hwaccel", "cuda"]);
         cmd.AddRange(["-probesize", "5000000", "-analyzeduration", "1000000",

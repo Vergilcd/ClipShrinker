@@ -2,9 +2,9 @@ using static ClipShrinker.Core.Py.Py;
 
 namespace ClipShrinker.Core.Plugins;
 
-/// <summary>The "Picture adjustments" plugin: brightness, contrast and saturation as one per-clip video filter
+/// <summary>The "Picture adjustments" plugin: denoise, brightness, contrast and saturation as one per-clip video filter
 /// (after crop / scale / tone-mapping). Neutral values give no filter at all, so exports stay identical.
-/// (Denoise is planned for 2.5.0: it needs the hqdn3d filter, which the slim ffmpeg build does not have yet.)</summary>
+/// Denoise (2.5.0) uses nlmeans: hqdn3d is GPL-only and cannot go in the LGPL build; atadenoise smeared moving footage.</summary>
 public static class PictureAdjust
 {
     public const int Min = -100, Max = 100;
@@ -38,4 +38,42 @@ public static class PictureAdjust
         string UV = s == 0 ? "val" : $"clip((val-{mid})*{F(1 + s / 100.0, 3)}+{mid},minval,maxval)";
         return $"lutyuv=y='{Y}':u='{UV}':v='{UV}'";
     }
+    public const int DenoiseMax = 100;
+
+    public static int ClampDenoise(int v) => Math.Max(0, Math.Min(DenoiseMax, v));
+
+    /// <summary>"25", "25%" -> 0 .. 100 (negative numbers count as 0); null when it is not a number.</summary>
+    public static int? ParseDenoise(string? text) => ParsePercent(text) is { } v ? ClampDenoise(v) : null;
+
+    /// <summary>Denoise as shown in its box: 0% .. 100% (no plus sign).</summary>
+    public static string FormatDenoise(int v) => $"{I(ClampDenoise(v))}%";
+
+    /// <summary>The denoise filter (0 = none): non-local means, strength 1 .. 5.5. On the graphics card through OpenCL
+    /// (~5x faster; 8-bit only) when it works on this PC, else the same filter on the CPU. Small patch / search window
+    /// (3 / 5) keeps it fast enough for the preview; 2.5.0 timings on a 1080p60 clip: GPU ~46 fps, CPU ~9 fps.</summary>
+    public static string? DenoiseFilter(int denoise, bool gpu)
+    {
+        int d = ClampDenoise(denoise);
+        if (d == 0) return null;
+        string s = F(1 + 4.5 * d / 100.0, 2);   // 2.5.0 test: above the old 50 % (s = 5.5) it only blurred, so 100 % = 5.5
+        return gpu ? $"format=yuv420p,hwupload,nlmeans_opencl=s={s}:p=3:r=5,hwdownload,format=yuv420p"
+                   : $"nlmeans=s={s}:p=3:r=5";
+    }
+
+    /// <summary>Denoise first (it works best on the untouched picture), then the colour. hdrKept: the clip stays HDR
+    /// (10-bit, "Convert HDR" off); denoise is skipped there because both filters would make it 8-bit.</summary>
+    public static string? Filter(int brightness, int contrast, int saturation, int denoise, bool gpu, bool hdrKept = false)
+    {
+        var parts = new[] { hdrKept ? null : DenoiseFilter(denoise, gpu), Filter(brightness, contrast, saturation) }
+            .Where(p => p is not null).ToList();
+        return parts.Count == 0 ? null : string.Join(",", parts);
+    }
+
+    /// <summary>The filter runs on the graphics card: ffmpeg then needs an OpenCL device (global options).</summary>
+    public static bool UsesOpenCl(string? vf) => vf is not null && vf.Contains("nlmeans_opencl");
+
+    public static readonly string[] OpenClArgs = ["-init_hw_device", "opencl=ocl", "-filter_hw_device", "ocl"];
+
+    /// <summary>OpenClArgs when any of these filters needs it, else nothing.</summary>
+    public static IEnumerable<string> HwArgs(IEnumerable<string?> vfs) => vfs.Any(UsesOpenCl) ? OpenClArgs : [];
 }

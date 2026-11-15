@@ -33,6 +33,15 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
 - 2.0 look deliberately differs from 1.0.8 (edge-to-edge thumbnails, keycap hotkeys, every shortcut rebindable).
 - Missing ffmpeg -> in-app download of the BtbN LGPL build (FfmpegDownloader).
 - Post-1.0 ideas: plugin support (extra effects), sound-effect library (needs audio tracks in timeline).
+- 2.5.0 denoise: nlmeans_opencl (GPU, static Khronos OpenCL loader in ffmpeg) with CPU nlmeans fallback; probed at
+  start-up (Tools.OpenClWorks). 8-bit only, so clips that stay HDR are not denoised. hqdn3d is GPL-only; atadenoise
+  smeared moving footage. Slider 0-100 % maps to strength 1-5.5 (the first test showed more only blurs).
+- 2.5.0: clip transitions are an app feature (Transition drop-down next to "Clear all clips", shown with 2+ clips),
+  not part of the Timeline effects plugin. Built-in plugin files are rewritten when the embedded version is newer.
+- Planned ~2.6.0: non-NVIDIA PCs. Today only NVENC exists, HasNvenc() only checks the ffmpeg build, so exports
+  fail on AMD/Intel. Plan: add h264/hevc_amf, _qsv and _mf (Media Foundation, also CPU fallback) to the slim build,
+  probe at start-up which encoders really open, list only those, tune size targeting per encoder. x264/x265 are
+  GPL - not allowed. Only NVIDIA hardware is available for testing (RTX 5070, Ryzen 5900X has no iGPU).
 
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.

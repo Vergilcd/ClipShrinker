@@ -113,6 +113,7 @@ public sealed class Encoder(IFfmpegRunner runner, IExportFileSystem fs, Action<d
                                 string audioK, bool hwdec, bool tonemap = false)
     {
         var cmd = new List<string> { Ffmpeg, "-y", "-hide_banner", "-nostats", "-progress", "pipe:1" };
+        cmd.AddRange(Plugins.PictureAdjust.HwArgs(clips.SelectMany(c => c.PluginVf ?? [])));   // (GPU denoise)
         foreach (var c in clips)
         {
             if (hwdec) cmd.AddRange(["-hwaccel", "cuda"]);
@@ -190,7 +191,7 @@ public sealed class Encoder(IFfmpegRunner runner, IExportFileSystem fs, Action<d
             Directory.CreateDirectory(dIn);
             Directory.CreateDirectory(dOut);
             string vf = string.Join(",", Filters.ClipVfilters(c, W, H, ratio, tonemap).Append($"fps={Py.PyFraction.Ratio(c.Fps)}"));
-            tools.Run([Ffmpeg, "-y", "-v", "error", "-nostdin", "-ss", F(a, 4), "-t", F(b - a, 4), "-i", c.Path,
+            tools.Run([Ffmpeg, "-y", "-v", "error", "-nostdin", .. Plugins.PictureAdjust.HwArgs([vf]), "-ss", F(a, 4), "-t", F(b - a, 4), "-i", c.Path,
                        "-an", "-vf", vf, "-q:v", "2", "-start_number", "1", Path.Combine(dIn, "%08d.jpg")]);
             if (cancelled) throw new ExportCancelledException();
             int cnt = Directory.GetFileSystemEntries(dIn).Length;

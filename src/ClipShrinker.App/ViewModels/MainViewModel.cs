@@ -43,7 +43,7 @@ public sealed partial class MainViewModel : ObservableObject
         saveDir = Str("save_dir") ?? "";
         InitPreviewSettings();
         InitPlugins();
-        Clips.CollectionChanged += (_, _) => { Renumber(); Refresh(); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
+        Clips.CollectionChanged += (_, _) => { Renumber(); Refresh(); OnPropertyChanged(nameof(HasManyClips)); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
         Refresh();
     }
 
@@ -80,6 +80,9 @@ public sealed partial class MainViewModel : ObservableObject
         if ((Tools.Ffmpeg is null || Tools.Ffprobe is null) && !await DownloadFfmpeg()) return false;
         _ = Task.Run(() =>
         {
+            // 2.5: GPU denoise needs a working OpenCL device; until this answers (or without one) denoise runs on the CPU
+            S.OpenCl = Tools.OpenClWorks();
+            if (S.PicDenoise != 0) Ui(PreviewSettingsChanged);
             if (!Tools.HasNvenc())
                 Ui(() => Dialogs.Warn("NVENC not available", "This ffmpeg build has no NVENC encoder. " +
                                       "Update your NVIDIA driver or use a full ffmpeg build."));
@@ -210,6 +213,8 @@ public sealed partial class MainViewModel : ObservableObject
     // effects window
     public string Trans { get => S.Trans; set => Set(ref S.Trans, value); }
     public IReadOnlyList<string> TransitionNames { get; } = C.Transitions.Select(t => t.Name).ToList();
+    /// <summary>2 or more clips: the Transition drop-down is shown (2.5).</summary>
+    public bool HasManyClips => Clips.Count > 1;
     public string Tlen { get => S.Tlen; set => Set(ref S.Tlen, value); }
     public string FastAudio { get => S.FastAudio; set => Set(ref S.FastAudio, value); }
     public IReadOnlyList<string> FastAudioOptions => C.FastAudio;

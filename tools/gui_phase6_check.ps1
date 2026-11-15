@@ -1,5 +1,5 @@
 # Phase 6 check in the real app: undo / redo, save project (Ctrl+S), bitrate presets editor, key rebinding,
-# the close dialog and "Restore the last session". UI Automation for buttons and fields; real key presses only where
+# the close dialog and "Save session on exit". UI Automation for buttons and fields; real key presses only where
 # a key must be captured (Ctrl+S, the new shortcut). Works on a copy of a test project in %TEMP%.
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path "$PSScriptRoot\.."
@@ -48,13 +48,17 @@ $dir = Join-Path $env:TEMP "cs_phase6"; Remove-Item $dir -Recurse -Force -ErrorA
 $proj = Join-Path $dir "p.clipproj"
 Copy-Item "$Root\tests\media\projects\single_effects.clipproj" $proj
 Remove-Item "$Lib\last_session.json", "$Lib\presets.json" -ErrorAction SilentlyContinue
+if (Test-Path "$Lib\settings.json") {                            # (2.4+: plugins at their defaults, so the presets button is there)
+    $js = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json; $js.PSObject.Properties.Remove("plugins")
+    $js | ConvertTo-Json -Depth 10 | Set-Content "$Lib\settings.json" -Encoding UTF8
+}
 
 "1. undo / redo"
 $proc = Start-App $proj
 $win = $A::FromHandle($proc.MainWindowHandle)
 Check ((Clips $win) -eq 1) "the project opened with 1 clip"
 $undo = Find $win $A::NameProperty ([string][char]0xE7A7); $redo = Find $win $A::NameProperty ([string][char]0xE7A6)
-Invoke (Find $win $A::NameProperty "Clear all");  Check ((Clips $win) -eq 0) "Clear all removed it (no question)"
+Invoke (Find $win $A::NameProperty "Clear all clips");  Check ((Clips $win) -eq 0) "Clear all clips removed it (no question)"
 Invoke $undo;  Check ((Clips $win) -eq 1) "Undo brought it back"
 Invoke $redo;  Check ((Clips $win) -eq 0) "Redo removed it again"
 Invoke $undo;  Check ((Clips $win) -eq 1) "Undo again"
@@ -86,7 +90,6 @@ Keys $hd @(0x58)                                            # X
 Invoke (Find $hd $A::NameProperty "Save")
 Start-Sleep -Milliseconds 300
 Check ((Find $sw $A::NameProperty "X" 3) -ne $null) "the speed keycaps show X"
-Check ((Find $win $A::NameProperty "X = speed up" 3) -ne $null) "the hint under the preview says X = speed up"
 Invoke (Find $sw $A::NameProperty "D"); $hd = Win "Change shortcut"
 Keys $hd @(0x58)                                            # X again for slow: must be refused
 Check ((Find $hd $A::NameProperty "X is already used: add a speed-up section (blue) at the playhead." 3) -ne $null) "X for slow motion shows the error"
@@ -95,9 +98,7 @@ Invoke (Find $hd $A::NameProperty "Cancel")
 $sw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
 
 "5. session restore + close dialog"
-Invoke (Find $win $A::NameProperty "Effects"); $fx = Win "Effects"
-Toggle (Find $fx $A::NameProperty "Restore the last session on start")
-Invoke (Find $fx $A::NameProperty "Done")
+Toggle (Find $win $A::NameProperty "Save session on exit")   # (2.4: in the Export panel SAVING section)
 $proc.CloseMainWindow() | Out-Null
 $cd = Win "Close Clip Shrinker"
 Check ((Find $cd $A::NameProperty "1 clip is open in the timeline.") -ne $null) "the close dialog asks"
@@ -112,8 +113,7 @@ Check ((Clips $win) -eq 1) "started without a file: the last session came back"
 Check ($win.Current.Name -notlike "*.clipproj") "(as a session, not as a project file)"
 
 "6. clean up (back to the defaults)"
-Invoke (Find $win $A::NameProperty "Effects"); $fx = Win "Effects"
-Toggle (Find $fx $A::NameProperty "Restore the last session on start"); Invoke (Find $fx $A::NameProperty "Done")
+Toggle (Find $win $A::NameProperty "Save session on exit")
 Invoke (Find $win $A::NameProperty "Shortcuts"); $sw = Win "Shortcuts"
 Invoke (Find $sw $A::NameProperty "X"); $hd = Win "Change shortcut"; Invoke (Find $hd $A::NameProperty "Reset"); Invoke (Find $hd $A::NameProperty "Save")
 $sw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()

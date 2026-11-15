@@ -87,6 +87,7 @@ public static class Program
 
         var state = AppState.FromSettings(o.GetValueOrDefault("--settings") is { } sp ? SettingsStore.Load(sp) : null);
         state.PictureOn = o.ContainsKey("--picture");
+        state.OpenCl = state.PictureOn && tools.OpenClWorks();
         var presets = o.GetValueOrDefault("--presets") is { } pp ? PresetStore.Load(pp) : [];
         Preset? PresetByName(string name) => presets.FirstOrDefault(p => p.Name == name);
 
