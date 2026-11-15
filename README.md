@@ -2,27 +2,33 @@
 
 **Trim, join and shrink game clips to an exact file size on your NVIDIA GPU.**
 
-<img width="1393" height="1177" alt="image" src="https://github.com/user-attachments/assets/0718291d-3bd0-43b9-bfc8-532d40db1456" />
+<img width="1410" height="1028" alt="image" src="https://github.com/user-attachments/assets/54a2dffd-42b2-43d9-9d0a-62f71063997e" />
 
 ClipShrinker is a small Windows tool for turning big gameplay recordings into clips that fit
 Discord. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, then encode with NVENC, 
 the app checks the result and re-encodes with a corrected bitrate until the file lands just under the limit.
 
 ## Features
-
-- **Size-targeted export** - give a MB limit (or a fixed bitrate) and the export iterates until the size fits the limit
+- **Size-targeted export** - MegaByte limit can be set to fit under share size limits
+- **Bitrate export** - Set a bitrate by pre-saved preset or apply one to all clips
 - **Thumbnail timelines** per clip with draggable trim handles or typed-in timestamps
-- **Speed sections** (fast-forward with custom multipliers)
-- **Slow motion sections** (with RIFE frame interpolation available)
-- **Zoom sections** to focus on details
 - **Join clips** with transitions (crossfade, wipes, swipes or a glitch effect) or export separately
 - **Centered crop** to 21:9, 16:9, 16:10 or 4:3 for trimming superwide clips
 - **Multiple audio tracks** - keep game and microphone separate or mix them
-- **HEVC / H.264 via NVENC**, HDR clips handled
+- **HEVC / H.264 via NVENC**, HDR clips handled or can be converted to SDR output
 - **Live preview** with sound, crop, and effects applied
-- **Dark and light theme** (Windows Fluent style), session saving, project saving/loading
-- **Customizable shortcuts** for all features
-- **Portable:** nothing is installed on your PC
+- **Dark and light theme** (Windows Fluent style),
+- **Project saving & loading** optional session saving at exit available
+- **Portable:** no installation needed, everything is bundled
+
+### 3 built in effects
+- **Speed sections** (fast-forward with custom multipliers)
+- **Slow motion sections** (with RIFE frame interpolation available)
+- **Zoom sections** to focus on details
+- Drag/click on the buttons or use the shortcuts to apply them to the timeline
+
+## Customizable shortcuts
+<img width="1131" height="745" alt="image" src="https://github.com/user-attachments/assets/d2852dad-2c34-4fbb-b340-f819da3d4a7e" />
 
 ## Requirements
 
