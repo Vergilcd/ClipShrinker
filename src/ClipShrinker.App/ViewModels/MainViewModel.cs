@@ -134,7 +134,13 @@ public sealed partial class MainViewModel : ObservableObject
     public bool DarkMode
     {
         get => Theme == "dark";
-        set { Theme = value ? "dark" : "light"; App.SetTheme(Theme); OnPropertyChanged(); }
+        set
+        {
+            Theme = value ? "dark" : "light";
+            App.SetTheme(Theme);
+            OnPropertyChanged();
+            foreach (var c in Clips) c.NotifyChanged();         // the timelines' trim stripes follow the theme
+        }
     }
 
     // ------------------------------------------------------------------ export settings (AppState fields)

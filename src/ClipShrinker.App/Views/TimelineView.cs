@@ -27,7 +27,30 @@ public sealed class TimelineView : Canvas
 
     static readonly Brush Bg = Frozen("#202020");
     static readonly Brush Shade = Frozen(Color.FromArgb(166, 0, 0, 0));        // trimmed away (65 %, plus the stripes)
-    static readonly Brush Hatch = MakeHatch();                                    // over the trimmed-away part
+    static readonly Pen HatchDark = FrozenPen(Color.FromArgb(38, 0, 0, 0), 5.5);         // 15 % black
+    static readonly Pen HatchLight = FrozenPen(Color.FromArgb(18, 255, 255, 255), 5.5);  // 7 % white (white stands out more)
+    static Pen FrozenPen(Color c, double w) { var p = new Pen(Frozen(c), w); p.Freeze(); return p; }
+    const double HatchStep = 16;
+
+    /// <summary>Slanted stripes over a trimmed-away part (2.2.2): 15 % black in dark mode, 7 % white in light mode.
+    /// Drawn as real lines (a tiled brush was rendered at low resolution and scaled up, which made the edges jagged
+    /// on scaled displays). They lie on a grid in timeline coordinates, so both trimmed-away ends line up.</summary>
+    void DrawHatch(DrawingContext dc, Rect r)
+    {
+        var bg = (TryFindResource("ApplicationBackgroundBrush") as SolidColorBrush)?.Color ?? Col("#202020");
+        var pen = bg.R + bg.G + bg.B > 3 * 128 ? HatchLight : HatchDark;
+        dc.PushClip(new RectangleGeometry(r));
+        // lines x + y = k * step, going up to the right. Each line starts and ends well outside the rectangle, so
+        // the clip cuts it straight along the edges: the square ends of the pen never show as slanted corners.
+        double e = 2 * pen.Thickness, top = r.Top - e, bottom = r.Bottom + e;
+        double k0 = Math.Floor((r.Left + top) / HatchStep) - 1, k1 = Math.Ceiling((r.Right + bottom) / HatchStep) + 1;
+        for (double k = k0; k <= k1; k++)
+        {
+            double s = k * HatchStep;
+            dc.DrawLine(pen, new Point(s - bottom, bottom), new Point(s - top, top));
+        }
+        dc.Pop();
+    }
     static readonly Brush Yellow = Frozen("#FBBF24");
     static readonly Brush Dark111 = Frozen("#111111");
     static readonly Typeface Ui = new("Segoe UI");
@@ -48,25 +71,6 @@ public sealed class TimelineView : Canvas
         SizeChanged += (_, _) => { if (vm is not null) vm.SetWidth(ActualWidth); UpdateClip(); Redraw(); };
     }
 
-    /// <summary>Thick dark stripes slanted at 45 degrees (tile 16 px, stripe 5.5 px). The tile is in timeline
-    /// coordinates, so the stripes stay in place and line up across both trimmed-away ends.</summary>
-    static Brush MakeHatch()
-    {
-        const double t = 16;
-        var pen = new Pen(Frozen(Color.FromArgb(215, 0, 0, 0)), 5.5);
-        var g = new GeometryGroup();
-        foreach (double o in new[] { -t, 0, t })                        // the stripe and its neighbours poking into the tile
-            g.Children.Add(new LineGeometry(new Point(o - 1, t + 1), new Point(o + t + 1, -1)));
-        var d = new GeometryDrawing(null, pen, g);
-        var brush = new DrawingBrush(d)
-        {
-            TileMode = TileMode.Tile, Stretch = Stretch.None,
-            Viewbox = new Rect(0, 0, t, t), ViewboxUnits = BrushMappingMode.Absolute,
-            Viewport = new Rect(0, 0, t, t), ViewportUnits = BrushMappingMode.Absolute,
-        };
-        brush.Freeze();
-        return brush;
-    }
 
     static SolidColorBrush Frozen(string hex) => Frozen((Color)ColorConverter.ConvertFromString(hex));
     static SolidColorBrush Frozen(Color c) { var b = new SolidColorBrush(c); b.Freeze(); return b; }
@@ -129,7 +133,7 @@ public sealed class TimelineView : Canvas
         {
             if (r.IsEmpty) continue;
             dc.DrawRectangle(Shade, null, r);
-            dc.DrawRectangle(Hatch, null, r);
+            DrawHatch(dc, r);
         }
         double lineW = ov ? 3 : (act ? 4 : 3);               // section edges: about twice the 2 px playhead
 

@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.2.1 (NVENC)
+CLIP SHRINKER 2.2.2 (NVENC)
 ===========================
 
 GETTING STARTED
