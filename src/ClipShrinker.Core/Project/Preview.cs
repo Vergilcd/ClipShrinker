@@ -89,6 +89,7 @@ public static class PreviewPlan
             ZoomMotion = s.ZoomFx == C.ZoomFx[0], ZoomLen = len, ZoomSound = s.ZoomSnd == C.ZoomAudio[0], ZoomVol = s.ZoomVol,
             ZoomPlay = zoomPlay.ToList(),
             PictureVf = s.PictureFilter(),
+            AudioAf = s.EqFilter(),
         };
     }
 }

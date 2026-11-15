@@ -33,7 +33,7 @@ public readonly record struct ZoomSpan(double OutStart, double OutEnd, double Le
 
 /// <summary>What ffprobe found out about a file (reference probe()).</summary>
 public sealed record MediaInfo(int W, int H, double Fps, double Dur, int NAudio, double Bitrate, long Size,
-                               string? Trc, string? Prim, string? Space)
+                               string? Trc, string? Prim, string? Space, double AudioBitrate = 0)
 {
     public bool Audio => NAudio > 0;
 }
@@ -51,6 +51,8 @@ public sealed record ExportClip
     /// <summary>null = not known (then Audio decides: 1 or 0), like c.get("naudio", ...).</summary>
     public int? NAudio { get; init; }
     public double Bitrate { get; init; }
+    /// <summary>2.6: source bitrate of the first audio track in bits/s (0 = not known).</summary>
+    public double AudioBitrate { get; init; }
     public string? Trc { get; init; }
     public string? Prim { get; init; }
     public string? Space { get; init; }
@@ -81,7 +83,7 @@ public sealed record ExportClip
         return new ExportClip
         {
             Path = path, Start = start, End = end, W = info.W, H = info.H, Fps = info.Fps, Audio = info.Audio,
-            NAudio = info.NAudio, Bitrate = info.Bitrate, Trc = info.Trc, Prim = info.Prim, Space = info.Space,
+            NAudio = info.NAudio, Bitrate = info.Bitrate, AudioBitrate = info.AudioBitrate, Trc = info.Trc, Prim = info.Prim, Space = info.Space,
             Pieces = vis.Count > 0 ? Timing.BuildPieces(start, end, vis) : null, Zooms = zs,
         };
     }
@@ -113,6 +115,8 @@ public sealed record EffectSettings
     public IReadOnlyList<Zoom> ZoomPlay { get; init; } = [];
     /// <summary>The preview's Picture adjustments filter (null = none). Exports take it from ExportClip.PluginVf.</summary>
     public string? PictureVf { get; init; }
+    /// <summary>2.6: the Sound equalizer filter (preview sound and export audio tracks; null = none).</summary>
+    public string? AudioAf { get; init; }
 
     public static EffectSettings Default { get; } = new();
 
@@ -135,6 +139,7 @@ public sealed record EffectSettings
             ZoomVol = st.ZoomVol,
             SlowBlend = mode != "repeat",
             SlowRife = mode == "rife",
+            AudioAf = st.AudioAf,
         };
     }
 }
@@ -145,7 +150,7 @@ public sealed record ExportSettings
     public double? TargetMb { get; init; }
     public double? BitrateMbps { get; init; }
     public string ResMode { get; init; } = "Auto";
-    /// <summary>ffmpeg encoder name: h264_nvenc | hevc_nvenc.</summary>
+    /// <summary>Encoder key (Media.Encoders): h264_nvenc, hevc_amf, h264_mf_hw ...</summary>
     public string Codec { get; init; } = "hevc_nvenc";
     public string AudioK { get; init; } = "128k";
     public double? Ratio { get; init; }
@@ -166,4 +171,6 @@ public sealed record ExportSettings
     public string ZoomSnd { get; init; } = C.ZoomAudio[0];
     public int ZoomVol { get; init; } = 80;
     public string SlowInterp { get; init; } = C.SlowInterp[1];
+    /// <summary>2.6: Sound equalizer filter for every output audio track (null = none).</summary>
+    public string? AudioAf { get; init; }
 }

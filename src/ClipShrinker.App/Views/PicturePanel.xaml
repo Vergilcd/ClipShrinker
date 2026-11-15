@@ -5,6 +5,7 @@
     <!-- Picture adjustments plugin: brightness / contrast / saturation over the preview (main window and full screen).
          Same look as the play / sound / full screen controls: white on a see-through black rounded card. -->
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="PanelText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -92,11 +93,11 @@
                         AutomationProperties.Name="Saturation" ToolTip="Stronger or paler colours; -100% = black and white (double-click = unchanged)" />
                 <TextBox Grid.Row="2" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding PicSatText, UpdateSourceTrigger=LostFocus}"
                          AutomationProperties.Name="Saturation %" ToolTip="Type a value from -100 to 100 (the % is optional), Enter confirms" />
-                <TextBlock Grid.Row="3" Text="Denoise" Style="{StaticResource PanelText}" />
-                <Slider Grid.Row="3" Grid.Column="1" Style="{StaticResource PanelSlider}" Minimum="0" Value="{Binding PicDenoise}" MouseDoubleClick="Slider_DoubleClick"
+                <TextBlock Grid.Row="3" Text="Denoise" Style="{StaticResource PanelText}" Visibility="{Binding DenoiseAvailable, Converter={StaticResource BoolToVis}}" />
+                <Slider Grid.Row="3" Grid.Column="1" Style="{StaticResource PanelSlider}" Minimum="0" Value="{Binding PicDenoise}" Visibility="{Binding DenoiseAvailable, Converter={StaticResource BoolToVis}}" MouseDoubleClick="Slider_DoubleClick"
                         AutomationProperties.Name="Denoise"
                         ToolTip="Removes grain and noise (dark or low-light footage). Runs on the graphics card when it can, else exports get slower. Not used on clips that stay HDR (double-click = off)" />
-                <TextBox Grid.Row="3" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding PicDenoiseText, UpdateSourceTrigger=LostFocus}"
+                <TextBox Grid.Row="3" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding PicDenoiseText, UpdateSourceTrigger=LostFocus}" Visibility="{Binding DenoiseAvailable, Converter={StaticResource BoolToVis}}"
                          AutomationProperties.Name="Denoise %" ToolTip="Type a value from 0 to 100 (the % is optional), Enter confirms" />
             </Grid>
         </StackPanel>

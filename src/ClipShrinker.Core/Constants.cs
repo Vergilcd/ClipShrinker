@@ -4,7 +4,7 @@ namespace ClipShrinker.Core;
 public static class C
 {
     public const string AppName = "ClipShrinker";
-    public const string AppVersion = "2.5.0";
+    public const string AppVersion = "2.6.0";
     public const string AppId = "ClipShrinker.Desktop.App";
     public const string ProjectExt = ".clipproj";
     public const string RepoUrl = "https://github.com/Vergilcd/ClipShrinker";
@@ -35,9 +35,12 @@ public static class C
     }
 
     public const string Glitch = "glitch";
-    public static readonly string[] Codecs = ["H.264 (h264_nvenc)", "HEVC (hevc_nvenc)"];
-    public static readonly string[] ResSizeMode = ["Auto", "100%", "75%", "50%"];
-    public static readonly string[] ResBitrateMode = ["Original", "75%", "50%"];
+    /// <summary>Every codec label (2.6: all encoders; the app lists the ones that work on this PC).</summary>
+    public static readonly string[] Codecs = [.. Media.Encoders.Labels];
+    /// <summary>2.6: 75% gave way to fixed heights (4K, 1440p, 1080p, 720p; never upscaled). A saved "75%" falls back to
+    /// the default.</summary>
+    public static readonly string[] ResSizeMode = ["Auto", "100%", "4K", "1440p", "1080p", "720p", "50%"];
+    public static readonly string[] ResBitrateMode = ["Original", "4K", "1440p", "1080p", "720p", "50%"];
     public static readonly double[] TickSteps = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200];
     public const double MinView = 1.0;
     public const int MaxThumbCache = 800;

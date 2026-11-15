@@ -1,5 +1,5 @@
-CLIP SHRINKER 2.5.0 (NVENC)
-===========================
+CLIP SHRINKER 2.6.0
+===================
 
 GETTING STARTED
 Double-click ClipShrinker.exe. Keep the "library" and "plugins" folders next to it: library holds ffmpeg,
@@ -7,7 +7,11 @@ ffprobe and your settings, plugins holds the plugins (Plugins button, top right)
 install (.NET is built into the exe). If ffmpeg.exe or ffprobe.exe is missing, the program offers to download
 them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
 
-You need Windows 10 or 11 (64-bit) and an NVIDIA GPU with NVENC (GTX 10xx or newer) on a current driver.
+You need Windows 10 or 11 (64-bit). Exports are fastest on a graphics card: NVIDIA (NVENC, GTX 10xx or newer),
+AMD (AMF) or Intel (Quick Sync), each with a current driver. Without one, Windows' own encoder is used, on the
+graphics card when it can and on the CPU otherwise (slower, H.264 only). The program tests what works on the
+PC at start-up and lists only those in Codec. The notice left of "Plugins" shows "GPU Encoding is ON" (green)
+or "GPU Encoding is OFF" (orange) for the chosen codec; hover over it for what was found.
 SmartScreen may warn about the unsigned exe; click More info, then Run anyway.
 
 To pin it to the taskbar, start the program, right-click its taskbar button and choose "Pin to taskbar".
@@ -38,15 +42,20 @@ Esc leaves it. Drag the grip between the preview and the clip list to resize the
 
 PLUGINS (button at the top right)
 Optional parts of the program are plugins you can switch on and off, delete, and restore from GitHub. Each is a
-folder in "plugins" with its version and changelog:
-- Timeline effects: speed up / slow motion / zoom sections and RIFE (on by default).
-- Bitrate presets: per-clip bitrates with hotkeys (on by default).
-- Picture adjustments: brightness, contrast, saturation and denoise (off by default). Its sun button at the
-  bottom right of the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
+folder in "plugins" with its version and changelog. All of them are on after the first start:
+- Timeline effects: speed up / slow motion / zoom sections and RIFE.
+- Bitrate presets: per-clip bitrates with hotkeys.
+- Picture adjustments: brightness, contrast, saturation and denoise. Its sun button at the bottom right of
+  the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
   saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
   (OpenCL, any recent NVIDIA, AMD or Intel driver) and on the CPU otherwise, where exports get much slower.
-  Clips that stay HDR ("Convert HDR" off) are not denoised.
+  Clips that stay HDR ("Convert HDR" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
+  library folder has no denoise filter (an older copy): use the ffmpeg.exe and ffprobe.exe from the download.
+- Sound equalizer: five bands (60 Hz to 12 kHz, -12 to +12 dB) and Volume (-20 to +20 dB) for the whole
+  export. Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
+  and press Enter. Heard in the preview, used on every audio track of the export, and saved with projects. A
+  limiter keeps boosted sound from clipping.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
 at the bottom shows where you are. "Reset zoom" shows the whole clip again.
@@ -66,31 +75,37 @@ The line under a clip's title shows its length after editing. Pitch, frame blend
 zoom motion are set in "Effects". RIFE (plugins\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
-- Size: "Max size (MB)" applies per file, or to the whole video when joining. Enter a value in "or Bitrate
-  (Mbps)" instead to use a fixed bitrate; the size limit is then ignored and resolution offers only
-  Original / 75% / 50%.
-- Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick one per clip in its title
-  bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto bitrate" means the size or
-  bitrate above. Presets are used when clips are saved as separate files.
-- Video: resolution, codec (HEVC by default), centered crop to 21:9, 16:9, 16:10 or 4:3 (only wider clips get
-  cut), and "Convert HDR clips to SDR".
-- Audio: 128k to 320k per track. ShadowPlay can record game and microphone as two tracks. "Keep separate
-  tracks" saves both (Game audio / Microphone), "Mix into one track" combines them (use this for Discord,
-  browsers and phones), and "Mute microphone" leaves the mic out.
-- File names: prefix and suffix. Prefix and suffix can hold dynamic labels that are filled in for each file: {date}, {time}, {preset} (the
-  clip's bitrate preset), {res} (output height, e.g. 1080p), {size} (the size limit) and {codec} (HEVC or
-  H264). The small buttons above Prefix insert one at the cursor of the box you used last. An empty suffix
-  adds nothing; put {codec} in it to get the old clip_HEVC.mp4 names. Untick "Keep original file name" to
-  leave the clip's name out, so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick
-  is greyed out while Prefix and Suffix are both empty.
-- Saving: the save folder (leave it empty to get a save dialog every time) and "Save session on exit", which
-  keeps the open clips when you close the program and opens them again on the next start.
+- Size: "Max size (MB)" applies per file: to each clip, or to the whole video when joining. Enter a value in
+  "or Bitrate (Mbps)" instead to use a fixed bitrate (it is ignored when empty); the size limit is then
+  ignored and resolution offers Original, 4K, 1440p, 1080p, 720p or 50%.
+- Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
+  one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
+  bitrate" means the size or bitrate above. Presets are used when clips are saved as separate files.
+- Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger
+  than it is), codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
+  or Windows on the GPU, and the Windows CPU encoder only when no graphics card encoder works; a project from
+  another PC switches to the closest one; the open list marks the recommended one), centered crop to 21:9,
+  16:9, 16:10 or 4:3 (only wider clips get cut), and "Convert HDR clips to SDR".
+- Audio: Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track. ShadowPlay can
+  record game and microphone as two tracks. "Keep as separate tracks" saves both (Game audio / Microphone),
+  "Mix into one track" combines them (use this for Discord, browsers and phones), and "Mute microphone"
+  leaves the mic out.
+- File names: prefix and suffix. They can hold dynamic labels that are filled in for each file: {date},
+  {time}, {preset} (the clip's bitrate preset), {res} (output height, e.g. 1080p, 1440p or 4K), {size} (the
+  size limit) and {codec} (HEVC or H264). Click a label button to insert it at the cursor of the box you
+  used last, or type its code (shown when you hover the button). An empty suffix adds nothing; put {codec}
+  in it to get the old clip_HEVC.mp4 names. Untick "Keep original file name" to leave the clip's name out,
+  so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick is greyed out while
+  Prefix and Suffix are both empty.
+- Saving: "Export folder" (exports are saved there without asking; when empty, a save dialog asks at every
+  export) and "Save session on exit", which keeps the open clips when you close the program and opens them
+  again on the next start.
 
 EXPORT (Ctrl+E)
 With several clips you choose between one joined video or a separate file per clip. The joined video uses the
 transition picked with the "Transition" button next to "Clear all clips" (shown with 2 or more clips; point at
-an effect in its list to see a preview). ClipShrinker encodes with NVENC, checks the file size, and re-encodes with a corrected bitrate
-(up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
+an effect in its list to see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
+re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.
 
 PROJECTS
@@ -109,3 +124,5 @@ NOTES
 - ffmpeg is a slim LGPL build of FFmpeg (settings in ffmpeg-build-settings.txt, license in ffmpeg-LICENSE.txt).
   Other components are listed in THIRD-PARTY-NOTICES.txt.
 - Version history: CHANGELOG.txt, or the About button in the program.
+- Updates: the About window checks GitHub when it opens and shows next to the link whether a newer version
+  is out (green light). Nothing is downloaded; updating is up to you.

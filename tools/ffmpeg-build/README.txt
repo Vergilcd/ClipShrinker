@@ -26,6 +26,10 @@ is built from source and linked in statically, so ffmpeg.exe needs no OpenCL.dll
 ffmpeg only allows it in GPL builds and this build is LGPL (configure leaves GPL-only filters out silently, so
 check "ffmpeg -filters" after a build).
 
+Encoders (Clip Shrinker 2.6.0): NVENC, AMF (AMD; headers only, the runtime comes with the AMD driver), QSV (Intel;
+the oneVPL dispatcher is built from source and linked in statically, the runtime comes with the Intel driver) and
+Media Foundation (Windows; loaded at run time, so Windows N editions still start ffmpeg).
+
 Known gaps in the slim build (the full build has them):
  - GPU preview scaling (scale_cuda) - the preview falls back to a slightly slower path automatically
  - decoders for rare formats (see DECODERS in features.sh)

@@ -122,10 +122,12 @@ public static class Geometry
         return (Math.Min(w, Even(h * ratio.Value)), h);
     }
 
-    /// <summary>mode: Auto, Original, 100%, 75%, 50%. Returns the scale factor (0.5 .. 1.0).</summary>
+    /// <summary>mode: Auto, Original, 100%, 75%, 50%, or a fixed height (4K, 1440p, 1080p, 720p: the picture is made that
+    /// high, never higher than it is). Returns the scale factor.</summary>
     public static double ChooseScale(string mode, double w, double h, double fps, double vBps)
     {
         if (mode == "Original") return 1.0;
+        if (TargetHeight(mode) is { } th) return h > 0 ? Math.Min(1.0, th / h) : 1.0;
         if (mode != "Auto") return int.Parse(mode.TrimEnd('%'), System.Globalization.CultureInfo.InvariantCulture) / 100.0;
         foreach (double s in new[] { 1.0, 0.75, 0.5 })
         {
@@ -134,6 +136,10 @@ public static class Geometry
         }
         return 0.5;
     }
+
+    /// <summary>2.6: the output height of a fixed resolution option ("4K" = 2160, "1080p" = 1080), else null.</summary>
+    public static int? TargetHeight(string mode) =>
+        mode == "4K" ? 2160 : mode.EndsWith('p') && int.TryParse(mode[..^1], System.Globalization.CultureInfo.InvariantCulture, out int px) ? px : null;
 
     /// <summary>HDR (PQ or HLG, BT.2020) -> SDR BT.709, 8-bit (zscale).</summary>
     public static string TonemapChain(string trc) =>

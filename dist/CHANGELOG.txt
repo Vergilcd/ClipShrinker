@@ -4,6 +4,50 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.6.0
+- Exports work without an NVIDIA card. Besides NVENC, Clip Shrinker can now encode on AMD (AMF) and Intel
+  (Quick Sync) graphics, and with Windows' own encoder (Media Foundation), on the graphics card or, as a last
+  resort, on the CPU (H.264 only, slower). At start-up a short test encode checks which ones work on the PC,
+  and the Codec list shows only those. A codec from settings or a project that this PC cannot run switches to
+  the closest one that works (HEVC stays HEVC when possible). NVENC exports are unchanged. AMD and Intel are
+  untested so far (no such card was at hand): please report the log if their file sizes land far off.
+- PCs without NVIDIA decoding (CUDA) now decode on the CPU from the start, in the preview and the export,
+  instead of failing first and retrying.
+- New plugin "Sound equalizer": five bands (60 Hz, 250 Hz, 1 kHz, 4 kHz, 12 kHz; -12 to
+  +12 dB) and Volume (-20 to +20 dB) on a card over the preview, opened with the equalizer button next to the
+  sun button (also in full screen). Values can be dragged or typed (3, +3 dB, -6dB; Enter confirms). Heard in
+  the preview, used on every audio track of the export, saved with projects. A limiter catches peaks when
+  something is boosted. Only one of the Picture and Equalizer cards is open at a time.
+- Top bar: a notice left of "Plugins" shows "GPU Encoding is ON" (green) when the chosen codec encodes on the
+  graphics card, or "GPU Encoding is OFF" (orange) when it runs on the CPU. Hovering it lists the encoders that
+  work on the PC and whether GPU decoding and GPU denoise work (handy for bug reports).
+- Resolution: the 75% option is replaced by 4K, 1440p, 1080p and 720p (the picture is made that high, never
+  larger than the clip). {res} in file names follows (an export at 2160 lines is named 4K). A 75% setting
+  saved by an older version falls back to the default.
+- Audio: "Original" in "Bitrate per track" keeps the clips' own audio bitrate (raised to the next AAC step,
+  at most 320k; 192k when a clip does not report one). "Keep separate tracks" is now "Keep as separate
+  tracks" (older settings and projects are read as before).
+- Codec: the Windows CPU encoder is only listed when no graphics card encoder works. In the open list each
+  codec has a short hint under its name, e.g. "- recommended for your NVIDIA GPU" or "- Windows encoder,
+  lower quality", so it is clear which one to pick.
+- Export panel wording: "ignored if empty" next to Bitrate, "Export folder"
+  (was "Save folder") with the hint "Asks at export when empty.", and a new hint above the dynamic label
+  buttons.
+- The effect buttons read "Speed Up | S", "Slow Down | D", "Zoom | Z" (with the current hotkeys).
+- Plugins window: a changelog opens across the whole card, and the scroll bar sits beside the cards instead
+  of over them.
+- Every built-in plugin is on after the first start, so new users see all features. Switches set in an
+  earlier version are kept.
+- About window: a line next to the GitHub link checks for a newer release when the window opens (blinking
+  green while checking, then "You have the latest version" or a "Version x is available" link to the release
+  page). It is only shown there: no pop-ups, nothing downloaded.
+- Picture adjustments: the Denoise row is hidden when the ffmpeg in the library folder has no denoise filter
+  (an older copy kept from before 2.5.0); before, exports with denoise failed there.
+- The bundled ffmpeg is rebuilt with the AMD, Intel and Windows encoders and the equalizer filter. It now
+  includes AMD's AMF headers and Intel's oneVPL dispatcher (both MIT, see AMF-LICENSE.txt and
+  oneVPL-LICENSE.txt). It still needs no DLLs beyond the ones that come with Windows.
+
+
 2.5.0
 - Picture adjustments: new Denoise slider (0 to 100 %, light to strong) on the Picture card. It removes
   grain and noise from dark or low-light footage, in the preview and the export, and is saved with projects.

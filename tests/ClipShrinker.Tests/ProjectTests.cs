@@ -93,7 +93,9 @@ public class ProjectTests
             }
             var state = AppState.FromSettings(settings);
             state.ApplyProject(load.Settings);
-            foreach (var (k, w, gs) in StateDiff(pr.GetProperty("state"), state)) m.Equal(w, gs, $"{file}: state {k}");
+            // (2.6 renamed "Keep separate tracks" to "Keep as separate tracks"; 1.0.8 fixtures still use the old wording)
+            foreach (var (k, w, gs) in StateDiff(pr.GetProperty("state"), state))
+                m.Equal(k == "atrk" && w == "Keep separate tracks" ? "Keep as separate tracks" : w, gs, $"{file}: state {k}");
         }
         m.AssertNone();
     }

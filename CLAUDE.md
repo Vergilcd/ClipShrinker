@@ -11,7 +11,7 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
 - `dist/` holds README.txt, CHANGELOG.txt, LICENSE.txt, THIRD-PARTY-NOTICES.txt and the ffmpeg texts. The release
   script copies them next to the exe, where the About window reads them (Debug builds find `dist/` directly).
 - `plugins/<id>/` (2.4): plugin.json + CHANGELOG.txt of the built-in plugins (timeline-effects, bitrate-presets,
-  picture-adjust). Embedded in the exe (seeded on first start, offline fallback for Restore), copied into the
+  picture-adjust, sound-equalizer). Embedded in the exe (seeded on first start, offline fallback for Restore), copied into the
   release, and fetched from raw.githubusercontent .../main/plugins by Restore. Their code is still in the app;
   `Core.Plugins.Features` / `AppState.PictureOn` gate it. RIFE lives in plugins\timeline-effects\rife.
 - Binaries NOT in git (see .gitignore): ffmpeg.exe, ffprobe.exe, library/rife/, ClipShrinker.exe, test media.
@@ -29,7 +29,7 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
 - Commit messages: short imperative subject, body explains why.
 
 ## Decisions
-- No code signing (not worth it). Deshake dropped. AV1 removed; HEVC/H.264 NVENC only.
+- No code signing (not worth it). Deshake dropped. AV1 removed; HEVC / H.264 only.
 - 2.0 look deliberately differs from 1.0.8 (edge-to-edge thumbnails, keycap hotkeys, every shortcut rebindable).
 - Missing ffmpeg -> in-app download of the BtbN LGPL build (FfmpegDownloader).
 - Post-1.0 ideas: plugin support (extra effects), sound-effect library (needs audio tracks in timeline).
@@ -38,10 +38,12 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
   smeared moving footage. Slider 0-100 % maps to strength 1-5.5 (the first test showed more only blurs).
 - 2.5.0: clip transitions are an app feature (Transition drop-down next to "Clear all clips", shown with 2+ clips),
   not part of the Timeline effects plugin. Built-in plugin files are rewritten when the embedded version is newer.
-- Planned ~2.6.0: non-NVIDIA PCs. Today only NVENC exists, HasNvenc() only checks the ffmpeg build, so exports
-  fail on AMD/Intel. Plan: add h264/hevc_amf, _qsv and _mf (Media Foundation, also CPU fallback) to the slim build,
-  probe at start-up which encoders really open, list only those, tune size targeting per encoder. x264/x265 are
-  GPL - not allowed. Only NVIDIA hardware is available for testing (RTX 5070, Ryzen 5900X has no iGPU).
+- 2.6.0: encoders for every PC (Core/Media/Encoders.cs): NVENC, AMF, QSV, Media Foundation on GPU (_mf_hw key) and
+  CPU. Tools.WorkingEncoders test-encodes each at start-up; the Codec list shows only those; Encoders.Fallback keeps
+  HEVC/H.264. NVENC args unchanged (golden). x264/x265 are GPL - not allowed. AMD/Intel untested (only an RTX 5070
+  here, Ryzen 5900X has no iGPU): set CLIPSHRINKER_HIDE_ENCODERS=nvenc,cuda,opencl to act like a non-NVIDIA PC.
+- 2.6.0 Sound equalizer plugin (sound-equalizer): 5 bands + volume in dB, one audio filter after mixing/joining on
+  every output track (GraphBuilder.Build wraps BuildRaw) and on the preview sound. Neutral = no filter.
 
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.

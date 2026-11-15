@@ -51,6 +51,7 @@ public partial class MainWindow : Window, IDialogs
         BuildBracket();
         BuildTokenButtons();
         RightPill.Children.Insert(0, PicturePanel.ToggleButton());
+        RightPill.Children.Insert(0, EqualizerPanel.ToggleButton());   // (2.6 Sound equalizer plugin)
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
     }
 
@@ -414,7 +415,10 @@ public partial class MainWindow : Window, IDialogs
                 Text = "\u283F", FontFamily = new FontFamily("Segoe UI Symbol"), FontSize = 13, Opacity = 0.75,
                 Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center,
             });
-            content.Children.Add(new TextBlock { Text = $"{name} [{key}]", FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
+            // 2.6: "Speed Up | S" - the name, a faint divider, then the hotkey
+            content.Children.Add(new TextBlock { Text = name, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
+            content.Children.Add(new TextBlock { Text = "|", Opacity = 0.5, Margin = new Thickness(7, 0, 7, 1), VerticalAlignment = VerticalAlignment.Center });
+            content.Children.Add(new TextBlock { Text = key, VerticalAlignment = VerticalAlignment.Center });
             var b = new Button
             {
                 Style = (Style)FindResource("EffectChip"), Content = content, Background = B(bg), BorderBrush = B(border), Foreground = B(fg),

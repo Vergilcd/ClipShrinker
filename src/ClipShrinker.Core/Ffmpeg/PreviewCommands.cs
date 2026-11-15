@@ -90,7 +90,11 @@ public static class PreviewCommands
         IReadOnlyList<Piece> pcs = pieces is { Count: > 0 } ? pieces : [new Piece(start, start + dur, 1.0)];
         var zt = fx.ZoomPlay.Count > 0 && fx.ZoomSound ? Timing.ZoomTimes(fx.ZoomPlay, pcs) : [];
         bool plain = Timing.IsPlain(pieces);
-        if (plain && naudio == 1 && zt.Count == 0) cmd.AddRange(["-map", "0:a:0"]);
+        if (plain && naudio == 1 && zt.Count == 0)
+        {
+            cmd.AddRange(["-map", "0:a:0"]);
+            if (fx.AudioAf is { } af0) cmd.AddRange(["-af", af0]);           // (2.6: Sound equalizer)
+        }
         else
         {
             var parts = new List<string>();
@@ -108,7 +112,8 @@ public static class PreviewCommands
             else parts.AddRange(Filters.SegAudio("ab", pieces!, start, "w", fin, muteFast, fx, 44100));
             if (zt.Count > 0)
                 parts.AddRange(Filters.ZoomWhooshParts("aoz", "aout", zt.Select(z => (z.OutStart, z.OutEnd)).ToList(), 44100, "zp", fx));
-            cmd.AddRange(["-filter_complex", string.Join(";", parts), "-map", "[aout]"]);
+            if (fx.AudioAf is { } af) parts.Add($"[aout]{af}[aeq]");
+            cmd.AddRange(["-filter_complex", string.Join(";", parts), "-map", fx.AudioAf is null ? "[aout]" : "[aeq]"]);
         }
         cmd.AddRange(["-ac", "2", "-ar", "44100", "-c:a", "pcm_s16le"]);
         if (output is not null) cmd.Add(output);

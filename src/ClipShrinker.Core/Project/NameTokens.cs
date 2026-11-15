@@ -19,7 +19,7 @@ public static partial class NameTokens
         ("{date}", "Date", "export date, e.g. 2026-11-15"),
         ("{time}", "Time", "export time, e.g. 14-30"),
         ("{preset}", "Preset", "the clip's bitrate preset (Auto when none)"),
-        ("{res}", "Resolution", "output height, e.g. 1080p"),
+        ("{res}", "Resolution", "output height, e.g. 1080p, 1440p or 4K"),
         ("{size}", "Max size", "the size limit, e.g. 50MB"),
         ("{codec}", "Codec", "HEVC or H264"),
     ];
@@ -56,13 +56,14 @@ public static partial class NameTokens
         {
             double total = Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
             if (clips.Count > 1 && !string.IsNullOrEmpty(st.Xfade)) total -= (clips.Count - 1) * st.T;
-            long audioBps = long.Parse(st.AudioK.TrimEnd('k'), CultureInfo.InvariantCulture) * 1000 * GraphBuilder.OutTracks(clips, st.MixAudio);
+            long audioBps = long.Parse(Text.ResolveAudioK(st.AudioK, clips).TrimEnd('k'), CultureInfo.InvariantCulture) * 1000 * GraphBuilder.OutTracks(clips, st.MixAudio);
             v = (st.TargetMb ?? 0) * 1024 * 1024 * 0.96 * 8 / Max(total, 0.1) - audioBps;
             var rates = clips.Select(c => c.Bitrate).ToList();
             if (rates.All(r => r > 0) && v > rates.Aggregate(Max)) v = rates.Aggregate(Max);
             v = Max(v, 20_000);
         }
         double scale = Geometry.ChooseScale(st.ResMode, refw, refh, fps, v);
-        return $"{Geometry.Even(refh * scale)}p";
+        int outH = Geometry.Even(refh * scale);
+        return outH == 2160 ? "4K" : $"{outH}p";                // (2.6: the 4K option names its files 4K)
     }
 }

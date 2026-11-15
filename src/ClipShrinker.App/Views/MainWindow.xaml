@@ -11,6 +11,8 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <app:NotBoolToVisConverter x:Key="NotBoolToVis" />
         <app:NotConverter x:Key="Not" />
+        <app:IsNullConverter x:Key="IsNull" />
+        <app:HintLookupConverter x:Key="HintLookup" />
         <Style x:Key="TopButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="Focusable" Value="False" />
@@ -64,7 +66,26 @@
                 <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0" Content="About" Click="About_Click"
                         ToolTip="Version, changelog and licenses" />
                 <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Content="Plugins" Click="Plugins_Click"
-                        ToolTip="Switch plugins on or off (timeline effects, bitrate presets, picture adjustments), see their versions and changelogs" />
+                        ToolTip="Switch plugins on or off (timeline effects, bitrate presets, picture adjustments, sound equalizer), see their versions and changelogs" />
+                <!-- 2.6: does this PC encode on the graphics card? green = yes, orange = no (hover for the details) -->
+                <Border x:Name="GpuBadge" DockPanel.Dock="Right" Margin="0,0,12,0" Padding="11,2,11,3" CornerRadius="12" BorderThickness="1"
+                        VerticalAlignment="Center" Background="Transparent" ToolTip="{Binding GpuTip}" AutomationProperties.Name="{Binding GpuText}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush" Value="#99808080" />
+                            <Setter Property="TextElement.Foreground" Value="#FF8A8A8A" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding GpuOn}" Value="True">
+                                    <Setter Property="BorderBrush" Value="#2EA043" /><Setter Property="TextElement.Foreground" Value="#2EA043" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding GpuOn}" Value="False">
+                                    <Setter Property="BorderBrush" Value="#F0900A" /><Setter Property="TextElement.Foreground" Value="#F0900A" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding GpuText}" FontSize="12" />
+                </Border>
             </DockPanel>
 
             <!-- preview + controls -->
@@ -129,6 +150,7 @@
                                 </StackPanel>
                             </Border>
                             <local:PicturePanel />
+                            <local:EqualizerPanel />
                         </Grid>
                         <Border x:Name="ToastBox" Background="Black" Padding="14,6" Margin="0,0,0,14" CornerRadius="4"
                                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="Collapsed" IsHitTestVisible="False">
@@ -317,7 +339,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                         <TextBox Width="70" AutomationProperties.Name="Bitrate (Mbps)" Text="{Binding Bitrate, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Fixed video bitrate in Mbps. When filled in, the size limit is ignored." />
-                        <TextBlock Text="empty = size limit" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
+                        <TextBlock Text="ignored if empty" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
                     </StackPanel>
 
                     <!-- (Bitrate presets plugin) -->
@@ -332,7 +354,37 @@
                     <ComboBox Grid.Row="3" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Resolution" ItemsSource="{Binding ResOptions}" SelectedItem="{Binding Res}" />
 
                     <TextBlock Grid.Row="4" Text="Codec:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="4" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Codec" ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec}" />
+                    <!-- 2.6: in the open list each codec has a short hint ("- recommended for your NVIDIA GPU"); the closed box shows
+                         only the name -->
+                    <ComboBox x:Name="CodecCombo" Grid.Row="4" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Codec"
+                              ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec}"
+                              ToolTip="Video encoder. Open the list for a hint on which one fits this PC best.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding}" />
+                                    <TextBlock Opacity="0.65" FontSize="11" Margin="0,1,0,0">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource HintLookup}">
+                                                <Binding />
+                                                <Binding Path="DataContext.CodecHints" ElementName="CodecCombo" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}, Converter={StaticResource IsNull}}" Value="False">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Grid.Row="5" Text="Crop (centered):" Style="{StaticResource FieldLabel}" />
                     <ComboBox Grid.Row="5" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Crop" ItemsSource="{Binding Crops}" SelectedItem="{Binding Crop}" />
@@ -348,7 +400,7 @@
                     <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate per track" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}" />
 
                     <TextBlock Grid.Row="12" Text="Audio tracks:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}" />
+                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" Width="200" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}" />
 
                     <CheckBox Grid.Row="13" Grid.ColumnSpan="2" Content="Mute microphone (2nd audio track)" IsChecked="{Binding MuteMic}"
                               Focusable="False" Margin="0,4"
@@ -359,9 +411,9 @@
 
                     <!-- dynamic labels: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
                     <StackPanel Grid.Row="16" Grid.ColumnSpan="2" Margin="0,0,0,4">
+                        <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,0,0,3"
+                                   Text="You can add dynamic labels to prefixes and suffixes by clicking on the buttons or typing their code. (visible on hover)" />
                         <WrapPanel x:Name="TokenPanel" />
-                        <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,1,0,0"
-                                   Text="Click a dynamic label to add to the prefix or suffix depending on which one is active." />
                     </StackPanel>
 
                     <TextBlock Grid.Row="17" Text="Prefix:" Style="{StaticResource FieldLabel}" />
@@ -382,11 +434,14 @@
                     <Separator Grid.Row="20" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
                     <TextBlock Grid.Row="21" Grid.ColumnSpan="2" Text="SAVING" Style="{StaticResource SectionText}" />
 
-                    <TextBlock Grid.Row="22" Text="Save folder:" Style="{StaticResource FieldLabel}" />
-                    <StackPanel Grid.Row="22" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
-                        <TextBox Width="146" AutomationProperties.Name="Save folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}"
-                                 ToolTip="Exports are saved here without asking (empty = a save dialog asks every time)" />
-                        <Button Content="..." Margin="6,0,0,0" Padding="10,4" MinWidth="0" Focusable="False" Click="PickSaveDir_Click" ToolTip="Choose the folder" />
+                    <TextBlock Grid.Row="22" Text="Export folder:" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" Margin="0,8,12,4" />
+                    <StackPanel Grid.Row="22" Grid.Column="1" Margin="0,3">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Width="146" AutomationProperties.Name="Export folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="Exports are saved here without asking (empty = a save dialog asks every time)" />
+                            <Button Content="..." Margin="6,0,0,0" Padding="10,4" MinWidth="0" Focusable="False" Click="PickSaveDir_Click" ToolTip="Choose the folder" />
+                        </StackPanel>
+                        <TextBlock Text="Asks at export when empty." Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
                     </StackPanel>
 
                     <CheckBox Grid.Row="23" Grid.ColumnSpan="2" Content="Save session on exit" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,4"

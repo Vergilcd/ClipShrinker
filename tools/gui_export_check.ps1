@@ -43,7 +43,7 @@ try {
     do { Start-Sleep -Milliseconds 300; $win = $A::FromHandle($proc.MainWindowHandle) } until ($win.Current.Name -like "* - *.clipproj" -or $sw.Elapsed.TotalSeconds -gt 30)
     "opened project: $($win.Current.Name)"
 
-    SetText (Find $win $A::NameProperty "Save folder") $OutDir
+    SetText (Find $win $A::NameProperty "Export folder") $OutDir
     Start-Sleep -Milliseconds 800
     Invoke (Find $win $A::AutomationIdProperty "GoButton")
     $choiceWin = Find $root $A::NameProperty "Export"

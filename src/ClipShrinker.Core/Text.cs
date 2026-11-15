@@ -56,7 +56,18 @@ public static class Text
         return h != 0 ? $"{I(h)}:{m:00}:{sec:00}" : $"{I(m)}:{sec:00}";
     }
 
-    public static string CodecKey(string label) => label.Contains("HEVC") ? "hevc_nvenc" : "h264_nvenc";
+    public static string CodecKey(string label) => Media.Encoders.KeyOf(label);
+    /// <summary>2.6: the audio bitrate per track to encode with. "Original" = the highest source audio bitrate of the clips,
+    /// raised to the next AAC step (64k .. 320k, so 125k -> 128k); 192k when no clip reports one.</summary>
+    public static string ResolveAudioK(string audioK, IEnumerable<ExportClip> clips)
+    {
+        if (audioK != "Original") return audioK;
+        double src = clips.Select(c => c.AudioBitrate).DefaultIfEmpty(0).Max() / 1000;
+        if (src <= 0) return "192k";
+        int[] steps = [64, 96, 128, 160, 192, 256, 320];
+        return $"{steps.FirstOrDefault(s => s >= src * 0.98, 320).ToString(System.Globalization.CultureInfo.InvariantCulture)}k";
+    }
+
     public static string CodecShort(string label) => label.Contains("HEVC") ? "HEVC" : "H.264";
 
     public static string AudKey(string label) =>

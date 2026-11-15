@@ -6,6 +6,10 @@ ClipShrinker itself is MIT licensed (see LICENSE.txt). It uses these components,
 - ffmpeg / ffprobe (LGPL build) - see ffmpeg-LICENSE.txt
 - Khronos OpenCL ICD loader (built into ffmpeg.exe, for the GPU denoise of Picture adjustments) - Apache 2.0,
   Copyright (c) The Khronos Group Inc., see OpenCL-ICD-Loader-LICENSE.txt (https://github.com/KhronosGroup/OpenCL-ICD-Loader)
+- AMD AMF headers (built into ffmpeg.exe, for AMD graphics encoding) - MIT, Copyright (c) Advanced Micro Devices,
+  Inc., see AMF-LICENSE.txt (https://github.com/GPUOpen-LibrariesAndSDKs/AMF)
+- Intel oneVPL dispatcher (built into ffmpeg.exe, for Intel Quick Sync encoding) - MIT, Copyright (c) Intel
+  Corporation, see oneVPL-LICENSE.txt (https://github.com/intel/libvpl)
 - RIFE ncnn Vulkan (smooth slow motion, in plugins\timeline-effects\rife) - MIT, see its LICENSE.txt
 - .NET runtime and WPF (built into ClipShrinker.exe) - MIT, Copyright (c) .NET Foundation and Contributors
   (https://github.com/dotnet/runtime, https://github.com/dotnet/wpf)

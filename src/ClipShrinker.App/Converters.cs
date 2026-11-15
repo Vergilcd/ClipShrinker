@@ -24,3 +24,13 @@ public sealed class IsNullConverter : IValueConverter
     public object Convert(object? value, Type targetType, object parameter, CultureInfo culture) => value is null;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }
+
+/// <summary>2.6: [key, dictionary] -> " - value" (empty when the key is not in it). Used for the codec hints.</summary>
+public sealed class HintLookupConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
+        values.Length == 2 && values[0] is string k && values[1] is IReadOnlyDictionary<string, string> d && d.TryGetValue(k, out var h)
+            && h.Length > 0 ? "- " + h : "";
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) =>
+        throw new NotSupportedException();
+}

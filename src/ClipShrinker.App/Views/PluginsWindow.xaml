@@ -24,12 +24,15 @@
         <Button DockPanel.Dock="Bottom" Content="Close" HorizontalAlignment="Right" Margin="0,14,0,0" Padding="18,5,18,6"
                 Style="{StaticResource AccentButtonStyle}" Click="Close_Click" Focusable="False" />
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Plugins}" Focusable="False">
+        <!-- the scroll bar sits in the gap right of the cards (the list has a right margin, the scroller reaches into the
+             window padding), so it never covers a card -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,-18,0">
+            <ItemsControl ItemsSource="{Binding Plugins}" Focusable="False" Margin="0,0,18,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:PluginItem}">
                         <Border Margin="0,10,0,0" Padding="16,12,14,12" CornerRadius="8" BorderThickness="1"
                                 Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}">
+                            <StackPanel>
                             <DockPanel>
                                 <!-- right: switch + delete, or restore when deleted -->
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="12,0,0,0">
@@ -75,11 +78,13 @@
                                                        VerticalAlignment="Center" Margin="8,1,0,0" />
                                         </StackPanel>
                                     </ToggleButton>
-                                    <TextBox x:Name="LogText" Text="{Binding Changelog, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="220"
-                                             FontFamily="Consolas" FontSize="12" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0"
-                                             Padding="10,8" Visibility="Collapsed" />
                                 </StackPanel>
                             </DockPanel>
+                            <!-- the changelog opens across the whole card (2.6) -->
+                            <TextBox x:Name="LogText" Text="{Binding Changelog, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="260"
+                                     FontFamily="Consolas" FontSize="12" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0"
+                                     Padding="10,8" Visibility="Collapsed" />
+                            </StackPanel>
                         </Border>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding Installed}" Value="False">

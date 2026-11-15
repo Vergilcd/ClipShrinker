@@ -83,9 +83,23 @@ public sealed partial class MainViewModel : ObservableObject
             // 2.5: GPU denoise needs a working OpenCL device; until this answers (or without one) denoise runs on the CPU
             S.OpenCl = Tools.OpenClWorks();
             if (S.PicDenoise != 0) Ui(PreviewSettingsChanged);
-            if (!Tools.HasNvenc())
-                Ui(() => Dialogs.Warn("NVENC not available", "This ffmpeg build has no NVENC encoder. " +
-                                      "Update your NVIDIA driver or use a full ffmpeg build."));
+            // 2.6: which decoders / encoders / filters really work on this PC
+            cudaOk = Tools.CudaWorks();
+            Media.PreviewService.CudaOk = cudaOk;
+            S.DenoiseOk = Tools.HasFilter("nlmeans");
+            var working = Tools.WorkingEncoders();
+            Ui(() =>
+            {
+                workingEncoders = working;
+                EnsureCodec();
+                OnPropertyChanged(nameof(Codecs));
+                OnPropertyChanged(nameof(Codec));
+                OnPropertyChanged(nameof(DenoiseAvailable));
+                if (working.Count == 0)
+                    Dialogs.Warn("No video encoder", "None of the video encoders works with this ffmpeg on this PC " +
+                                 "(NVIDIA, AMD, Intel or Windows). Update the graphics driver, or put the ffmpeg.exe and " +
+                                 "ffprobe.exe of the Clip Shrinker download in the library folder.");
+            });
         });
         Ui(RefreshRife);
         return true;
@@ -177,8 +191,65 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<string> ResOptions => S.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode;
     public bool SizeEnabled => S.BitrateMbps() is null;
     public string SizeHint => S.BitrateMbps() is null ? "per file" : "ignored";
-    public string Codec { get => S.Codec; set => Set(ref S.Codec, value); }
-    public IReadOnlyList<string> Codecs => C.Codecs;
+    public string Codec { get => S.Codec; set { if (value is not null) Set(ref S.Codec, value); } }   // (null while the list changes)
+    /// <summary>2.6: only the encoders that work on this PC (all of them until the start-up check has answered).</summary>
+    public IReadOnlyList<string> Codecs => OfferedKeys is { Count: > 0 } w
+        ? Core.Media.Encoders.All.Where(e => w.Contains(e.Key)).Select(e => e.Label).ToList() : C.Codecs;
+
+    /// <summary>The working encoders the Codec list offers: the CPU ones only when no graphics card encoder works.</summary>
+    IReadOnlyList<string>? OfferedKeys => workingEncoders is null ? null
+        : workingEncoders.Any(k => Core.Media.Encoders.ByKey(k)?.Gpu == true)
+            ? workingEncoders.Where(k => Core.Media.Encoders.ByKey(k)?.Gpu == true).ToList() : workingEncoders;
+    /// <summary>2.6: codec label -> short hint for the open Codec list ("recommended for your NVIDIA GPU", ...).</summary>
+    public IReadOnlyDictionary<string, string> CodecHints => OfferedKeys is { Count: > 0 } w
+        ? Core.Media.Encoders.All.Where(e => w.Contains(e.Key)).ToDictionary(e => e.Label, e => Core.Media.Encoders.Hint(e.Key, w))
+        : new Dictionary<string, string>();
+    IReadOnlyList<string>? workingEncoders;
+    bool cudaOk = true;
+
+    // ------------------------------------------------------------------ GPU notice in the top bar (2.6)
+    /// <summary>null = the start-up check has not answered yet; true = the chosen codec encodes on the graphics card.</summary>
+    public bool? GpuOn => workingEncoders is null ? null : Core.Media.Encoders.ByLabel(S.Codec)?.Gpu == true && workingEncoders.Count > 0;
+
+    public string GpuText => GpuOn switch { null => "Checking GPU...", true => "GPU Encoding is ON", false => "GPU Encoding is OFF" };
+
+    /// <summary>What the start-up check found (handy for bug reports).</summary>
+    public string GpuTip
+    {
+        get
+        {
+            if (workingEncoders is null) return "Testing which encoders work on this PC...";
+            var ok = Core.Media.Encoders.All.Where(e => workingEncoders.Contains(e.Key)).Select(e => e.Label).ToList();
+            string head = GpuOn == true
+                ? $"Exports encode on the graphics card ({S.Codec})."
+                : ok.Any(l => Core.Media.Encoders.ByLabel(l)?.Gpu == true)
+                    ? $"{S.Codec} encodes on the CPU (slower). Pick a GPU codec in Codec to speed exports up."
+                    : "No graphics card encoder works on this PC (or its driver is too old), so exports encode on the CPU (slower).";
+            return head + "\n\nWorking encoders: " + (ok.Count > 0 ? string.Join(", ", ok) : "none") +
+                   $"\nGPU decoding (NVIDIA CUDA): {(cudaOk ? "yes" : "no")}" +
+                   $"\nGPU denoise (OpenCL): {(S.OpenCl ? "yes" : "no")}";
+        }
+    }
+
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (e.PropertyName is nameof(Codec) or nameof(Codecs))
+        {
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(CodecHints)));
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuOn)));
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuText)));
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuTip)));
+        }
+    }
+
+    /// <summary>A codec from settings or a project that this PC cannot run becomes the closest one that works.</summary>
+    void EnsureCodec()
+    {
+        if (workingEncoders is null) return;
+        string fit = Core.Media.Encoders.Fallback(S.Codec, OfferedKeys!);
+        if (fit != S.Codec) { S.Codec = fit; OnPropertyChanged(nameof(Codec)); }
+    }
     public string Crop { get => S.Crop; set { if (Set(ref S.Crop, value)) PreviewSettingsChanged(); } }
     public IReadOnlyList<string> Crops { get; } = C.Aspects.Select(a => a.Name).ToList();
     public bool Hdr
@@ -481,6 +552,7 @@ public sealed partial class MainViewModel : ObservableObject
             OnPropertyChanged(string.Empty);                 // every setting may have changed
             OnPropertyChanged(nameof(ResOptions));           // the resolution list first, then its value, or the
             OnPropertyChanged(nameof(Res));                  // drop-down shows nothing for "Original" (bitrate mode)
+            EnsureCodec();
             foreach (var r in load.Clips) Clips.Add(NewItem(r));
         }
         finally { undoOff = false; }
@@ -819,7 +891,7 @@ public sealed partial class MainViewModel : ObservableObject
         var runner = new ProcessRunner(p => Ui(() => Progress = p), SetExportMessage);
         encoder = new Encoder(runner, new RealFileSystem(), p => Ui(() => Progress = p), SetExportMessage,
                               Text.InterpKey(st.SlowInterp) == "rife" ? AppPaths.FindRife(Tools) : null, runner,
-                              m => Debug.WriteLine(m)) { Ffmpeg = Tools.Ffmpeg ?? "ffmpeg" };
+                              m => Debug.WriteLine(m)) { Ffmpeg = Tools.Ffmpeg ?? "ffmpeg", UseHwDec = cudaOk };
         var enc = encoder;
         Exporting = true;
         OutPath = null;

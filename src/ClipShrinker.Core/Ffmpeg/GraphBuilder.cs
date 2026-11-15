@@ -24,6 +24,17 @@ public static class GraphBuilder
                                     double fps, EffectSettings fx, bool tonemap = false, bool muteFast = true, bool mix = false,
                                     IReadOnlyDictionary<int, IReadOnlyDictionary<int, RifeInput>>? rife = null)
     {
+        var g = BuildRaw(clips, W, H, ratio, xfade, T, fps, fx, tonemap, muteFast, mix, rife);
+        if (fx.AudioAf is not { } af || g.AudioLabels is not { Count: > 0 } al) return g;
+        // 2.6: the Sound equalizer on every output track, after mixing / joining
+        var extra = al.Select(l => $"[{l}]{af}[{l}eq]");
+        return new FilterGraph(g.Graph + ";" + string.Join(";", extra), g.VideoLabel, al.Select(l => l + "eq").ToList());
+    }
+
+    static FilterGraph BuildRaw(IReadOnlyList<ExportClip> clips, int W, int H, double? ratio, string? xfade, double T,
+                                double fps, EffectSettings fx, bool tonemap, bool muteFast, bool mix,
+                                IReadOnlyDictionary<int, IReadOnlyDictionary<int, RifeInput>>? rife)
+    {
         int n = clips.Count;
         int nOut = OutTracks(clips, mix);
         bool anyAudio = nOut > 0;
