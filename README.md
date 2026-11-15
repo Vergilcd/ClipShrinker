@@ -42,12 +42,13 @@ Drag/click on the buttons or use the shortcuts to apply them to the timeline
 ## Requirements
 
 - Windows 10/11 (64-bit)
-- NVIDIA GPU with NVENC (GTX 10xx or newer) and a current driver
+- NVIDIA GPU with NVENC (GTX 10xx or newer) and a recent driver
+- The Picture adjustments plugin includes a denoiser that uses OpenCL. This also requires GPU with a recent driver, otherwise it falls back to using CPU which is way slower.
 
 ## Install
 
-1. Download the latest `ClipShrinker_vX.Y.Z.zip` from the [Releases](../../releases) page.
-2. Unzip anywhere and double-click `ClipShrinker.exe`. Keep the `library` folder next to the exe.
+1. Download the latest `ClipShrinker-X.Y.Z.zip` from the [Releases](../../releases) page.
+2. Unzip anywhere and double-click `ClipShrinker.exe`. Keep the `library` and `plugins` folder next to the exe.
 
 Windows may show a SmartScreen warning because the exe is not code-signed: **More info -> Run anyway**.
 
@@ -79,6 +80,7 @@ Since 2.0.0 ClipShrinker is a C# / .NET 10 WPF app. The Python 1.0.x version is 
 ## License
 
 MIT - see [LICENSE](LICENSE) (third-party parts: [THIRD-PARTY-NOTICES.txt](dist/THIRD-PARTY-NOTICES.txt)). ffmpeg is a slim LGPL build of the [FFmpeg](https://ffmpeg.org) project
-([settings](dist/ffmpeg-build-settings.txt), [license](dist/ffmpeg-LICENSE.txt)). RIFE (ncnn) keeps its own license.
+([settings](dist/ffmpeg-build-settings.txt), [license](dist/ffmpeg-LICENSE.txt)). It includes the Khronos OpenCL loader for the GPU denoiser,
+which is Apache 2.0 ([license](dist/OpenCL-ICD-Loader-LICENSE.txt)). RIFE (ncnn) keeps its own license.
 
 Made by Vergil, built together with [Claude](https://claude.com).
