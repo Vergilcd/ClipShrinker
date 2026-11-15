@@ -29,6 +29,9 @@ public sealed class PreviewService(Dispatcher ui)
     Process? playProc, audioProc;
     WaveOut? wave;
     int playLevel = 2;                      // 2 = GPU decode + scale, 1 = GPU decode, 0 = software (steps down on failure)
+    /// <summary>2.6: NVIDIA (CUDA) decoding works on this PC (set after the start-up check); without it playback starts
+    /// on the CPU instead of failing twice first.</summary>
+    public static volatile bool CudaOk = true;
 
     /// <summary>2.2.1: does this ffmpeg have scale_cuda (level 2)? The slim build does not, so level 2 failed on every
     /// first play of a session (~65 ms lost before the retry). Checked once in the background, from the first preview on.</summary>
@@ -181,6 +184,7 @@ public sealed class PreviewService(Dispatcher ui)
         double start = r.Start, end = r.End;
         var buf = new byte[fsize];
         if (playLevel == 2 && !scaleCuda.Result) playLevel = 1;           // (the playback thread: it may wait for the check)
+        if (!CudaOk) playLevel = 0;
         while (gen == playGen)
         {
             if (!firstPass && r.Trim() is { } tr) (start, end) = tr;      // the markers may have been moved meanwhile

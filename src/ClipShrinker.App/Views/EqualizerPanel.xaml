@@ -1,0 +1,114 @@
+<UserControl x:Class="ClipShrinker.App.Views.EqualizerPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             HorizontalAlignment="Right" VerticalAlignment="Bottom">
+    <!-- 2.6 Sound equalizer plugin: five bands and the overall volume over the preview (main window and full screen).
+         Same look as the play / sound / full screen controls: white on a see-through black rounded card. -->
+    <UserControl.Resources>
+        <Style x:Key="PanelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style x:Key="PanelSlider" TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
+            <Setter Property="Minimum" Value="-12" />
+            <Setter Property="Maximum" Value="12" />
+            <Setter Property="TickFrequency" Value="1" />
+            <Setter Property="IsSnapToTickEnabled" Value="True" />
+            <Setter Property="SmallChange" Value="1" />
+            <Setter Property="LargeChange" Value="3" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsMoveToPointEnabled" Value="True" />
+            <Setter Property="Margin" Value="8,0,10,0" />
+        </Style>
+        <!-- the % box: plain white text on a light see-through field, like the overlay pills -->
+        <Style x:Key="PanelBox" TargetType="TextBox">
+            <Setter Property="Width" Value="66" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="CaretBrush" Value="White" />
+            <Setter Property="SelectionBrush" Value="#88FFFFFF" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd" CornerRadius="13" Background="#26FFFFFF" BorderBrush="Transparent" BorderThickness="1" Padding="8,0,9,0">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#40FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#40FFFFFF" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#B3FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PanelTextButton" TargetType="Button" BasedOn="{StaticResource OverlayButton}">
+            <Setter Property="Width" Value="NaN" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="#99000000" CornerRadius="17" Padding="16,10,12,12" Width="340">
+        <StackPanel>
+            <DockPanel Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right" Style="{StaticResource PanelTextButton}" Command="{Binding ResetEqCommand}"
+                        ToolTip="Back to the unchanged sound">
+                    <TextBlock Text="Reset" Margin="12,0" />
+                </Button>
+                <TextBlock Text="Equalizer" Style="{StaticResource PanelText}" FontWeight="SemiBold" />
+            </DockPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" /><RowDefinition Height="32" /><RowDefinition Height="32" /><RowDefinition Height="32" />
+                    <RowDefinition Height="32" /><RowDefinition Height="10" /><RowDefinition Height="32" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="60 Hz" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="0" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding EqBand0}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="60 Hz" ToolTip="Bass: rumble, explosions (-12 to +12 dB, double-click = unchanged)" />
+                <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding EqBand0Text, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="60 Hz dB" ToolTip="Type a value from -12 to 12 (the dB is optional), Enter confirms" />
+                <TextBlock Grid.Row="1" Text="250 Hz" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="1" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding EqBand1}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="250 Hz" ToolTip="Low mids: warmth, boominess (-12 to +12 dB, double-click = unchanged)" />
+                <TextBox Grid.Row="1" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding EqBand1Text, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="250 Hz dB" ToolTip="Type a value from -12 to 12 (the dB is optional), Enter confirms" />
+                <TextBlock Grid.Row="2" Text="1 kHz" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="2" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding EqBand2}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="1 kHz" ToolTip="Mids: voices (-12 to +12 dB, double-click = unchanged)" />
+                <TextBox Grid.Row="2" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding EqBand2Text, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="1 kHz dB" ToolTip="Type a value from -12 to 12 (the dB is optional), Enter confirms" />
+                <TextBlock Grid.Row="3" Text="4 kHz" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="3" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding EqBand3}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="4 kHz" ToolTip="High mids: presence, footsteps (-12 to +12 dB, double-click = unchanged)" />
+                <TextBox Grid.Row="3" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding EqBand3Text, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="4 kHz dB" ToolTip="Type a value from -12 to 12 (the dB is optional), Enter confirms" />
+                <TextBlock Grid.Row="4" Text="12 kHz" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="4" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding EqBand4}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="12 kHz" ToolTip="Treble: air, hiss (-12 to +12 dB, double-click = unchanged)" />
+                <TextBox Grid.Row="4" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding EqBand4Text, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="12 kHz dB" ToolTip="Type a value from -12 to 12 (the dB is optional), Enter confirms" />
+                <TextBlock Grid.Row="6" Text="Volume" Style="{StaticResource PanelText}" FontWeight="SemiBold" />
+                <Slider Grid.Row="6" Grid.Column="1" Style="{StaticResource PanelSlider}" Minimum="-20" Maximum="20" Value="{Binding EqVolume}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="Volume" ToolTip="Louder or quieter export and preview, in dB (double-click = unchanged)" />
+                <TextBox Grid.Row="6" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding EqVolumeText, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="Volume dB" ToolTip="Type a value from -20 to 20 (the dB is optional), Enter confirms" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

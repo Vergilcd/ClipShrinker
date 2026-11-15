@@ -84,11 +84,36 @@ public sealed class Tools
 
     readonly Dictionary<string, bool> filterCache = [];
 
+    /// <summary>2.6: the encoder keys (Encoders.All) that really encode on this PC: each one gets a tiny test encode,
+    /// all at once (~1 s). An encoder missing from this ffmpeg build fails its test like one without the hardware.</summary>
+    public IReadOnlyList<string> WorkingEncoders()
+    {
+        if (Ffmpeg is null) return [];
+        var ok = new System.Collections.Concurrent.ConcurrentBag<string>();
+        Parallel.ForEach(Encoders.All, e =>
+        {
+            if (Encoders.HiddenForTest(e.Key)) return;
+            try { if (Capture(Encoders.ProbeCommand(Ffmpeg, e.Key)).Code == 0) ok.Add(e.Key); }
+            catch (System.ComponentModel.Win32Exception) { }
+        });
+        return Encoders.All.Where(e => ok.Contains(e.Key)).Select(e => e.Key).ToList();
+    }
+
+    /// <summary>2.6: NVIDIA (CUDA) decoding works here. Without it the export and the preview decode on the CPU from the
+    /// start instead of failing once and retrying.</summary>
+    public bool CudaWorks()
+    {
+        if (Ffmpeg is null || Encoders.HiddenForTest("cuda")) return false;
+        try { return Capture([Ffmpeg, "-hide_banner", "-v", "error", "-init_hw_device", "cuda=c", "-filter_complex", "color=s=64x64:d=0.04",
+                              "-c:v", "rawvideo", "-f", "null", "-"]).Code == 0; }
+        catch (System.ComponentModel.Win32Exception) { return false; }
+    }
+
     /// <summary>2.5: GPU denoise works here: this ffmpeg has nlmeans_opencl and a tiny test picture goes through it
     /// on an OpenCL device (graphics driver with OpenCL). Takes ~0.3 s; ask once and keep the answer.</summary>
     public bool OpenClWorks()
     {
-        if (Ffmpeg is null || !HasFilter("nlmeans_opencl")) return false;
+        if (Ffmpeg is null || Encoders.HiddenForTest("opencl") || !HasFilter("nlmeans_opencl")) return false;
         try
         {
             return Capture([Ffmpeg, "-hide_banner", "-v", "error", .. Plugins.PictureAdjust.OpenClArgs,

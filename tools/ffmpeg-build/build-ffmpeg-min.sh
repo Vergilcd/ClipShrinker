@@ -27,6 +27,19 @@ cmake --build ocll/build -j"$(nproc)"
 cmake --install ocll/build
 [ -f "$P/lib/OpenCL.a" ] && cp "$P/lib/OpenCL.a" "$P/lib/libOpenCL.a"   # (the loader names its static lib OpenCL.a)
 
+# 2.6: AMD (AMF headers, MIT) and Intel Quick Sync (oneVPL dispatcher, MIT, linked statically; it loads the
+# Intel runtime from the graphics driver at run time). Media Foundation needs nothing extra (Windows headers).
+if [ ! -d amf ]; then
+  git clone --depth 1 --filter=blob:none --sparse https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git amf
+  (cd amf && git sparse-checkout set amf/public/include)
+fi
+mkdir -p "$P/include/AMF" && cp -r amf/amf/public/include/* "$P/include/AMF/"
+[ -d vpl ] || git clone --depth 1 https://github.com/intel/libvpl.git vpl
+cmake -S vpl -B vpl/build -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$P" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF \
+  -DBUILD_EXAMPLES=OFF -DINSTALL_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build vpl/build -j"$(nproc)"
+cmake --install vpl/build
+
 [ -d ff ]   || git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ff
 source "$HERE/features.sh"
 cd ff

@@ -29,6 +29,7 @@ public static class Program
           --rife <dir>            folder with rife-ncnn-vulkan.exe and a rife-v4 model (default: <tools>\rife)
           --no-rife               treat RIFE as not installed
           --picture               Picture adjustments plugin on (pic_* values from the project or --settings)
+          --eq                    Sound equalizer plugin on (eq_bands / eq_vol from the project or --settings)
           --log-commands <file>   write every command that ran to a JSON file
         """;
 
@@ -52,7 +53,7 @@ public static class Program
     static Dictionary<string, string?> Options(string[] a)
     {
         var o = new Dictionary<string, string?>();
-        string[] flags = ["--join", "--separate", "--no-rife", "--picture"];
+        string[] flags = ["--join", "--separate", "--no-rife", "--picture", "--eq"];
         for (int i = 0; i < a.Length; i++)
         {
             if (flags.Contains(a[i])) o[a[i]] = null;
@@ -82,11 +83,13 @@ public static class Program
     {
         if (!o.TryGetValue("--out", out var outArg) || string.IsNullOrEmpty(outArg)) throw new UsageException("--out is required.");
         var tools = LocateTools(o);
-        if (!tools.HasNvenc())
-            Console.Error.WriteLine("Warning: this ffmpeg build has no NVENC encoder. Update your NVIDIA driver or use a full ffmpeg build.");
+        var working = tools.WorkingEncoders();                    // (2.6: NVIDIA, AMD, Intel or Windows)
+        if (working.Count == 0) Console.Error.WriteLine("Warning: no video encoder works with this ffmpeg on this PC.");
+        bool cuda = tools.CudaWorks();
 
         var state = AppState.FromSettings(o.GetValueOrDefault("--settings") is { } sp ? SettingsStore.Load(sp) : null);
         state.PictureOn = o.ContainsKey("--picture");
+        state.EqOn = o.ContainsKey("--eq");
         state.OpenCl = state.PictureOn && tools.OpenClWorks();
         var presets = o.GetValueOrDefault("--presets") is { } pp ? PresetStore.Load(pp) : [];
         Preset? PresetByName(string name) => presets.FirstOrDefault(p => p.Name == name);
@@ -95,6 +98,9 @@ public static class Program
         try { proj = ProjectFile.Load(projectPath, tools.Probe, PresetByName); }
         catch (ProjectException e) { Console.Error.WriteLine(e.Message); return 1; }
         state.ApplyProject(proj.Settings);
+        string fit = Encoders.Fallback(state.Codec, working);
+        if (fit != state.Codec) { Console.Error.WriteLine($"{state.Codec} does not work on this PC, using {fit}"); state.Codec = fit; }
+        state.DenoiseOk = tools.HasFilter("nlmeans");
         foreach (var m in proj.Missing) Console.Error.WriteLine($"Not found, skipped: {m}");
         foreach (var f in proj.Failed) Console.Error.WriteLine($"Skipped: {f}");
         var rows = proj.Clips;
@@ -127,7 +133,7 @@ public static class Program
         var runner = new ProcessRunner(console.Progress, console.Status);
         RifeInstall? rife = o.ContainsKey("--no-rife") ? null
             : RifeInstall.Find(o.GetValueOrDefault("--rife") ?? Path.Combine(Path.GetDirectoryName(tools.Ffmpeg!)!, "rife"));
-        var enc = new Encoder(runner, new RealFileSystem(), console.Progress, console.Status, rife, runner, Console.Error.WriteLine) { Ffmpeg = tools.Ffmpeg! };
+        var enc = new Encoder(runner, new RealFileSystem(), console.Progress, console.Status, rife, runner, Console.Error.WriteLine) { Ffmpeg = tools.Ffmpeg!, UseHwDec = cuda };
         bool stopping = false;
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; stopping = true; enc.Cancel(); };
 

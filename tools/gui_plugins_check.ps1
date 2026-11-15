@@ -69,6 +69,8 @@ Check (Has $win "Effects") "Effects button (Timeline effects on by default)"
 Check (Has $win "Speed Up") "effect buttons under the preview"
 Check (Has $win "Bitrate presets") "Bitrate presets button (on by default)"
 Check (-not (HasButton $win "Picture")) "no Picture button on the preview (Picture adjustments off by default)"
+Check (-not (HasButton $win "Equalizer")) "no Equalizer button on the preview (Sound equalizer off by default)"
+Check ((Find $win $A::NameProperty "Codec").GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()[0].Current.Name -eq "HEVC (hevc_nvenc)") "Codec: HEVC (hevc_nvenc) on this NVIDIA PC"
 Check (Has $win "Save session on exit") "Save session on exit in the Export panel"
 Check (-not (Has $win "Transition")) "no Transition button with one clip"
 Shot $win "1_main"
@@ -129,6 +131,27 @@ Key 0x1B
 Start-Sleep 1
 Invoke (Find $win $A::NameProperty "Reset")
 Check ((Range "Brightness") -eq 0 -and (Range "Saturation") -eq 0 -and (Range "Denoise") -eq 0) "Reset"
+"3b. Sound equalizer (2.6)"
+Invoke (Find $win $A::NameProperty "Plugins")
+$pw = Win "Plugins"
+$eq = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Sound equalizer"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
+Toggle $eq
+Check (HasButton $win "Equalizer") "Equalizer button on the preview"
+$pw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close(); Start-Sleep -Milliseconds 500
+Invoke (Find $win $A::NameProperty "Equalizer")
+Check (Has $win "12 kHz") "Equalizer card opens over the preview"
+Check (-not (Has $win "Brightness")) "the Picture card closed (one card at a time)"
+$vb = Find $win $A::NameProperty "Volume dB"
+$vb.SetFocus(); $vb.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("+6 dB"); Key 13
+Check ((Range "Volume") -eq 6) "typed +6 dB moved the volume slider"
+$b0 = Find $win $A::NameProperty "60 Hz dB"
+$b0.SetFocus(); $b0.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("40"); Key 13
+Check ((Range "60 Hz") -eq 12) "typed 40 is held at +12 dB"
+Start-Sleep 1
+Shot $win "3d_sound_card"
+Invoke (Find $win $A::NameProperty "Reset")
+Check ((Range "Volume") -eq 0 -and (Range "60 Hz") -eq 0) "Reset (sound)"
+Invoke (Find $win $A::NameProperty "Equalizer")
 Invoke (Find $win $A::NameProperty "Plugins")
 $pw = Win "Plugins"
 
@@ -203,6 +226,18 @@ if ($closeBox) { Invoke (Find $closeBox $A::NameProperty "Close without saving")
 $proc.WaitForExit(10000) | Out-Null
 $s = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json
 Check ($s.trans -eq "Crossfade (gradient)" -and $s.tlen -eq "0.8") "transition and length saved"
+
+"7. a PC without NVIDIA (2.6; NVENC / CUDA / OpenCL hidden by CLIPSHRINKER_HIDE_ENCODERS)"
+$env:CLIPSHRINKER_HIDE_ENCODERS = "nvenc,cuda,opencl"
+$proc = Start-Process $Exe -ArgumentList "`"$proj`"" -PassThru
+$env:CLIPSHRINKER_HIDE_ENCODERS = $null
+do { Start-Sleep -Milliseconds 300; $proc.Refresh() } until ($proc.MainWindowHandle -ne 0)
+Start-Sleep 7
+$win = $A::FromHandle($proc.MainWindowHandle)
+$codec = (Find $win $A::NameProperty "Codec").GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()[0].Current.Name
+Check ($codec -eq "HEVC (Windows, GPU)") "Codec switched to HEVC (Windows, GPU) (was: $codec)"
+Shot $win "7_no_nvidia"
+$proc.Kill(); $proc.WaitForExit(5000) | Out-Null
 Restore-Lib
 ""
 "screenshots: $Shots"

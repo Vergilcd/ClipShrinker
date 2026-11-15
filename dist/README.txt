@@ -1,5 +1,5 @@
-CLIP SHRINKER 2.5.0 (NVENC)
-===========================
+CLIP SHRINKER 2.6.0
+===================
 
 GETTING STARTED
 Double-click ClipShrinker.exe. Keep the "library" and "plugins" folders next to it: library holds ffmpeg,
@@ -7,7 +7,10 @@ ffprobe and your settings, plugins holds the plugins (Plugins button, top right)
 install (.NET is built into the exe). If ffmpeg.exe or ffprobe.exe is missing, the program offers to download
 them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
 
-You need Windows 10 or 11 (64-bit) and an NVIDIA GPU with NVENC (GTX 10xx or newer) on a current driver.
+You need Windows 10 or 11 (64-bit). Exports are fastest on a graphics card: NVIDIA (NVENC, GTX 10xx or newer),
+AMD (AMF) or Intel (Quick Sync), each with a current driver. Without one, Windows' own encoder is used, on the
+graphics card when it can and on the CPU otherwise (slower, H.264 only). The program tests what works on the
+PC at start-up and lists only those in Codec.
 SmartScreen may warn about the unsigned exe; click More info, then Run anyway.
 
 To pin it to the taskbar, start the program, right-click its taskbar button and choose "Pin to taskbar".
@@ -46,7 +49,12 @@ folder in "plugins" with its version and changelog:
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
   saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
   (OpenCL, any recent NVIDIA, AMD or Intel driver) and on the CPU otherwise, where exports get much slower.
-  Clips that stay HDR ("Convert HDR" off) are not denoised.
+  Clips that stay HDR ("Convert HDR" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
+  library folder has no denoise filter (an older copy): use the ffmpeg.exe and ffprobe.exe from the download.
+- Sound equalizer: five bands (60 Hz to 12 kHz, -12 to +12 dB) and Volume (-20 to +20 dB) for the whole export
+  (off by default). Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
+  and press Enter. Heard in the preview, used on every audio track of the export, and saved with projects. A
+  limiter keeps boosted sound from clipping.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
 at the bottom shows where you are. "Reset zoom" shows the whole clip again.
@@ -72,8 +80,9 @@ EXPORT SETTINGS (right side)
 - Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick one per clip in its title
   bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto bitrate" means the size or
   bitrate above. Presets are used when clips are saved as separate files.
-- Video: resolution, codec (HEVC by default), centered crop to 21:9, 16:9, 16:10 or 4:3 (only wider clips get
-  cut), and "Convert HDR clips to SDR".
+- Video: resolution, codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD,
+  Intel, or Windows on the GPU / CPU; a project from another PC switches to the closest one), centered crop
+  to 21:9, 16:9, 16:10 or 4:3 (only wider clips get cut), and "Convert HDR clips to SDR".
 - Audio: 128k to 320k per track. ShadowPlay can record game and microphone as two tracks. "Keep separate
   tracks" saves both (Game audio / Microphone), "Mix into one track" combines them (use this for Discord,
   browsers and phones), and "Mute microphone" leaves the mic out.
@@ -89,8 +98,8 @@ EXPORT SETTINGS (right side)
 EXPORT (Ctrl+E)
 With several clips you choose between one joined video or a separate file per clip. The joined video uses the
 transition picked with the "Transition" button next to "Clear all clips" (shown with 2 or more clips; point at
-an effect in its list to see a preview). ClipShrinker encodes with NVENC, checks the file size, and re-encodes with a corrected bitrate
-(up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
+an effect in its list to see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
+re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.
 
 PROJECTS

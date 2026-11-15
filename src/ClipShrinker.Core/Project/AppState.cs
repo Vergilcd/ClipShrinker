@@ -33,10 +33,24 @@ public sealed class AppState
     public bool OpenCl;
     /// <summary>The plugin is switched on (set by the app, not saved here).</summary>
     public bool PictureOn;
+    /// <summary>2.6: this ffmpeg has the nlmeans (denoise) filter; without it denoise is left out (set by the app).</summary>
+    public bool DenoiseOk = true;
+
+    // Sound equalizer plugin (2.6): five bands in dB (-12 .. 12) and the overall volume in dB (-20 .. 20)
+    public int[] EqBands = new int[Plugins.Equalizer.Bands.Length];
+    public int EqVolume;
+    /// <summary>The plugin is switched on (set by the app, not saved here).</summary>
+    public bool EqOn;
+
+    /// <summary>The equalizer filter for the export and the preview sound, or null (plugin off, or nothing changed).</summary>
+    public string? EqFilter() => EqOn ? Plugins.Equalizer.Filter(EqBands, EqVolume) : null;
+
+    /// <summary>The equalizer differs from the neutral one (then it is saved in projects too).</summary>
+    public bool EqChanged => EqVolume != 0 || EqBands.Any(b => b != 0);
 
     /// <summary>The Picture adjustments filter for every clip, or null (plugin off, or nothing changed).</summary>
     public string? PictureFilter(bool hdrKept = false) =>
-        PictureOn ? Plugins.PictureAdjust.Filter(PicBright, PicContrast, PicSat, PicDenoise, OpenCl, hdrKept) : null;
+        PictureOn ? Plugins.PictureAdjust.Filter(PicBright, PicContrast, PicSat, DenoiseOk ? PicDenoise : 0, OpenCl, hdrKept) : null;
 
     /// <summary>The picture values differ from the neutral ones (then they are saved in projects too).</summary>
     public bool PictureChanged => PicBright != 0 || PicContrast != 0 || PicSat != 0 || PicDenoise != 0;
@@ -83,6 +97,7 @@ public sealed class AppState
             KeepName = SavedB("keep_name", true),
         };
         a.ReadPicture(s);
+        a.ReadEq(s);
         a.BitrateChanged();
         return a;
     }
@@ -95,6 +110,15 @@ public sealed class AppState
         if (P("pic_contrast") is { } c) PicContrast = c;
         if (P("pic_sat") is { } sat) PicSat = sat;
         if (P("pic_denoise") is { } dn) PicDenoise = Plugins.PictureAdjust.ClampDenoise(dn);
+    }
+
+    /// <summary>eq_bands (5 x dB) and eq_vol (dB) from settings.json or a project.</summary>
+    void ReadEq(JsonObject s)
+    {
+        if (s["eq_bands"] is JsonArray arr)
+            for (int i = 0; i < Math.Min(arr.Count, EqBands.Length); i++)
+                if (IsPlainInt(arr[i])) EqBands[i] = Plugins.Equalizer.ClampBand((int)Math.Max(-1000, Math.Min(1000, AsLong(arr[i]!))));
+        if (IsPlainInt(s["eq_vol"])) EqVolume = Plugins.Equalizer.ClampVolume((int)Math.Max(-1000, Math.Min(1000, AsLong(s["eq_vol"]!))));
     }
 
     /// <summary>Fixed bitrate in Mbps from the entry, or null when it is empty / not a positive number.</summary>
@@ -151,6 +175,8 @@ public sealed class AppState
         // a project saved with picture adjustments brings them back; one without them opens with a neutral picture
         (PicBright, PicContrast, PicSat, PicDenoise) = (0, 0, 0, 0);
         ReadPicture(st);
+        (EqBands, EqVolume) = (new int[Plugins.Equalizer.Bands.Length], 0);
+        ReadEq(st);
         BitrateChanged();
     }
 
@@ -183,7 +209,7 @@ public sealed class AppState
             Ratio = Ratio, Xfade = join ? C.TransitionMode(Trans) : null, T = tlen, Tonemap = Hdr,
             FastAudio = FastAudio, SlowAudio = SlowAudio, SlowPitch = SlowPitch, FastPitch = FastPitch, Vhs = Vhs,
             SlowInterp = SlowInterp, FastVol = FastVol, SlowVol = SlowVol, ZoomFx = ZoomFx, ZoomSnd = ZoomSnd,
-            ZoomLen = ZoomLen.Replace(",", "."), ZoomVol = ZoomVol, MixAudio = Atrk.StartsWith("Mix"),
+            ZoomLen = ZoomLen.Replace(",", "."), ZoomVol = ZoomVol, MixAudio = Atrk.StartsWith("Mix"), AudioAf = EqFilter(),
         };
     }
 
@@ -231,6 +257,7 @@ public sealed class AppState
         d["trans"] = Trans; d["tlen"] = Tlen; d["prefix"] = Prefix; d["suffix"] = Suffix;
         d["keep_name"] = KeepName;
         d["pic_bright"] = PicBright; d["pic_contrast"] = PicContrast; d["pic_sat"] = PicSat; d["pic_denoise"] = PicDenoise;
+        d["eq_bands"] = new JsonArray(EqBands.Select(b => (JsonNode?)JsonValue.Create(b)).ToArray()); d["eq_vol"] = EqVolume;
     }
 
     /// <summary>clip -> prefix_clip_suffix (the output file name without extension). The prefix and suffix may hold

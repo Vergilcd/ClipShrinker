@@ -13,12 +13,7 @@ public static class Filters
 
     public static IReadOnlyList<string> VideoCodecArgs(string codec, double vBps)
     {
-        long kb = Math.Max(20, Int(vBps / 1000));
-        var a = new List<string> { "-c:v", codec, "-preset", "p5", "-tune", "hq", "-rc", "vbr",
-            "-b:v", $"{I(kb)}k", "-maxrate", $"{I(kb)}k", "-bufsize", $"{I(kb * 2)}k",
-            "-spatial-aq", "1", "-pix_fmt", "yuv420p" };
-        if (codec == "hevc_nvenc") a.AddRange(["-tag:v", "hvc1"]);
-        return a;
+        return Media.Encoders.Args(codec, vBps);   // (2.6: per encoder; NVENC unchanged)
     }
 
     public static IReadOnlyList<string> AtempoChain(double sp)

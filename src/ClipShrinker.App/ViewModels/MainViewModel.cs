@@ -83,9 +83,23 @@ public sealed partial class MainViewModel : ObservableObject
             // 2.5: GPU denoise needs a working OpenCL device; until this answers (or without one) denoise runs on the CPU
             S.OpenCl = Tools.OpenClWorks();
             if (S.PicDenoise != 0) Ui(PreviewSettingsChanged);
-            if (!Tools.HasNvenc())
-                Ui(() => Dialogs.Warn("NVENC not available", "This ffmpeg build has no NVENC encoder. " +
-                                      "Update your NVIDIA driver or use a full ffmpeg build."));
+            // 2.6: which decoders / encoders / filters really work on this PC
+            cudaOk = Tools.CudaWorks();
+            Media.PreviewService.CudaOk = cudaOk;
+            S.DenoiseOk = Tools.HasFilter("nlmeans");
+            var working = Tools.WorkingEncoders();
+            Ui(() =>
+            {
+                workingEncoders = working;
+                EnsureCodec();
+                OnPropertyChanged(nameof(Codecs));
+                OnPropertyChanged(nameof(Codec));
+                OnPropertyChanged(nameof(DenoiseAvailable));
+                if (working.Count == 0)
+                    Dialogs.Warn("No video encoder", "None of the video encoders works with this ffmpeg on this PC " +
+                                 "(NVIDIA, AMD, Intel or Windows). Update the graphics driver, or put the ffmpeg.exe and " +
+                                 "ffprobe.exe of the Clip Shrinker download in the library folder.");
+            });
         });
         Ui(RefreshRife);
         return true;
@@ -177,8 +191,20 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<string> ResOptions => S.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode;
     public bool SizeEnabled => S.BitrateMbps() is null;
     public string SizeHint => S.BitrateMbps() is null ? "per file" : "ignored";
-    public string Codec { get => S.Codec; set => Set(ref S.Codec, value); }
-    public IReadOnlyList<string> Codecs => C.Codecs;
+    public string Codec { get => S.Codec; set { if (value is not null) Set(ref S.Codec, value); } }   // (null while the list changes)
+    /// <summary>2.6: only the encoders that work on this PC (all of them until the start-up check has answered).</summary>
+    public IReadOnlyList<string> Codecs => workingEncoders is { Count: > 0 } w
+        ? Core.Media.Encoders.All.Where(e => w.Contains(e.Key)).Select(e => e.Label).ToList() : C.Codecs;
+    IReadOnlyList<string>? workingEncoders;
+    bool cudaOk = true;
+
+    /// <summary>A codec from settings or a project that this PC cannot run becomes the closest one that works.</summary>
+    void EnsureCodec()
+    {
+        if (workingEncoders is null) return;
+        string fit = Core.Media.Encoders.Fallback(S.Codec, workingEncoders);
+        if (fit != S.Codec) { S.Codec = fit; OnPropertyChanged(nameof(Codec)); }
+    }
     public string Crop { get => S.Crop; set { if (Set(ref S.Crop, value)) PreviewSettingsChanged(); } }
     public IReadOnlyList<string> Crops { get; } = C.Aspects.Select(a => a.Name).ToList();
     public bool Hdr
@@ -481,6 +507,7 @@ public sealed partial class MainViewModel : ObservableObject
             OnPropertyChanged(string.Empty);                 // every setting may have changed
             OnPropertyChanged(nameof(ResOptions));           // the resolution list first, then its value, or the
             OnPropertyChanged(nameof(Res));                  // drop-down shows nothing for "Original" (bitrate mode)
+            EnsureCodec();
             foreach (var r in load.Clips) Clips.Add(NewItem(r));
         }
         finally { undoOff = false; }
@@ -819,7 +846,7 @@ public sealed partial class MainViewModel : ObservableObject
         var runner = new ProcessRunner(p => Ui(() => Progress = p), SetExportMessage);
         encoder = new Encoder(runner, new RealFileSystem(), p => Ui(() => Progress = p), SetExportMessage,
                               Text.InterpKey(st.SlowInterp) == "rife" ? AppPaths.FindRife(Tools) : null, runner,
-                              m => Debug.WriteLine(m)) { Ffmpeg = Tools.Ffmpeg ?? "ffmpeg" };
+                              m => Debug.WriteLine(m)) { Ffmpeg = Tools.Ffmpeg ?? "ffmpeg", UseHwDec = cudaOk };
         var enc = encoder;
         Exporting = true;
         OutPath = null;

@@ -4,7 +4,7 @@ namespace ClipShrinker.Core;
 public static class C
 {
     public const string AppName = "ClipShrinker";
-    public const string AppVersion = "2.5.0";
+    public const string AppVersion = "2.6.0";
     public const string AppId = "ClipShrinker.Desktop.App";
     public const string ProjectExt = ".clipproj";
     public const string RepoUrl = "https://github.com/Vergilcd/ClipShrinker";
@@ -35,7 +35,8 @@ public static class C
     }
 
     public const string Glitch = "glitch";
-    public static readonly string[] Codecs = ["H.264 (h264_nvenc)", "HEVC (hevc_nvenc)"];
+    /// <summary>Every codec label (2.6: all encoders; the app lists the ones that work on this PC).</summary>
+    public static readonly string[] Codecs = [.. Media.Encoders.Labels];
     public static readonly string[] ResSizeMode = ["Auto", "100%", "75%", "50%"];
     public static readonly string[] ResBitrateMode = ["Original", "75%", "50%"];
     public static readonly double[] TickSteps = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200];

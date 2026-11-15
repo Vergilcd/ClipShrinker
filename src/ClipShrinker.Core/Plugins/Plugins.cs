@@ -8,7 +8,7 @@ namespace ClipShrinker.Core.Plugins;
 /// the app sets them from the Plugins window.</summary>
 public static class Features
 {
-    /// <summary>Speed up / slow motion / zoom sections, clip transitions and RIFE.</summary>
+    /// <summary>Speed up / slow motion / zoom sections and RIFE.</summary>
     public static volatile bool TimelineEffects = true;
     /// <summary>Per-clip bitrate presets with their hotkeys.</summary>
     public static volatile bool BitratePresets = true;
@@ -20,11 +20,12 @@ public static class PluginIds
     public const string TimelineEffects = "timeline-effects";
     public const string BitratePresets = "bitrate-presets";
     public const string PictureAdjust = "picture-adjust";
+    public const string Equalizer = "sound-equalizer";
 
-    public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust];
+    public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust, Equalizer];
 
-    /// <summary>On after the first start: the two that were part of the app before 2.4 are on, the new one is off.</summary>
-    public static bool DefaultOn(string id) => id != PictureAdjust;
+    /// <summary>On after the first start: the two that were part of the app before 2.4 are on, the newer ones are off.</summary>
+    public static bool DefaultOn(string id) => id is TimelineEffects or BitratePresets;
 }
 
 /// <summary>plugins\&lt;id&gt;\plugin.json: who made it, which version, and what it does.</summary>

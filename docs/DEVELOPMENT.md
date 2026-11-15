@@ -34,3 +34,10 @@ Each folder in `plugins\` is one plugin: `plugin.json` (id, name, author, versio
 Restore downloads these two files from `main` on GitHub, so a changed plugin.json must be merged to reach users.
 
 The slim ffmpeg build recipe is in `tools/ffmpeg-build/`.
+
+## Encoders (2.6)
+`Core/Media/Encoders.cs` lists every video encoder (NVENC, AMF, QSV, Media Foundation on the GPU and the CPU) with
+its ffmpeg options. At start-up `Tools.WorkingEncoders()` test-encodes a grey picture with each one and the Codec
+list shows only those that worked. To try the AMD / Intel / Windows path on an NVIDIA PC, start the app or the CLI
+with `CLIPSHRINKER_HIDE_ENCODERS=nvenc,cuda,opencl` (any parts of encoder keys; `cuda` and `opencl` hide GPU
+decoding and GPU denoise). `tools/gui_plugins_check.ps1` does this in its last step.

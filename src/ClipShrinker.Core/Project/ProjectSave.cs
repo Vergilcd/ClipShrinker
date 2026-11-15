@@ -44,6 +44,11 @@ public static class ProjectSave
             var st = (JsonObject)data["settings"]!;
             st["pic_bright"] = s.PicBright; st["pic_contrast"] = s.PicContrast; st["pic_sat"] = s.PicSat; st["pic_denoise"] = s.PicDenoise;
         }
+        if (s.EqChanged)                                     // (Sound equalizer plugin, 2.6)
+        {
+            var st = (JsonObject)data["settings"]!;
+            st["eq_bands"] = new JsonArray(s.EqBands.Select(b => (JsonNode?)JsonValue.Create(b)).ToArray()); st["eq_vol"] = s.EqVolume;
+        }
         return data;
     }
 

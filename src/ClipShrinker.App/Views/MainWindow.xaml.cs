@@ -51,6 +51,7 @@ public partial class MainWindow : Window, IDialogs
         BuildBracket();
         BuildTokenButtons();
         RightPill.Children.Insert(0, PicturePanel.ToggleButton());
+        RightPill.Children.Insert(0, EqualizerPanel.ToggleButton());   // (2.6 Sound equalizer plugin)
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
     }
 

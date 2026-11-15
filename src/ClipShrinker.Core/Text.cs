@@ -56,7 +56,7 @@ public static class Text
         return h != 0 ? $"{I(h)}:{m:00}:{sec:00}" : $"{I(m)}:{sec:00}";
     }
 
-    public static string CodecKey(string label) => label.Contains("HEVC") ? "hevc_nvenc" : "h264_nvenc";
+    public static string CodecKey(string label) => Media.Encoders.KeyOf(label);
     public static string CodecShort(string label) => label.Contains("HEVC") ? "HEVC" : "H.264";
 
     public static string AudKey(string label) =>

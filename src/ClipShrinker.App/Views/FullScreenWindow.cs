@@ -58,6 +58,7 @@ public sealed class FullScreenWindow : Window
         exit.Click += (_, _) => Close();
 
         var right = new StackPanel { Orientation = Orientation.Horizontal };
+        right.Children.Add(EqualizerPanel.ToggleButton());      // (Sound equalizer plugin)
         right.Children.Add(PicturePanel.ToggleButton());        // (Picture adjustments plugin)
         right.Children.Add(exit);
 
@@ -65,6 +66,7 @@ public sealed class FullScreenWindow : Window
         overlay.Children.Add(Pill(left, HorizontalAlignment.Left));
         overlay.Children.Add(Pill(right, HorizontalAlignment.Right));
         overlay.Children.Add(new PicturePanel());
+        overlay.Children.Add(new EqualizerPanel());
 
         var root = new Grid();
         root.Children.Add(img);

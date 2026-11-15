@@ -102,6 +102,7 @@ public sealed partial class MainViewModel
     public bool EffectsPluginOn => PluginOn(PluginIds.TimelineEffects);
     public bool PresetsPluginOn => PluginOn(PluginIds.BitratePresets);
     public bool PicturePluginOn => PluginOn(PluginIds.PictureAdjust);
+    public bool EqPluginOn => PluginOn(PluginIds.Equalizer);
     public string PluginsDirText => AppPaths.PluginsDir;
 
     bool PluginOn(string id) => Plugins.FirstOrDefault(p => p.Id == id) is { Installed: true, Enabled: true };
@@ -177,10 +178,13 @@ public sealed partial class MainViewModel
         Features.TimelineEffects = EffectsPluginOn;
         Features.BitratePresets = PresetsPluginOn;
         S.PictureOn = PicturePluginOn;
+        S.EqOn = EqPluginOn;
         OnPropertyChanged(nameof(EffectsPluginOn));
         OnPropertyChanged(nameof(PresetsPluginOn));
         OnPropertyChanged(nameof(PicturePluginOn));
         OnPropertyChanged(nameof(ShowPicturePanel));
+        OnPropertyChanged(nameof(EqPluginOn));
+        OnPropertyChanged(nameof(ShowEqPanel));
         if (startup) return;
         StopPlayback();
         foreach (var c in Clips) c.NotifyChanged();            // the timelines show / hide their effect sections
@@ -224,13 +228,72 @@ public sealed partial class MainViewModel
     public bool ShowPicturePanel => PicturePanelOpen && PicturePluginOn;
 
     [RelayCommand]
-    void TogglePicturePanel() => PicturePanelOpen = !PicturePanelOpen;
+    void TogglePicturePanel() { PicturePanelOpen = !PicturePanelOpen; if (PicturePanelOpen) EqPanelOpen = false; }
+
+    /// <summary>2.6: the denoise filter is in this ffmpeg (an older slim build in library does not have it).</summary>
+    public bool DenoiseAvailable => S.DenoiseOk;
 
     /// <summary>Something is adjusted: the overlay button's icon is yellow.</summary>
     public bool PictureChanged => S.PictureChanged;
 
     [RelayCommand]
     void ResetPicture() => PicBright = PicContrast = PicSat = PicDenoise = 0;
+
+    // ------------------------------------------------------------------ Sound equalizer (preview overlay, 2.6)
+    /// <summary>A band or the volume changed: the preview sound follows (playback restarts with the new filter).</summary>
+    void SetEq(int index, int value)
+    {
+        int v = index < 0 ? Equalizer.ClampVolume(value) : Equalizer.ClampBand(value);
+        string name = index < 0 ? nameof(EqVolume) : $"EqBand{index}";
+        ref int field = ref (index < 0 ? ref S.EqVolume : ref S.EqBands[index]);
+        if (field == v) { OnPropertyChanged(name + "Text"); return; }   // (a typed "50" shows "+12 dB" again)
+        field = v;
+        OnPropertyChanged(name);
+        OnPropertyChanged(name + "Text");
+        OnPropertyChanged(nameof(EqChanged));
+        PreviewSettingsChanged();
+    }
+
+    string EqText(int v) => Equalizer.FormatDb(v);
+    void SetEqText(int index, string value)
+    {
+        int cur = index < 0 ? S.EqVolume : S.EqBands[index];
+        SetEq(index, Equalizer.ParseDb(value) ?? cur);
+    }
+
+    public int EqBand0 { get => S.EqBands[0]; set => SetEq(0, value); }
+    public int EqBand1 { get => S.EqBands[1]; set => SetEq(1, value); }
+    public int EqBand2 { get => S.EqBands[2]; set => SetEq(2, value); }
+    public int EqBand3 { get => S.EqBands[3]; set => SetEq(3, value); }
+    public int EqBand4 { get => S.EqBands[4]; set => SetEq(4, value); }
+    public int EqVolume { get => S.EqVolume; set => SetEq(-1, value); }
+    /// <summary>The dB boxes next to the sliders: "+3 dB"; "3", "-6dB" or "2 db" can be typed (Enter confirms).</summary>
+    public string EqBand0Text { get => EqText(S.EqBands[0]); set => SetEqText(0, value); }
+    public string EqBand1Text { get => EqText(S.EqBands[1]); set => SetEqText(1, value); }
+    public string EqBand2Text { get => EqText(S.EqBands[2]); set => SetEqText(2, value); }
+    public string EqBand3Text { get => EqText(S.EqBands[3]); set => SetEqText(3, value); }
+    public string EqBand4Text { get => EqText(S.EqBands[4]); set => SetEqText(4, value); }
+    public string EqVolumeText { get => EqText(S.EqVolume); set => SetEqText(-1, value); }
+
+    /// <summary>The Sound card over the preview is open (shared by the main window and full screen).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowEqPanel))]
+    private bool eqPanelOpen;
+
+    public bool ShowEqPanel => EqPanelOpen && EqPluginOn;
+
+    [RelayCommand]
+    void ToggleEqPanel() { EqPanelOpen = !EqPanelOpen; if (EqPanelOpen) PicturePanelOpen = false; }
+
+    /// <summary>Something is changed: the overlay button's icon is yellow.</summary>
+    public bool EqChanged => S.EqChanged;
+
+    [RelayCommand]
+    void ResetEq()
+    {
+        for (int i = 0; i < S.EqBands.Length; i++) SetEq(i, 0);
+        SetEq(-1, 0);
+    }
 
     // ------------------------------------------------------------------ Plugins window commands
     [RelayCommand]
