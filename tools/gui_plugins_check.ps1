@@ -79,6 +79,10 @@ Check ((Has $ab "You have the latest version") -or (Has $ab "Could not check for
 Shot $ab "1c_about"
 $ab.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close(); Start-Sleep -Milliseconds 400
 Check ((Find $win $A::NameProperty "Codec").GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()[0].Current.Name -eq "HEVC (hevc_nvenc)") "Codec: HEVC (hevc_nvenc) on this NVIDIA PC"
+$cc = Find $win $A::NameProperty "Codec"
+$cc.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand(); Start-Sleep -Milliseconds 700
+Shot $win "1d_codec_list"
+$cc.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse(); Start-Sleep -Milliseconds 400
 Check (Has $win "Save session on exit") "Save session on exit in the Export panel"
 Check (-not (Has $win "Transition")) "no Transition button with one clip"
 Shot $win "1_main"

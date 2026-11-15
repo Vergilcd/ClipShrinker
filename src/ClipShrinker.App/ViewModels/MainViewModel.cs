@@ -190,7 +190,7 @@ public sealed partial class MainViewModel : ObservableObject
     public string Res { get => S.Res; set { if (value is not null) Set(ref S.Res, value); } }
     public IReadOnlyList<string> ResOptions => S.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode;
     public bool SizeEnabled => S.BitrateMbps() is null;
-    public string SizeHint => S.BitrateMbps() is null ? "per export" : "ignored";
+    public string SizeHint => S.BitrateMbps() is null ? "per file" : "ignored";
     public string Codec { get => S.Codec; set { if (value is not null) Set(ref S.Codec, value); } }   // (null while the list changes)
     /// <summary>2.6: only the encoders that work on this PC (all of them until the start-up check has answered).</summary>
     public IReadOnlyList<string> Codecs => OfferedKeys is { Count: > 0 } w
@@ -200,6 +200,10 @@ public sealed partial class MainViewModel : ObservableObject
     IReadOnlyList<string>? OfferedKeys => workingEncoders is null ? null
         : workingEncoders.Any(k => Core.Media.Encoders.ByKey(k)?.Gpu == true)
             ? workingEncoders.Where(k => Core.Media.Encoders.ByKey(k)?.Gpu == true).ToList() : workingEncoders;
+    /// <summary>2.6: codec label -> short hint for the open Codec list ("recommended for your NVIDIA GPU", ...).</summary>
+    public IReadOnlyDictionary<string, string> CodecHints => OfferedKeys is { Count: > 0 } w
+        ? Core.Media.Encoders.All.Where(e => w.Contains(e.Key)).ToDictionary(e => e.Label, e => Core.Media.Encoders.Hint(e.Key, w))
+        : new Dictionary<string, string>();
     IReadOnlyList<string>? workingEncoders;
     bool cudaOk = true;
 
@@ -232,6 +236,7 @@ public sealed partial class MainViewModel : ObservableObject
         base.OnPropertyChanged(e);
         if (e.PropertyName is nameof(Codec) or nameof(Codecs))
         {
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(CodecHints)));
             base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuOn)));
             base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuText)));
             base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuTip)));

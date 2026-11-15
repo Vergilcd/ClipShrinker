@@ -31,6 +31,22 @@ public class UpdateCheckTests
     }
 
     [Fact]
+    public void CodecHintsPointAtTheBestOne()
+    {
+        string[] nvidia = ["h264_nvenc", "hevc_nvenc", "h264_mf_hw", "hevc_mf_hw"];
+        Assert.Equal("hevc_nvenc", Encoders.Recommended(nvidia));
+        Assert.Equal("recommended for your NVIDIA GPU", Encoders.Hint("hevc_nvenc", nvidia));
+        Assert.Equal("NVIDIA GPU, plays on older devices", Encoders.Hint("h264_nvenc", nvidia));
+        Assert.Equal("Windows encoder, lower quality", Encoders.Hint("hevc_mf_hw", nvidia));
+        string[] amd = ["h264_amf", "hevc_amf"];
+        Assert.Equal("recommended for your AMD GPU", Encoders.Hint("hevc_amf", amd));
+        string[] windows = ["h264_mf_hw", "hevc_mf_hw"];
+        Assert.Equal("recommended for this PC (Windows encoder)", Encoders.Hint("hevc_mf_hw", windows));
+        Assert.Equal("Windows encoder, plays on older devices", Encoders.Hint("h264_mf_hw", windows));
+        Assert.Equal("slow, no GPU encoder works here", Encoders.Hint("h264_mf", ["h264_mf"]));
+    }
+
+    [Fact]
     public void OnlyTheWindowsCpuEncoderIsNotGpu()
     {
         Assert.Equal(["h264_mf", "hevc_mf"], Encoders.All.Where(e => !e.Gpu).Select(e => e.Key));

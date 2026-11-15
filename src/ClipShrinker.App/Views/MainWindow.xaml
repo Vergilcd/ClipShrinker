@@ -11,6 +11,8 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <app:NotBoolToVisConverter x:Key="NotBoolToVis" />
         <app:NotConverter x:Key="Not" />
+        <app:IsNullConverter x:Key="IsNull" />
+        <app:HintLookupConverter x:Key="HintLookup" />
         <Style x:Key="TopButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="Focusable" Value="False" />
@@ -352,7 +354,37 @@
                     <ComboBox Grid.Row="3" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Resolution" ItemsSource="{Binding ResOptions}" SelectedItem="{Binding Res}" />
 
                     <TextBlock Grid.Row="4" Text="Codec:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="4" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Codec" ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec}" />
+                    <!-- 2.6: in the open list each codec has a short hint ("- recommended for your NVIDIA GPU"); the closed box shows
+                         only the name -->
+                    <ComboBox x:Name="CodecCombo" Grid.Row="4" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Codec"
+                              ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec}"
+                              ToolTip="Video encoder. Open the list for a hint on which one fits this PC best.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding}" />
+                                    <TextBlock Opacity="0.65" FontSize="11" Margin="0,1,0,0">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource HintLookup}">
+                                                <Binding />
+                                                <Binding Path="DataContext.CodecHints" ElementName="CodecCombo" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}, Converter={StaticResource IsNull}}" Value="False">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Grid.Row="5" Text="Crop (centered):" Style="{StaticResource FieldLabel}" />
                     <ComboBox Grid.Row="5" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Crop" ItemsSource="{Binding Crops}" SelectedItem="{Binding Crop}" />
@@ -380,7 +412,7 @@
                     <!-- dynamic labels: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
                     <StackPanel Grid.Row="16" Grid.ColumnSpan="2" Margin="0,0,0,4">
                         <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,0,0,3"
-                                   Text="You can add dynamic labels to prefixes and suffixes by clicking on the buttons or writing in their code visible on hover." />
+                                   Text="You can add dynamic labels to prefixes and suffixes by clicking on the buttons or typing their code. (visible on hover)" />
                         <WrapPanel x:Name="TokenPanel" />
                     </StackPanel>
 

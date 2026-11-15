@@ -75,7 +75,7 @@ The line under a clip's title shows its length after editing. Pitch, frame blend
 zoom motion are set in "Effects". RIFE (plugins\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
-- Size: "Max size (MB)" applies per export: per file, or to the whole video when joining. Enter a value in
+- Size: "Max size (MB)" applies per file: to each clip, or to the whole video when joining. Enter a value in
   "or Bitrate (Mbps)" instead to use a fixed bitrate (it is ignored when empty); the size limit is then
   ignored and resolution offers Original, 4K, 1440p, 1080p, 720p or 50%.
 - Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
@@ -84,8 +84,8 @@ EXPORT SETTINGS (right side)
 - Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger
   than it is), codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
   or Windows on the GPU, and the Windows CPU encoder only when no graphics card encoder works; a project from
-  another PC switches to the closest one), centered crop to 21:9, 16:9, 16:10 or 4:3 (only wider clips get
-  cut), and "Convert HDR clips to SDR".
+  another PC switches to the closest one; the open list marks the recommended one), centered crop to 21:9,
+  16:9, 16:10 or 4:3 (only wider clips get cut), and "Convert HDR clips to SDR".
 - Audio: Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track. ShadowPlay can
   record game and microphone as two tracks. "Keep as separate tracks" saves both (Game audio / Microphone),
   "Mix into one track" combines them (use this for Discord, browsers and phones), and "Mute microphone"

@@ -27,8 +27,10 @@ Newest version first.
 - Audio: "Original" in "Bitrate per track" keeps the clips' own audio bitrate (raised to the next AAC step,
   at most 320k; 192k when a clip does not report one). "Keep separate tracks" is now "Keep as separate
   tracks" (older settings and projects are read as before).
-- Codec: the Windows CPU encoder is only listed when no graphics card encoder works.
-- Export panel wording: "per export" next to Max size, "ignored if empty" next to Bitrate, "Export folder"
+- Codec: the Windows CPU encoder is only listed when no graphics card encoder works. In the open list each
+  codec has a short hint under its name, e.g. "- recommended for your NVIDIA GPU" or "- Windows encoder,
+  lower quality", so it is clear which one to pick.
+- Export panel wording: "ignored if empty" next to Bitrate, "Export folder"
   (was "Save folder") with the hint "Asks at export when empty.", and a new hint above the dynamic label
   buttons.
 - The effect buttons read "Speed Up | S", "Slow Down | D", "Zoom | Z" (with the current hotkeys).

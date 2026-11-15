@@ -47,6 +47,29 @@ public static class Encoders
         return (ok.FirstOrDefault(e => e.Hevc == cur.Hevc) ?? ok[0]).Label;
     }
 
+    /// <summary>The best choice among the offered encoders: the GPU maker's own HEVC encoder (smallest files for the
+    /// size), then its H.264, then Windows on the GPU, then the CPU.</summary>
+    public static string? Recommended(IReadOnlyCollection<string> offered) =>
+        new[] { "hevc_nvenc", "hevc_amf", "hevc_qsv", "h264_nvenc", "h264_amf", "h264_qsv", "hevc_mf_hw", "h264_mf_hw", "h264_mf", "hevc_mf" }
+            .FirstOrDefault(offered.Contains);
+
+    /// <summary>2.6: the short hint after a codec in the open Codec list, so a new user knows which one to pick.</summary>
+    public static string Hint(string key, IReadOnlyCollection<string> offered)
+    {
+        var e = ByKey(key);
+        if (e is null) return "";
+        bool rec = Recommended(offered) == key;
+        bool native = e.Vendor != "Windows";
+        bool nativeThere = offered.Any(k => ByKey(k)?.Vendor is "NVIDIA" or "AMD" or "Intel");
+        if (native)
+            return rec ? $"recommended for your {e.Vendor} GPU"
+                 : e.Hevc ? $"{e.Vendor} GPU, smaller files" : $"{e.Vendor} GPU, plays on older devices";
+        if (e.Gpu)
+            return rec ? "recommended for this PC (Windows encoder)"
+                 : nativeThere ? "Windows encoder, lower quality" : "Windows encoder, plays on older devices";
+        return rec ? "slow, no GPU encoder works here" : "CPU only, slow";
+    }
+
     /// <summary>ffmpeg output options for the video at vBps (bits/s). NVENC keeps the 1.0.8 options exactly; the others
     /// aim at the same average bitrate (the export's size passes correct what they miss).</summary>
     public static List<string> Args(string key, double vBps)
