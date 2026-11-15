@@ -2,7 +2,7 @@
 
 **Trim, join and shrink game clips to an exact file size on your NVIDIA GPU.**
 
-<img width="1386" height="1020" alt="image" src="https://github.com/user-attachments/assets/30f315c6-4c4a-4c57-9904-7c426cfb7e80" />
+<img width="1386" height="1036" alt="image" src="https://github.com/user-attachments/assets/513ec890-54f8-4039-83f3-c774d694ea54" />
 
 ClipShrinker is a small Windows tool for turning big gameplay recordings into clips that fit
 Discord. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, then encode with NVENC, 
@@ -29,7 +29,7 @@ the app checks the result and re-encodes with a corrected bitrate until the file
 Drag/click on the buttons or use the shortcuts to apply them to the timeline
 
 ## Customizable shortcuts
-<img width="1131" height="745" alt="image" src="https://github.com/user-attachments/assets/d2852dad-2c34-4fbb-b340-f819da3d4a7e" />
+<img width="1131" height="745" alt="image" src="https://github.com/user-attachments/assets/e492440b-0bbb-45db-b6b4-7890617f3131" />
 
 ## Requirements
 
