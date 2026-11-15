@@ -2,31 +2,39 @@
 
 **Trim, join and shrink game clips to an exact file size on your NVIDIA GPU.**
 
-<img width="1386" height="1036" alt="image" src="https://github.com/user-attachments/assets/513ec890-54f8-4039-83f3-c774d694ea54" />
+<img width="1386" height="1135" alt="image" src="https://github.com/user-attachments/assets/dfc2c288-6197-4f85-b6c2-cac43505097f" />
 
-ClipShrinker is a small Windows tool for turning big gameplay recordings into clips that fit
-Discord. Set a size limit (eg. 50 MB), trim on a thumbnail timeline, then encode with NVENC, 
-the app checks the result and re-encodes with a corrected bitrate until the file lands just under the limit.
+ClipShrinker is a simple modular Windows tool for turning big gameplay recordings into clips that fit Discord or other services.
+
+Set a size limit (eg. 50 MB), trim on a thumbnail timeline, join multiple clips, then export. The app re-encodes with bitrate iteration until the file size lands just under the limit.
 
 ## Features
 - **Size-targeted export** - MegaByte limit can be set to fit under share size limits
-- **Bitrate export** - Set a bitrate by pre-saved preset or apply one to all clips
-- **Thumbnail timelines** per clip with draggable trim handles or typed-in timestamps
+- **Bitrate export** - Set a bitrate by pre-saved presets or apply one to all clips
+- **Thumbnail timeline** for each clip with draggable trim handles or typed-in timestamps
 - **Join clips** with transitions (crossfade, wipes, swipes or a glitch effect) or export separately
-- **Centered crop** to 21:9, 16:9, 16:10 or 4:3 for trimming superwide clips
-- **Multiple audio tracks** - keep game and microphone separate or mix them
+- **Centered crop** to 21:9, 16:9, 16:10 or even 4:3 for cutting ultrawide gameplay
+- **Multiple audio tracks** - keep game and microphone separate or mix them on one track
 - **HEVC / H.264 via NVENC**, HDR clips handled or can be converted to SDR output
 - **Live preview** with sound, crop, and effects applied
-- **Dark and light theme** (Windows Fluent style),
-- **Project saving & loading** optional session saving at exit available
+- **Picture adjustments** with simple denoiser, brightness, contrast and saturation sliders
+- **Dark and light theme** (Windows Fluent style)
+- **Project saving & loading** with optional session saving at exit
 - **Portable:** no installation needed, everything is bundled
 
-### 3 built in effects
+### 3 built in timeline effects as plugin
 - **Speed sections** (fast-forward with custom multipliers)
 - **Slow motion sections** (with RIFE frame interpolation available)
 - **Zoom sections** to focus on details
 
 Drag/click on the buttons or use the shortcuts to apply them to the timeline
+
+## Modular build with plugins
+<img width="646" height="627" alt="image" src="https://github.com/user-attachments/assets/bc882e4c-cb0e-410d-8825-fab6ed959ef4" />
+
+- Core features include cutting and joining clips with file size shrinking
+- Rest of the features are broken into plugins that can be switched off or even deleted to avoid clutter if not needed
+- Additional features can be easily added without touching core functions.
 
 ## Customizable shortcuts
 <img width="1131" height="745" alt="image" src="https://github.com/user-attachments/assets/e492440b-0bbb-45db-b6b4-7890617f3131" />
