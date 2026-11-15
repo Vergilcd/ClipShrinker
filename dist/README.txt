@@ -10,7 +10,8 @@ them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
 You need Windows 10 or 11 (64-bit). Exports are fastest on a graphics card: NVIDIA (NVENC, GTX 10xx or newer),
 AMD (AMF) or Intel (Quick Sync), each with a current driver. Without one, Windows' own encoder is used, on the
 graphics card when it can and on the CPU otherwise (slower, H.264 only). The program tests what works on the
-PC at start-up and lists only those in Codec.
+PC at start-up and lists only those in Codec. The notice left of "Plugins" shows "GPU encoding ON" (green)
+or "GPU encoding OFF" (orange) for the chosen codec; hover over it for what was found.
 SmartScreen may warn about the unsigned exe; click More info, then Run anyway.
 
 To pin it to the taskbar, start the program, right-click its taskbar button and choose "Pin to taskbar".
@@ -41,18 +42,18 @@ Esc leaves it. Drag the grip between the preview and the clip list to resize the
 
 PLUGINS (button at the top right)
 Optional parts of the program are plugins you can switch on and off, delete, and restore from GitHub. Each is a
-folder in "plugins" with its version and changelog:
-- Timeline effects: speed up / slow motion / zoom sections and RIFE (on by default).
-- Bitrate presets: per-clip bitrates with hotkeys (on by default).
-- Picture adjustments: brightness, contrast, saturation and denoise (off by default). Its sun button at the
-  bottom right of the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
+folder in "plugins" with its version and changelog. All of them are on after the first start:
+- Timeline effects: speed up / slow motion / zoom sections and RIFE.
+- Bitrate presets: per-clip bitrates with hotkeys.
+- Picture adjustments: brightness, contrast, saturation and denoise. Its sun button at the bottom right of
+  the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
   saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
   (OpenCL, any recent NVIDIA, AMD or Intel driver) and on the CPU otherwise, where exports get much slower.
   Clips that stay HDR ("Convert HDR" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
   library folder has no denoise filter (an older copy): use the ffmpeg.exe and ffprobe.exe from the download.
-- Sound equalizer: five bands (60 Hz to 12 kHz, -12 to +12 dB) and Volume (-20 to +20 dB) for the whole export
-  (off by default). Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
+- Sound equalizer: five bands (60 Hz to 12 kHz, -12 to +12 dB) and Volume (-20 to +20 dB) for the whole
+  export. Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
   and press Enter. Heard in the preview, used on every audio track of the export, and saved with projects. A
   limiter keeps boosted sound from clipping.
 
@@ -118,3 +119,5 @@ NOTES
 - ffmpeg is a slim LGPL build of FFmpeg (settings in ffmpeg-build-settings.txt, license in ffmpeg-LICENSE.txt).
   Other components are listed in THIRD-PARTY-NOTICES.txt.
 - Version history: CHANGELOG.txt, or the About button in the program.
+- Updates: the About window checks GitHub when it opens and shows next to the link whether a newer version
+  is out (green light). Nothing is downloaded; updating is up to you.

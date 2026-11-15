@@ -4,7 +4,11 @@ namespace ClipShrinker.Core.Media;
 
 /// <summary>One video encoder the Codec list can offer. Key is what settings / exports use (it is the ffmpeg encoder
 /// name, plus "_hw" for the Media Foundation encoder forced onto the graphics card).</summary>
-public sealed record VideoEncoder(string Key, string Label, bool Hevc, string FfmpegName, string Vendor);
+public sealed record VideoEncoder(string Key, string Label, bool Hevc, string FfmpegName, string Vendor)
+{
+    /// <summary>Encodes on the graphics card (everything except the Windows CPU encoder).</summary>
+    public bool Gpu => Vendor != "Windows" || Key.EndsWith("_hw");
+}
 
 /// <summary>2.6: video encoders for every PC. NVENC (NVIDIA) first, then AMF (AMD), Quick Sync (Intel), and Windows
 /// Media Foundation on the graphics card or on the CPU (the last resort that works almost anywhere). Which ones

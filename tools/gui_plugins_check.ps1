@@ -68,8 +68,16 @@ Check (Has $win "Plugins") "Plugins button"
 Check (Has $win "Effects") "Effects button (Timeline effects on by default)"
 Check (Has $win "Speed Up") "effect buttons under the preview"
 Check (Has $win "Bitrate presets") "Bitrate presets button (on by default)"
-Check (-not (HasButton $win "Picture")) "no Picture button on the preview (Picture adjustments off by default)"
-Check (-not (HasButton $win "Equalizer")) "no Equalizer button on the preview (Sound equalizer off by default)"
+Check (HasButton $win "Picture") "Picture button on the preview (2.6: every plugin on by default)"
+Check (HasButton $win "Equalizer") "Equalizer button on the preview (2.6: every plugin on by default)"
+$sw = [Diagnostics.Stopwatch]::StartNew(); while (-not (Has $win "GPU encoding ON") -and $sw.Elapsed.TotalSeconds -lt 10) { Start-Sleep -Milliseconds 300 }
+Check (Has $win "GPU encoding ON") "top bar: GPU encoding ON (green) on this NVIDIA PC"
+Invoke (Find $win $A::NameProperty "About")
+$ab = Win "About ClipShrinker"
+$sw = [Diagnostics.Stopwatch]::StartNew(); while ((Has $ab "Checking for updates...") -and $sw.Elapsed.TotalSeconds -lt 12) { Start-Sleep -Milliseconds 300 }
+Check ((Has $ab "You have the latest version") -or (Has $ab "Could not check for updates (offline?)") -or @($ab.FindAll($TS::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | Where-Object { $_.Current.Name -like "Version * is available" }).Count) "About: the update line answered"
+Shot $ab "1c_about"
+$ab.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close(); Start-Sleep -Milliseconds 400
 Check ((Find $win $A::NameProperty "Codec").GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()[0].Current.Name -eq "HEVC (hevc_nvenc)") "Codec: HEVC (hevc_nvenc) on this NVIDIA PC"
 Check (Has $win "Save session on exit") "Save session on exit in the Export panel"
 Check (-not (Has $win "Transition")) "no Transition button with one clip"
@@ -90,10 +98,10 @@ Shot $pw "2_plugins"
 $te = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Timeline effects"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
 $bp = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Bitrate presets"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
 $pa = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Picture adjustments"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
-Check ((IsOn $te) -and (IsOn $bp) -and -not (IsOn $pa)) "switches: effects on, presets on, picture off"
+Check ((IsOn $te) -and (IsOn $bp) -and (IsOn $pa)) "switches: all on"
 
-"3. switch Timeline effects off, Picture adjustments on"
-Toggle $te; Toggle $pa
+"3. switch Timeline effects off (Picture adjustments is on)"
+Toggle $te
 Check (-not (HasButton $win "Effects")) "Effects button hidden"
 Check (-not (Has $win "Speed Up")) "effect buttons hidden"
 Check (HasButton $win "Picture") "Picture button on the preview"
@@ -132,12 +140,7 @@ Start-Sleep 1
 Invoke (Find $win $A::NameProperty "Reset")
 Check ((Range "Brightness") -eq 0 -and (Range "Saturation") -eq 0 -and (Range "Denoise") -eq 0) "Reset"
 "3b. Sound equalizer (2.6)"
-Invoke (Find $win $A::NameProperty "Plugins")
-$pw = Win "Plugins"
-$eq = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Sound equalizer"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
-Toggle $eq
 Check (HasButton $win "Equalizer") "Equalizer button on the preview"
-$pw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close(); Start-Sleep -Milliseconds 500
 Invoke (Find $win $A::NameProperty "Equalizer")
 Check (Has $win "12 kHz") "Equalizer card opens over the preview"
 Check (-not (Has $win "Brightness")) "the Picture card closed (one card at a time)"
@@ -237,6 +240,16 @@ $win = $A::FromHandle($proc.MainWindowHandle)
 $codec = (Find $win $A::NameProperty "Codec").GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern).Current.GetSelection()[0].Current.Name
 Check ($codec -eq "HEVC (Windows, GPU)") "Codec switched to HEVC (Windows, GPU) (was: $codec)"
 Shot $win "7_no_nvidia"
+Check (Has $win "GPU encoding ON") "top bar: still GPU encoding ON (Windows GPU encoder)"
+$proc.Kill(); $proc.WaitForExit(5000) | Out-Null
+$env:CLIPSHRINKER_HIDE_ENCODERS = "nvenc,cuda,opencl,_hw"                 # (only the Windows CPU encoder left)
+$proc = Start-Process $Exe -ArgumentList "`"$proj`"" -PassThru
+$env:CLIPSHRINKER_HIDE_ENCODERS = $null
+do { Start-Sleep -Milliseconds 300; $proc.Refresh() } until ($proc.MainWindowHandle -ne 0)
+Start-Sleep 7
+$win = $A::FromHandle($proc.MainWindowHandle)
+Check (Has $win "GPU encoding OFF") "top bar: GPU encoding OFF (orange) with only the CPU encoder"
+Shot $win "7b_cpu_only"
 $proc.Kill(); $proc.WaitForExit(5000) | Out-Null
 Restore-Lib
 ""

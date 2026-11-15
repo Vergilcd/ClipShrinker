@@ -167,10 +167,10 @@ public class EncoderEqTests
     }
 
     [Fact]
-    public void EqualizerIsABuiltinPluginOffByDefault()
+    public void EqualizerIsABuiltinPluginOnByDefault()
     {
         Assert.Contains(PluginIds.Equalizer, PluginIds.Builtin);
-        Assert.False(PluginIds.DefaultOn(PluginIds.Equalizer));
+        Assert.True(PluginIds.DefaultOn(PluginIds.Equalizer));    // (2.6: every plugin on for new users)
         Assert.True(PluginIds.DefaultOn(PluginIds.TimelineEffects));
     }
 }

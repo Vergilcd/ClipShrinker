@@ -13,11 +13,19 @@ Newest version first.
   untested so far (no such card was at hand): please report the log if their file sizes land far off.
 - PCs without NVIDIA decoding (CUDA) now decode on the CPU from the start, in the preview and the export,
   instead of failing first and retrying.
-- New plugin "Sound equalizer" (off by default): five bands (60 Hz, 250 Hz, 1 kHz, 4 kHz, 12 kHz; -12 to
+- New plugin "Sound equalizer": five bands (60 Hz, 250 Hz, 1 kHz, 4 kHz, 12 kHz; -12 to
   +12 dB) and Volume (-20 to +20 dB) on a card over the preview, opened with the equalizer button next to the
   sun button (also in full screen). Values can be dragged or typed (3, +3 dB, -6dB; Enter confirms). Heard in
   the preview, used on every audio track of the export, saved with projects. A limiter catches peaks when
   something is boosted. Only one of the Picture and Equalizer cards is open at a time.
+- Top bar: a notice left of "Plugins" shows "GPU encoding ON" (green) when the chosen codec encodes on the
+  graphics card, or "GPU encoding OFF" (orange) when it runs on the CPU. Hovering it lists the encoders that
+  work on the PC and whether GPU decoding and GPU denoise work (handy for bug reports).
+- Every built-in plugin is on after the first start, so new users see all features. Switches set in an
+  earlier version are kept.
+- About window: a line next to the GitHub link checks for a newer release when the window opens (blinking
+  green while checking, then "You have the latest version" or a "Version x is available" link to the release
+  page). It is only shown there: no pop-ups, nothing downloaded.
 - Picture adjustments: the Denoise row is hidden when the ffmpeg in the library folder has no denoise filter
   (an older copy kept from before 2.5.0); before, exports with denoise failed there.
 - The bundled ffmpeg is rebuilt with the AMD, Intel and Windows encoders and the equalizer filter. It now

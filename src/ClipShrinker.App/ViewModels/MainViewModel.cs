@@ -198,6 +198,41 @@ public sealed partial class MainViewModel : ObservableObject
     IReadOnlyList<string>? workingEncoders;
     bool cudaOk = true;
 
+    // ------------------------------------------------------------------ GPU notice in the top bar (2.6)
+    /// <summary>null = the start-up check has not answered yet; true = the chosen codec encodes on the graphics card.</summary>
+    public bool? GpuOn => workingEncoders is null ? null : Core.Media.Encoders.ByLabel(S.Codec)?.Gpu == true && workingEncoders.Count > 0;
+
+    public string GpuText => GpuOn switch { null => "Checking GPU...", true => "GPU encoding ON", false => "GPU encoding OFF" };
+
+    /// <summary>What the start-up check found (handy for bug reports).</summary>
+    public string GpuTip
+    {
+        get
+        {
+            if (workingEncoders is null) return "Testing which encoders work on this PC...";
+            var ok = Core.Media.Encoders.All.Where(e => workingEncoders.Contains(e.Key)).Select(e => e.Label).ToList();
+            string head = GpuOn == true
+                ? $"Exports encode on the graphics card ({S.Codec})."
+                : ok.Any(l => Core.Media.Encoders.ByLabel(l)?.Gpu == true)
+                    ? $"{S.Codec} encodes on the CPU (slower). Pick a GPU codec in Codec to speed exports up."
+                    : "No graphics card encoder works on this PC (or its driver is too old), so exports encode on the CPU (slower).";
+            return head + "\n\nWorking encoders: " + (ok.Count > 0 ? string.Join(", ", ok) : "none") +
+                   $"\nGPU decoding (NVIDIA CUDA): {(cudaOk ? "yes" : "no")}" +
+                   $"\nGPU denoise (OpenCL): {(S.OpenCl ? "yes" : "no")}";
+        }
+    }
+
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (e.PropertyName is nameof(Codec) or nameof(Codecs))
+        {
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuOn)));
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuText)));
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(GpuTip)));
+        }
+    }
+
     /// <summary>A codec from settings or a project that this PC cannot run becomes the closest one that works.</summary>
     void EnsureCodec()
     {

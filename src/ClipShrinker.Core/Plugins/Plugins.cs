@@ -24,8 +24,9 @@ public static class PluginIds
 
     public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust, Equalizer];
 
-    /// <summary>On after the first start: the two that were part of the app before 2.4 are on, the newer ones are off.</summary>
-    public static bool DefaultOn(string id) => id is TimelineEffects or BitratePresets;
+    /// <summary>On after the first start (2.6: every built-in plugin, so a new user sees all features; a switch someone
+    /// set before is kept in settings.json).</summary>
+    public static bool DefaultOn(string id) => true;
 }
 
 /// <summary>plugins\&lt;id&gt;\plugin.json: who made it, which version, and what it does.</summary>

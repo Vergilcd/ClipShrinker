@@ -64,7 +64,21 @@
                 <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0" Content="About" Click="About_Click"
                         ToolTip="Version, changelog and licenses" />
                 <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Content="Plugins" Click="Plugins_Click"
-                        ToolTip="Switch plugins on or off (timeline effects, bitrate presets, picture adjustments), see their versions and changelogs" />
+                        ToolTip="Switch plugins on or off (timeline effects, bitrate presets, picture adjustments, sound equalizer), see their versions and changelogs" />
+                <!-- 2.6: does this PC encode on the graphics card? green = yes, orange = no (hover for the details) -->
+                <Border DockPanel.Dock="Right" Margin="0,0,10,0" Padding="10,3,10,4" CornerRadius="4" VerticalAlignment="Center"
+                        ToolTip="{Binding GpuTip}" AutomationProperties.Name="{Binding GpuText}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="#66808080" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding GpuOn}" Value="True"><Setter Property="Background" Value="#2E7D32" /></DataTrigger>
+                                <DataTrigger Binding="{Binding GpuOn}" Value="False"><Setter Property="Background" Value="#D9730D" /></DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding GpuText}" Foreground="White" FontSize="12" FontWeight="SemiBold" />
+                </Border>
             </DockPanel>
 
             <!-- preview + controls -->
