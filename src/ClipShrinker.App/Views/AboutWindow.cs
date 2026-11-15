@@ -41,7 +41,7 @@ public sealed class AboutWindow : Window
         DockPanel.SetDock(close, Dock.Bottom);
         root.Children.Add(close);
 
-        string docs = AppPaths.DocsDir, lib = AppPaths.DocsLibraryDir;
+        string docs = AppPaths.DocsDir;
         var tabs = new TabControl();
         tabs.Items.Add(Tab("Changelog", Read(Path.Combine(docs, "CHANGELOG.txt")) ?? "CHANGELOG.txt was not found."));
         var parts = new List<string>();
@@ -49,7 +49,7 @@ public sealed class AboutWindow : Window
                  {
                      (C.AppName, Path.Combine(docs, "LICENSE.txt")),
                      ("ffmpeg / ffprobe", Path.Combine(docs, "ffmpeg-LICENSE.txt")),
-                     ("RIFE ncnn Vulkan", Path.Combine(lib, "rife", "LICENSE.txt")),
+                     ("RIFE ncnn Vulkan (Timeline effects plugin)", AppPaths.RifeLicense),
                      ("Third-party notices", Path.Combine(docs, "THIRD-PARTY-NOTICES.txt")),
                  })
             if (Read(path) is { } t) parts.Add($"{new string('=', 70)}\n{title}\n{new string('=', 70)}\n\n{t}");

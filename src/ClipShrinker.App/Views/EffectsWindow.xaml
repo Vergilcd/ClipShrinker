@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:app="clr-namespace:ClipShrinker.App"
-        Title="Effects" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False"
+        Title="Effects (Timeline effects plugin)" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False"
         Background="{DynamicResource ApplicationBackgroundBrush}">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -54,12 +54,8 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="APP" Style="{StaticResource SectionText}" Margin="0,0,0,4" />
-            <CheckBox Grid.Row="1" Grid.ColumnSpan="2" Content="Restore the last session on start" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,3"
-                      ToolTip="Reopen the clips (with trims, effects and presets) that were open when the program was closed." />
-
-            <Separator Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-            <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="CLIP TRANSITIONS" Style="{StaticResource SectionText}" />
+            <!-- (rows 0 - 2 held the APP section until 2.3; "Save session on exit" is in the Export panel now) -->
+            <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="CLIP TRANSITIONS" Style="{StaticResource SectionText}" Margin="0,0,0,6" />
             <TextBlock Grid.Row="4" Text="Transition effect:" Style="{StaticResource FxLabel}" />
             <ComboBox x:Name="TransCombo" Grid.Row="4" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding TransitionNames}" SelectedItem="{Binding Trans}" MaxDropDownHeight="420" DropDownClosed="Trans_DropDownClosed" PreviewMouseMove="Trans_PreviewMouseMove">
 
@@ -99,7 +95,7 @@
                 <Button Content="Download RIFE (about 12 MB)" HorizontalAlignment="Left" Margin="0,2,0,4" Focusable="False" Command="{Binding DownloadRifeCommand}"
                         IsEnabled="{Binding RifeDownloading, Converter={StaticResource Not}}"
                         Visibility="{Binding ShowRifeButton, Converter={StaticResource BoolToVis}}"
-                        ToolTip="Downloads rife-ncnn-vulkan (MIT license) from GitHub into the library\rife folder" />
+                        ToolTip="Downloads rife-ncnn-vulkan (MIT license) from GitHub into the plugins\timeline-effects\rife folder" />
                 <TextBlock Text="{Binding RifeStatus}" Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" MaxWidth="460" HorizontalAlignment="Left" />
                 <ProgressBar Width="330" Height="6" HorizontalAlignment="Left" Margin="0,4,0,0" Maximum="100" Value="{Binding RifePct}"
                              Visibility="{Binding RifeDownloading, Converter={StaticResource BoolToVis}}" />

@@ -1,10 +1,11 @@
-CLIP SHRINKER 2.3.0 (NVENC)
+CLIP SHRINKER 2.4.0 (NVENC)
 ===========================
 
 GETTING STARTED
-Double-click ClipShrinker.exe. Keep the "library" folder next to it: it holds ffmpeg, ffprobe, RIFE and your
-settings. There is nothing to install (.NET is built into the exe). If ffmpeg.exe or ffprobe.exe is missing,
-the program offers to download them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
+Double-click ClipShrinker.exe. Keep the "library" and "plugins" folders next to it: library holds ffmpeg,
+ffprobe and your settings, plugins holds the plugins (Plugins button, top right) and RIFE. There is nothing to
+install (.NET is built into the exe). If ffmpeg.exe or ffprobe.exe is missing, the program offers to download
+them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
 
 You need Windows 10 or 11 (64-bit) and an NVIDIA GPU with NVENC (GTX 10xx or newer) on a current driver.
 SmartScreen may warn about the unsigned exe; click More info, then Run anyway.
@@ -35,10 +36,20 @@ and sound, looping the trimmed part. With the playhead outside the trimmed part 
 video and stops. M mutes it. F (or the button at the bottom right of the preview) shows the preview full screen;
 Esc leaves it. Drag the grip between the preview and the clip list to resize the preview.
 
+PLUGINS (button at the top right)
+Optional parts of the program are plugins you can switch on and off, delete, and restore from GitHub. Each is a
+folder in "plugins" with its version and changelog:
+- Timeline effects: speed up / slow motion / zoom sections, clip transitions and RIFE (on by default).
+- Bitrate presets: per-clip bitrates with hotkeys (on by default).
+- Picture adjustments: brightness, contrast and saturation (off by default). Its sun button at the bottom
+  right of the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
+  press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
+  saved with projects.
+
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
 at the bottom shows where you are. "Reset zoom" shows the whole clip again.
 
-EFFECTS (the band above the thumbnails)
+EFFECTS (the band above the thumbnails - Timeline effects plugin)
 - S adds a speed-up section (blue), D a slow-down section (pink) at the playhead. Type the speed in the box on
   its header: 4 is four times faster, 0.5 is half speed (0.1 to 100, Enter confirms).
 - Z adds a zoom section (white, header at the bottom of the timeline). While the playhead is inside it, a
@@ -50,13 +61,13 @@ EFFECTS (the band above the thumbnails)
   stay inside the trimmed part.
 
 The line under a clip's title shows its length after editing. Pitch, frame blending, RIFE AI slow motion and
-zoom motion are set in "Effects". RIFE (library\rife) needs a GPU with Vulkan support.
+zoom motion are set in "Effects". RIFE (plugins\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
 - Size: "Max size (MB)" applies per file, or to the whole video when joining. Enter a value in "or Bitrate
   (Mbps)" instead to use a fixed bitrate; the size limit is then ignored and resolution offers only
   Original / 75% / 50%.
-- Presets: create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick one per clip in its title
+- Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick one per clip in its title
   bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto bitrate" means the size or
   bitrate above. Presets are used when clips are saved as separate files.
 - Video: resolution, codec (HEVC by default), centered crop to 21:9, 16:9, 16:10 or 4:3 (only wider clips get
@@ -64,13 +75,14 @@ EXPORT SETTINGS (right side)
 - Audio: 128k to 320k per track. ShadowPlay can record game and microphone as two tracks. "Keep separate
   tracks" saves both (Game audio / Microphone), "Mix into one track" combines them (use this for Discord,
   browsers and phones), and "Mute microphone" leaves the mic out.
-- File names: prefix, suffix and save folder. Leave the folder empty to get a save dialog every time.
-  Prefix and suffix can hold dynamic labels that are filled in for each file: {date}, {time}, {preset} (the
+- File names: prefix and suffix. Prefix and suffix can hold dynamic labels that are filled in for each file: {date}, {time}, {preset} (the
   clip's bitrate preset), {res} (output height, e.g. 1080p), {size} (the size limit) and {codec} (HEVC or
   H264). The small buttons above Prefix insert one at the cursor of the box you used last. An empty suffix
   adds nothing; put {codec} in it to get the old clip_HEVC.mp4 names. Untick "Keep original file name" to
   leave the clip's name out, so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick
   is greyed out while Prefix and Suffix are both empty.
+- Saving: the save folder (leave it empty to get a save dialog every time) and "Save session on exit", which
+  keeps the open clips when you close the program and opens them again on the next start.
 
 EXPORT (Ctrl+E)
 With several clips you choose between one joined video (using the transition set in "Effects") or a separate
@@ -82,7 +94,7 @@ PROJECTS
 Ctrl+S saves the clips with their trims, effects and presets, plus the export settings, as a .clipproj file.
 Ctrl+Shift+S saves under a new name and Ctrl+O opens one. Clip paths on the same drive are stored relative to
 the project, so you can move the project folder. Ctrl+Z undoes; Ctrl+Shift+Z or Ctrl+Y redoes.
-"Restore the last session on start" (in Effects) reopens the clips you had open when you closed the program.
+"Save session on exit" (under SAVING) reopens the clips you had open when you closed the program.
 
 NOTES
 - Single clips keep their frame rate. Joined clips use the highest frame rate among them.

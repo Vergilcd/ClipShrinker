@@ -42,4 +42,11 @@
     <Resource Include="Assets\clipshrinker.ico" />
   </ItemGroup>
 
+  <!-- The built-in plugins' plugin.json + CHANGELOG.txt: written to plugins\<id>\ on the first start, and the
+       fallback for "Restore" when GitHub cannot be reached -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\plugins\*\plugin.json;..\..\plugins\*\CHANGELOG.txt"
+                      LogicalName="plugins/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

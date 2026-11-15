@@ -1,0 +1,98 @@
+<UserControl x:Class="ClipShrinker.App.Views.PicturePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             HorizontalAlignment="Right" VerticalAlignment="Bottom">
+    <!-- Picture adjustments plugin: brightness / contrast / saturation over the preview (main window and full screen).
+         Same look as the play / sound / full screen controls: white on a see-through black rounded card. -->
+    <UserControl.Resources>
+        <Style x:Key="PanelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style x:Key="PanelSlider" TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
+            <Setter Property="Minimum" Value="-100" />
+            <Setter Property="Maximum" Value="100" />
+            <Setter Property="TickFrequency" Value="1" />
+            <Setter Property="IsSnapToTickEnabled" Value="True" />
+            <Setter Property="SmallChange" Value="1" />
+            <Setter Property="LargeChange" Value="10" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsMoveToPointEnabled" Value="True" />
+            <Setter Property="Margin" Value="8,0,10,0" />
+        </Style>
+        <!-- the % box: plain white text on a light see-through field, like the overlay pills -->
+        <Style x:Key="PanelBox" TargetType="TextBox">
+            <Setter Property="Width" Value="58" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="CaretBrush" Value="White" />
+            <Setter Property="SelectionBrush" Value="#88FFFFFF" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd" CornerRadius="13" Background="#26FFFFFF" BorderBrush="Transparent" BorderThickness="1" Padding="8,0,9,0">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#40FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#40FFFFFF" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#B3FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PanelTextButton" TargetType="Button" BasedOn="{StaticResource OverlayButton}">
+            <Setter Property="Width" Value="NaN" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="#99000000" CornerRadius="17" Padding="16,10,12,12" Width="330">
+        <StackPanel>
+            <DockPanel Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right" Style="{StaticResource PanelTextButton}" Command="{Binding ResetPictureCommand}"
+                        ToolTip="Back to the unchanged picture">
+                    <TextBlock Text="Reset" Margin="12,0" />
+                </Button>
+                <TextBlock Text="Picture" Style="{StaticResource PanelText}" FontWeight="SemiBold" />
+            </DockPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" /><RowDefinition Height="32" /><RowDefinition Height="32" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Brightness" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="0" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding PicBright}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="Brightness" ToolTip="Lighter or darker (double-click = unchanged)" />
+                <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding PicBrightText, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="Brightness %" ToolTip="Type a value from -100 to 100 (the % is optional), Enter confirms" />
+                <TextBlock Grid.Row="1" Text="Contrast" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="1" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding PicContrast}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="Contrast" ToolTip="More or less difference between dark and light (double-click = unchanged)" />
+                <TextBox Grid.Row="1" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding PicContrastText, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="Contrast %" ToolTip="Type a value from -100 to 100 (the % is optional), Enter confirms" />
+                <TextBlock Grid.Row="2" Text="Saturation" Style="{StaticResource PanelText}" />
+                <Slider Grid.Row="2" Grid.Column="1" Style="{StaticResource PanelSlider}" Value="{Binding PicSat}" MouseDoubleClick="Slider_DoubleClick"
+                        AutomationProperties.Name="Saturation" ToolTip="Stronger or paler colours; -100% = black and white (double-click = unchanged)" />
+                <TextBox Grid.Row="2" Grid.Column="2" Style="{StaticResource PanelBox}" Text="{Binding PicSatText, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="Saturation %" ToolTip="Type a value from -100 to 100 (the % is optional), Enter confirms" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

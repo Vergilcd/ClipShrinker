@@ -9,11 +9,16 @@ public sealed record ExportJob(string Out, IReadOnlyList<ExportClip> Clips, Expo
 /// <summary>What the Export button does before and after the encoder runs (reference start_export, _export_worker).</summary>
 public static class ExportPlanner
 {
-    /// <summary>The clips as the encoder gets them; "Mute microphone" keeps only the first audio track.</summary>
-    public static List<ExportClip> PrepareClips(AppState state, IEnumerable<TimelineClip> rows) =>
-        rows.Select(r => r.ToExport())
-            .Select(c => state.MuteMic ? c with { NAudio = Math.Min(c.NAudio ?? 1, 1) } : c)
-            .ToList();
+    /// <summary>The clips as the encoder gets them; "Mute microphone" keeps only the first audio track, and the
+    /// Picture adjustments plugin adds its filter to every clip.</summary>
+    public static List<ExportClip> PrepareClips(AppState state, IEnumerable<TimelineClip> rows)
+    {
+        string? pic = state.PictureFilter();
+        return rows.Select(r => r.ToExport())
+                   .Select(c => state.MuteMic ? c with { NAudio = Math.Min(c.NAudio ?? 1, 1) } : c)
+                   .Select(c => pic is not null ? c with { PluginVf = [pic] } : c)
+                   .ToList();
+    }
 
     public static HashSet<string> InputSet(IEnumerable<ExportClip> clips) =>
         clips.Select(c => Path.GetFullPath(c.Path).ToLowerInvariant()).ToHashSet();
@@ -35,7 +40,7 @@ public static class ExportPlanner
     public static NameContext OneFileName(AppState state, ExportSettings st, IReadOnlyList<TimelineClip> rows, IReadOnlyList<ExportClip> clips,
                                           bool join, Func<string, Preset?> presetByName)
     {
-        var over = !join && rows[0].Preset is { } n ? presetByName(n) : null;
+        var over = !join && rows[0].ActivePreset is { } n ? presetByName(n) : null;
         return new NameContext(DateTime.Now, over?.Name, clips, join ? st : state.ClipOverride(st, over));
     }
 
@@ -44,7 +49,7 @@ public static class ExportPlanner
                                     string output, bool join, Func<string, Preset?> presetByName)
     {
         if (join) return new ExportJob(output, clips, st, false);
-        var over = rows[0].Preset is { } n ? presetByName(n) : null;
+        var over = rows[0].ActivePreset is { } n ? presetByName(n) : null;
         return new ExportJob(output, clips, state.ClipOverride(st, over), over is not null);
     }
 
@@ -58,7 +63,7 @@ public static class ExportPlanner
         var now = DateTime.Now;                              // one time for all files of this export
         for (int i = 0; i < clips.Count; i++)
         {
-            var over = rows[i].Preset is { } n ? presetByName(n) : null;
+            var over = rows[i].ActivePreset is { } n ? presetByName(n) : null;
             var cst = state.ClipOverride(st, over);
             string p = AutoPath(state, folder, Stem(clips[i].Path), used, exists, new NameContext(now, over?.Name, [clips[i]], cst));
             used.Add(p.ToLowerInvariant());

@@ -27,6 +27,17 @@ public sealed class AppState
     /// <summary>2.3: the clip's own name stays in the exported file name (off = only the prefix and suffix).</summary>
     public bool KeepName = true;
 
+    // Picture adjustments plugin: percentages (-100 .. 100, 0 = unchanged)
+    public int PicBright, PicContrast, PicSat;
+    /// <summary>The plugin is switched on (set by the app, not saved here).</summary>
+    public bool PictureOn;
+
+    /// <summary>The Picture adjustments filter for every clip, or null (plugin off, or nothing changed).</summary>
+    public string? PictureFilter() => PictureOn ? Plugins.PictureAdjust.Filter(PicBright, PicContrast, PicSat) : null;
+
+    /// <summary>The picture values differ from the neutral ones (then they are saved in projects too).</summary>
+    public bool PictureChanged => PicBright != 0 || PicContrast != 0 || PicSat != 0;
+
     static IEnumerable<string> ResModes => C.ResSizeMode.Concat(C.ResBitrateMode);
 
     /// <summary>Start-up values from settings.json (the _saved / _saved_int rules), then _bitrate_changed().</summary>
@@ -68,8 +79,18 @@ public sealed class AppState
             Suffix = Saved("suffix", ""),
             KeepName = SavedB("keep_name", true),
         };
+        a.ReadPicture(s);
         a.BitrateChanged();
         return a;
+    }
+
+    /// <summary>pic_bright / pic_contrast / pic_sat (-100 .. 100) from settings.json or a project.</summary>
+    void ReadPicture(JsonObject s)
+    {
+        int? P(string key) => IsPlainInt(s[key]) ? Plugins.PictureAdjust.Clamp((int)Math.Max(-1000, Math.Min(1000, AsLong(s[key]!)))) : null;
+        if (P("pic_bright") is { } b) PicBright = b;
+        if (P("pic_contrast") is { } c) PicContrast = c;
+        if (P("pic_sat") is { } sat) PicSat = sat;
     }
 
     /// <summary>Fixed bitrate in Mbps from the entry, or null when it is empty / not a positive number.</summary>
@@ -123,6 +144,9 @@ public sealed class AppState
         if (Bool(st["mute_mic"]) is { } mm) MuteMic = mm;
         if (Bool(st["vhs"]) is { } vh) Vhs = vh;
         if (Bool(st["hdr"]) is { } hd) Hdr = hd;
+        // a project saved with picture adjustments brings them back; one without them opens with a neutral picture
+        (PicBright, PicContrast, PicSat) = (0, 0, 0);
+        ReadPicture(st);
         BitrateChanged();
     }
 
@@ -152,7 +176,7 @@ public sealed class AppState
         return new ExportSettings
         {
             TargetMb = targetMb, BitrateMbps = bitrate, ResMode = Res, Codec = Text.CodecKey(Codec), AudioK = Audio,
-            Ratio = Ratio, Xfade = join ? C.TransitionMode(Trans) : null, T = tlen, Tonemap = Hdr,
+            Ratio = Ratio, Xfade = join && Plugins.Features.TimelineEffects ? C.TransitionMode(Trans) : null, T = tlen, Tonemap = Hdr,
             FastAudio = FastAudio, SlowAudio = SlowAudio, SlowPitch = SlowPitch, FastPitch = FastPitch, Vhs = Vhs,
             SlowInterp = SlowInterp, FastVol = FastVol, SlowVol = SlowVol, ZoomFx = ZoomFx, ZoomSnd = ZoomSnd,
             ZoomLen = ZoomLen.Replace(",", "."), ZoomVol = ZoomVol, MixAudio = Atrk.StartsWith("Mix"),
@@ -170,7 +194,7 @@ public sealed class AppState
         double total = Py.Py.Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
         double? br = Bitrate.Trim().Length > 0 ? BitrateMbps() : null;
         string crop = Crop.Split(' ')[0];
-        bool joined = n > 1 && !string.IsNullOrEmpty(C.TransitionMode(Trans));
+        bool joined = n > 1 && Plugins.Features.TimelineEffects && !string.IsNullOrEmpty(C.TransitionMode(Trans));
         if (joined)                                          // transitions overlap the clips
         {
             double T = Py.Py.ParseFloat(Tlen.Replace(",", ".")) is { } t ? Py.Py.Max(0.1, Py.Py.Min(3.0, t)) : 0.4;
@@ -202,6 +226,7 @@ public sealed class AppState
         d["zoom_len"] = ZoomLen; d["zoom_vol"] = ZoomVol; d["slow_interp"] = SlowInterp; d["hdr"] = Hdr; d["mode"] = Mode;
         d["trans"] = Trans; d["tlen"] = Tlen; d["prefix"] = Prefix; d["suffix"] = Suffix;
         d["keep_name"] = KeepName;
+        d["pic_bright"] = PicBright; d["pic_contrast"] = PicContrast; d["pic_sat"] = PicSat;
     }
 
     /// <summary>clip -> prefix_clip_suffix (the output file name without extension). The prefix and suffix may hold

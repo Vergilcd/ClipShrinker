@@ -23,15 +23,19 @@ if ($extra) { throw "publish made more than the exe: $($extra.Name -join ', ')" 
 
 "2. assemble $Out"
 Remove-Item $Out -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory "$Out\library\rife" | Out-Null
+New-Item -ItemType Directory "$Out\library" | Out-Null
 Copy-Item "$Pub\ClipShrinker.exe" $Out
 foreach ($f in "README.txt", "CHANGELOG.txt", "LICENSE.txt", "THIRD-PARTY-NOTICES.txt", "ffmpeg-LICENSE.txt", "ffmpeg-build-settings.txt") {
     Copy-Item "$Root\dist\$f" $Out
 }
 Copy-Item "$Dev\library\ffmpeg.exe", "$Dev\library\ffprobe.exe" "$Out\library"
+# 2.4: the built-in plugins (plugin.json + CHANGELOG.txt each); RIFE belongs to the Timeline effects plugin
+Copy-Item "$Root\plugins" $Out -Recurse
+$Rife = "$Out\plugins\timeline-effects\rife"
+New-Item -ItemType Directory $Rife | Out-Null
 # RIFE: only the parts the program uses (like the in-app download)
-foreach ($f in "rife-ncnn-vulkan.exe", "vcomp140.dll", "LICENSE.txt") { Copy-Item "$Dev\library\rife\$f" "$Out\library\rife" }
-Copy-Item "$Dev\library\rife\rife-v4.6" "$Out\library\rife" -Recurse
+foreach ($f in "rife-ncnn-vulkan.exe", "vcomp140.dll", "LICENSE.txt") { Copy-Item "$Dev\library\rife\$f" $Rife }
+Copy-Item "$Dev\library\rife\rife-v4.6" $Rife -Recurse
 
 "3. zip $Zip"
 Remove-Item $Zip -Force -ErrorAction SilentlyContinue

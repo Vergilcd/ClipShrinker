@@ -24,9 +24,12 @@ public sealed class ShortcutsWindow : Window
         WindowStartupLocation = WindowStartupLocation.Manual;
         SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
         static (string, string) K(string act) => (Text.KeyText[act], "@" + act);   // a rebindable shortcut
-        (string, (string Desc, string Key)[])[] sections =
-        [
-            ("GENERAL", [K("shortcuts"), K("effects"), K("export"), K("open"), K("save"), K("save_as"),
+        (string Desc, string Key)[] clips = [K("select_all"), K("delete"), ("Change the order by dragging a clip above or below another one.", "")];
+        if (vm.PresetsPluginOn)
+            clips = [.. clips, ("Bitrate presets plugin: apply a preset with its hotkey or by choosing it in the clip's title bar.", "")];
+        var sections = new List<(string, (string Desc, string Key)[])>
+        {
+            ("GENERAL", [K("shortcuts"), K("export"), K("open"), K("save"), K("save_as"),
                          K("undo"), K("redo"), K("redo_alt")]),
             ("PREVIEW", [K("play"), K("mute"), K("fullscreen"),
                          ("With the playhead outside the trimmed part, Play plays to the end of the video once.", "")]),
@@ -34,13 +37,13 @@ public sealed class ShortcutsWindow : Window
             ("TRIMMING", [K("trim_start"), K("trim_end"),
                           ("Trim with the keys above or by dragging the trim handles.", ""),
                           ("Zoom the timeline with Ctrl + mouse wheel; the wheel alone scrolls it.", "")]),
-            ("EFFECTS", [K("speed"), K("slow"), K("zoom"), K("delete_section"),
-                         ("Resize or move an effect section by dragging its handle bar or the whole section.", ""),
-                         ("Remove a section by right-clicking it.", "")]),
-            ("CLIPS", [K("select_all"), K("delete"),
-                       ("Change the order by dragging a clip above or below another one.", ""),
-                       ("Apply a bitrate preset with its hotkey or by choosing it in the clip's title bar.", "")]),
-        ];
+            ("CLIPS", clips),
+        };
+        // plugin sections go last, and only while their plugin is on
+        if (vm.EffectsPluginOn)
+            sections.Add(("EFFECTS (plugin)", [K("effects"), K("speed"), K("slow"), K("zoom"), K("delete_section"),
+                          ("Resize or move an effect section by dragging its handle bar or the whole section.", ""),
+                          ("Remove a section by right-clicking it.", "")]));
         var box = new Grid { Margin = new Thickness(26, 20, 26, 20) };
         box.ColumnDefinitions.Add(new ColumnDefinition());
         box.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -56,7 +59,7 @@ public sealed class ShortcutsWindow : Window
             col.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) });
             col.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             int r = 0;
-            foreach (var (title, items) in c == 0 ? sections[..2] : sections[2..])
+            foreach (var (title, items) in c == 0 ? sections.Take(2) : sections.Skip(2))
             {
                 if (r > 0) Add(col, new Separator { Margin = new Thickness(0, 14, 0, 0) }, r++, 0, 2);
                 var head = new TextBlock { Text = title };

@@ -57,9 +57,14 @@ public sealed class FullScreenWindow : Window
         var exit = new Button { Style = (Style)Application.Current.FindResource("OverlayButton"), Content = "", ToolTip = "Leave full screen (Esc)" };
         exit.Click += (_, _) => Close();
 
+        var right = new StackPanel { Orientation = Orientation.Horizontal };
+        right.Children.Add(PicturePanel.ToggleButton());        // (Picture adjustments plugin)
+        right.Children.Add(exit);
+
         overlay = new Grid { Margin = new Thickness(16) };
         overlay.Children.Add(Pill(left, HorizontalAlignment.Left));
-        overlay.Children.Add(Pill(exit, HorizontalAlignment.Right));
+        overlay.Children.Add(Pill(right, HorizontalAlignment.Right));
+        overlay.Children.Add(new PicturePanel());
 
         var root = new Grid();
         root.Children.Add(img);

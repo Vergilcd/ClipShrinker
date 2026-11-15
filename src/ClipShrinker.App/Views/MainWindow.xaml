@@ -62,6 +62,8 @@
                 <Button Style="{StaticResource TopButton}" Content="&#xE7A6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}" ToolTip="Redo (Ctrl+Shift+Z)" />
                 <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0" Content="About" Click="About_Click"
                         ToolTip="Version, changelog and licenses" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Content="Plugins" Click="Plugins_Click"
+                        ToolTip="Switch plugins on or off (timeline effects, bitrate presets, picture adjustments), see their versions and changelogs" />
             </DockPanel>
 
             <!-- preview + controls -->
@@ -118,10 +120,14 @@
                                             IsMoveToPointEnabled="True" ToolTip="Preview volume (only the preview - the export is not changed)" />
                                 </StackPanel>
                             </Border>
+                            <!-- (Picture adjustments plugin: its button joins this pill, its card opens above it) -->
                             <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#99000000" CornerRadius="19" Padding="2">
-                                <Button x:Name="FullscreenButton" Style="{StaticResource OverlayButton}" Content="&#xE740;" Click="Fullscreen_Click"
-                                        AutomationProperties.Name="Full screen" />
+                                <StackPanel x:Name="RightPill" Orientation="Horizontal">
+                                    <Button x:Name="FullscreenButton" Style="{StaticResource OverlayButton}" Content="&#xE740;" Click="Fullscreen_Click"
+                                            AutomationProperties.Name="Full screen" />
+                                </StackPanel>
                             </Border>
+                            <local:PicturePanel />
                         </Grid>
                         <Border x:Name="ToastBox" Background="Black" Padding="14,6" Margin="0,0,0,14" CornerRadius="4"
                                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="Collapsed" IsHitTestVisible="False">
@@ -131,12 +137,17 @@
                 </Border>
                 <DockPanel Grid.Row="1" Margin="0,4,0,0" LastChildFill="False">
                     <!-- effect buttons: click = add at the playhead of the active clip, drag onto a timeline = add there -->
-                    <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center" />
+                    <!-- (Timeline effects plugin) -->
+                    <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center"
+                                Visibility="{Binding EffectsPluginOn, Converter={StaticResource BoolToVis}}" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all"
                             Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Effects" Click="Effects_Click"
-                            ToolTip="Clip transitions, speed up / slow motion / zoom effects and app options (F2). Changes are kept automatically." />
+                            Visibility="{Binding EffectsPluginOn, Converter={StaticResource BoolToVis}}"
+                            ToolTip="Clip transitions and the speed up / slow motion / zoom effects (F2). Changes are kept automatically." />
+                    <!-- (Bitrate presets plugin) -->
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Bitrate presets" Click="Presets_Click"
+                            Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}"
                             ToolTip="Bitrate presets: name, Mbps and a hotkey. Pick one for each clip when exporting separate files" />
                 </DockPanel>
             </Grid>
@@ -165,6 +176,7 @@
                                                 <Button DockPanel.Dock="Right" Style="{StaticResource HeadButton}" Content="Reset zoom" Click="Fit_Click"
                                                         ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)" />
                                                 <ComboBox DockPanel.Dock="Right" Width="240" Height="24" Margin="0,0,10,0" FontSize="12" Padding="9,2" MinHeight="0" Focusable="False" VerticalContentAlignment="Center"
+                                                          Visibility="{Binding DataContext.PresetsPluginOn, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
                                                           Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
                                                           ItemsSource="{Binding PresetLabels}" SelectedItem="{Binding PresetLabel}" PreviewMouseWheel="Combo_NoWheel"
                                                           ToolTip="Bitrate of this clip when the clips are exported as separate files: Auto bitrate = the size / bitrate from the Export panel. Presets are made in the Bitrate presets window.">
@@ -273,7 +285,8 @@
                         <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Text="Max size (MB):" Style="{StaticResource FieldLabel}" />
@@ -290,9 +303,12 @@
                         <TextBlock Text="empty = size limit" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
                     </StackPanel>
 
-                    <TextBlock Grid.Row="2" Text="Preset (all clips):" Style="{StaticResource FieldLabel}" />
+                    <!-- (Bitrate presets plugin) -->
+                    <TextBlock Grid.Row="2" Text="Preset (all clips):" Style="{StaticResource FieldLabel}"
+                               Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}" />
                     <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Bitrate preset for all clips"
                               ItemsSource="{Binding AllPresetOptions}" SelectedItem="{Binding AllPreset}"
+                              Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}"
                               ToolTip="Sets the bitrate preset of every clip at once (used when the clips are exported as separate files). Auto = the size / bitrate above." />
 
                     <TextBlock Grid.Row="3" Text="Resolution:" Style="{StaticResource FieldLabel}" />
@@ -308,50 +324,57 @@
                     <CheckBox Grid.Row="7" Grid.ColumnSpan="2" Content="Convert HDR clips to SDR (tone-map)" IsChecked="{Binding Hdr}"
                               Focusable="False" Margin="0,4" ToolTip="Fixes dark, washed-out colours of HDR recordings" />
 
-                    <Separator Grid.Row="8" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-                    <TextBlock Grid.Row="9" Grid.ColumnSpan="2" Text="AUDIO SETTINGS" Style="{StaticResource SectionText}" />
+                    <Separator Grid.Row="9" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+                    <TextBlock Grid.Row="10" Grid.ColumnSpan="2" Text="AUDIO SETTINGS" Style="{StaticResource SectionText}" />
 
-                    <TextBlock Grid.Row="10" Text="Bitrate per track:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="10" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate per track" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}" />
+                    <TextBlock Grid.Row="11" Text="Bitrate per track:" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate per track" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}" />
 
-                    <TextBlock Grid.Row="11" Text="Audio tracks:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}" />
+                    <TextBlock Grid.Row="12" Text="Audio tracks:" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}" />
 
-                    <CheckBox Grid.Row="12" Grid.ColumnSpan="2" Content="Mute microphone (2nd audio track)" IsChecked="{Binding MuteMic}"
+                    <CheckBox Grid.Row="13" Grid.ColumnSpan="2" Content="Mute microphone (2nd audio track)" IsChecked="{Binding MuteMic}"
                               Focusable="False" Margin="0,4"
                               ToolTip="Leave out the second audio track (ShadowPlay microphone) in the preview and export" />
 
-                    <Separator Grid.Row="13" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-                    <TextBlock Grid.Row="14" Grid.ColumnSpan="2" Text="FILE NAMES" Style="{StaticResource SectionText}" />
+                    <Separator Grid.Row="14" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+                    <TextBlock Grid.Row="15" Grid.ColumnSpan="2" Text="FILE NAMES" Style="{StaticResource SectionText}" />
 
                     <!-- dynamic labels: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
-                    <StackPanel Grid.Row="15" Grid.ColumnSpan="2" Margin="0,0,0,4">
+                    <StackPanel Grid.Row="16" Grid.ColumnSpan="2" Margin="0,0,0,4">
                         <WrapPanel x:Name="TokenPanel" />
                         <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,1,0,0"
                                    Text="Click a dynamic label to add to the prefix or suffix depending on which one is active." />
                     </StackPanel>
 
-                    <TextBlock Grid.Row="16" Text="Prefix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox x:Name="PrefixBox" Grid.Row="16" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBlock Grid.Row="17" Text="Prefix:" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="PrefixBox" Grid.Row="17" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
                              AutomationProperties.Name="Prefix" Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
                              ToolTip="Added before the clip name with an underscore, e.g. prefix_clip.mp4 (empty = nothing). May hold dynamic labels like {date}." />
 
-                    <TextBlock Grid.Row="17" Text="Suffix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox x:Name="SuffixBox" Grid.Row="17" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBlock Grid.Row="18" Text="Suffix:" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="SuffixBox" Grid.Row="18" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
                              AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
                              ToolTip="Added after the clip name with an underscore, e.g. clip_suffix.mp4 (empty = nothing). May hold dynamic labels like {codec}." />
 
-                    <CheckBox Grid.Row="18" Grid.ColumnSpan="2" Content="Keep original file name" Focusable="False" Margin="0,4"
+                    <CheckBox Grid.Row="19" Grid.ColumnSpan="2" Content="Keep original file name" Focusable="False" Margin="0,4"
                               AutomationProperties.Name="Keep original file name"
                               IsChecked="{Binding KeepName}" IsEnabled="{Binding KeepNameEnabled}"
                               ToolTip="Ticked: prefix_clip_suffix.mp4. Unticked: only the prefix and suffix with their dynamic labels, e.g. 2026-11-15_HEVC.mp4. Needs text in Prefix or Suffix." />
 
-                    <TextBlock Grid.Row="19" Text="Save folder:" Style="{StaticResource FieldLabel}" />
-                    <StackPanel Grid.Row="19" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                    <Separator Grid.Row="20" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+                    <TextBlock Grid.Row="21" Grid.ColumnSpan="2" Text="SAVING" Style="{StaticResource SectionText}" />
+
+                    <TextBlock Grid.Row="22" Text="Save folder:" Style="{StaticResource FieldLabel}" />
+                    <StackPanel Grid.Row="22" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                         <TextBox Width="146" AutomationProperties.Name="Save folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Exports are saved here without asking (empty = a save dialog asks every time)" />
                         <Button Content="..." Margin="6,0,0,0" Padding="10,4" MinWidth="0" Focusable="False" Click="PickSaveDir_Click" ToolTip="Choose the folder" />
                     </StackPanel>
+
+                    <CheckBox Grid.Row="23" Grid.ColumnSpan="2" Content="Save session on exit" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,4"
+                              AutomationProperties.Name="Save session on exit"
+                              ToolTip="Keep the open clips (with trims, effects and presets) when the program closes, and open them again on the next start." />
                 </Grid>
             </ScrollViewer>
 
