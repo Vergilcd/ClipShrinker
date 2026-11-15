@@ -48,14 +48,14 @@ public static class PictureAdjust
     /// <summary>Denoise as shown in its box: 0% .. 100% (no plus sign).</summary>
     public static string FormatDenoise(int v) => $"{I(ClampDenoise(v))}%";
 
-    /// <summary>The denoise filter (0 = none): non-local means, strength 1 .. 10. On the graphics card through OpenCL
+    /// <summary>The denoise filter (0 = none): non-local means, strength 1 .. 5.5. On the graphics card through OpenCL
     /// (~5x faster; 8-bit only) when it works on this PC, else the same filter on the CPU. Small patch / search window
     /// (3 / 5) keeps it fast enough for the preview; 2.5.0 timings on a 1080p60 clip: GPU ~46 fps, CPU ~9 fps.</summary>
     public static string? DenoiseFilter(int denoise, bool gpu)
     {
         int d = ClampDenoise(denoise);
         if (d == 0) return null;
-        string s = F(1 + 9 * d / 100.0, 2);
+        string s = F(1 + 4.5 * d / 100.0, 2);   // 2.5.0 test: above the old 50 % (s = 5.5) it only blurred, so 100 % = 5.5
         return gpu ? $"format=yuv420p,hwupload,nlmeans_opencl=s={s}:p=3:r=5,hwdownload,format=yuv420p"
                    : $"nlmeans=s={s}:p=3:r=5";
     }

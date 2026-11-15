@@ -55,15 +55,7 @@
             </Grid.RowDefinitions>
 
             <!-- (rows 0 - 2 held the APP section until 2.3; "Save session on exit" is in the Export panel now) -->
-            <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="CLIP TRANSITIONS" Style="{StaticResource SectionText}" Margin="0,0,0,6" />
-            <TextBlock Grid.Row="4" Text="Transition effect:" Style="{StaticResource FxLabel}" />
-            <ComboBox x:Name="TransCombo" Grid.Row="4" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding TransitionNames}" SelectedItem="{Binding Trans}" MaxDropDownHeight="420" DropDownClosed="Trans_DropDownClosed" PreviewMouseMove="Trans_PreviewMouseMove">
-
-            </ComboBox>
-            <TextBlock Grid.Row="5" Text="Transition length (s):" Style="{StaticResource FxLabel}" />
-            <TextBox Grid.Row="5" Grid.Column="1" Width="70" HorizontalAlignment="Left" Margin="0,3" Text="{Binding Tlen, UpdateSourceTrigger=PropertyChanged}" />
-
-            <Separator Grid.Row="6" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+            <!-- (rows 3 - 6 held CLIP TRANSITIONS until 2.4; since 2.5 they are the Transition drop-down next to "Clear all clips") -->
             <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="SPEED UP" Style="{StaticResource SectionText}" />
             <TextBlock Grid.Row="8" Text="Sound:" Style="{StaticResource FxLabel}" />
             <ComboBox Grid.Row="8" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding FastAudioOptions}" SelectedItem="{Binding FastAudio}" />

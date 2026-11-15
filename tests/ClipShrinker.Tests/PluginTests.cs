@@ -172,17 +172,17 @@ public class PluginTests
     public void DenoiseFilterStrings()
     {
         Assert.Null(PictureAdjust.DenoiseFilter(0, gpu: true));
-        Assert.Equal("nlmeans=s=1.09:p=3:r=5", PictureAdjust.DenoiseFilter(1, gpu: false));
-        Assert.Equal("nlmeans=s=10.00:p=3:r=5", PictureAdjust.DenoiseFilter(100, gpu: false));
-        Assert.Equal("format=yuv420p,hwupload,nlmeans_opencl=s=5.50:p=3:r=5,hwdownload,format=yuv420p", PictureAdjust.DenoiseFilter(50, gpu: true));
-        Assert.Equal("nlmeans=s=10.00:p=3:r=5", PictureAdjust.DenoiseFilter(500, gpu: false));     // clamped
+        Assert.Equal("nlmeans=s=1.04:p=3:r=5", PictureAdjust.DenoiseFilter(1, gpu: false));
+        Assert.Equal("nlmeans=s=5.50:p=3:r=5", PictureAdjust.DenoiseFilter(100, gpu: false));
+        Assert.Equal("format=yuv420p,hwupload,nlmeans_opencl=s=3.25:p=3:r=5,hwdownload,format=yuv420p", PictureAdjust.DenoiseFilter(50, gpu: true));
+        Assert.Equal("nlmeans=s=5.50:p=3:r=5", PictureAdjust.DenoiseFilter(500, gpu: false));     // clamped
     }
 
     [Fact]
     public void DenoiseComesBeforeColourAndNotOnKeptHdr()
     {
         string colour = PictureAdjust.Filter(10, 0, 0)!;
-        Assert.Equal("nlmeans=s=5.50:p=3:r=5," + colour, PictureAdjust.Filter(10, 0, 0, 50, gpu: false));
+        Assert.Equal("nlmeans=s=3.25:p=3:r=5," + colour, PictureAdjust.Filter(10, 0, 0, 50, gpu: false));
         Assert.Equal(colour, PictureAdjust.Filter(10, 0, 0, 50, gpu: false, hdrKept: true));
         Assert.Null(PictureAdjust.Filter(0, 0, 0, 50, gpu: true, hdrKept: true));
         Assert.Null(PictureAdjust.Filter(0, 0, 0, 0, gpu: true));
@@ -242,7 +242,7 @@ public class PluginTests
 
     // ------------------------------------------------------------------ plugins switched off
     [Fact]
-    public void TimelineEffectsOffDropsSectionsTransitionsAndKeys()
+    public void TimelineEffectsOffDropsSectionsButKeepsTransitions()
     {
         var row = Clip();
         row.Sections.Add(new SpeedSection(2, 6, 2.0));
@@ -255,7 +255,7 @@ public class PluginTests
             Assert.Null(c.Pieces);
             Assert.Empty(c.Zooms);
             Assert.Single(row.Sections);                               // kept for when the plugin comes back
-            Assert.Null(s.ToExportSettings(true, out _)!.Xfade);
+            Assert.Equal(C.TransitionMode(s.Trans), s.ToExportSettings(true, out _)!.Xfade);   // 2.5: transitions are an app feature
             var ed = new TimelineEditor(row);
             Assert.Empty(ed.Vis());
             Assert.Empty(ed.VisZ());

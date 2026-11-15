@@ -10,6 +10,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <app:NotBoolToVisConverter x:Key="NotBoolToVis" />
+        <app:NotConverter x:Key="Not" />
         <Style x:Key="TopButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="Focusable" Value="False" />
@@ -140,11 +141,27 @@
                     <!-- (Timeline effects plugin) -->
                     <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center"
                                 Visibility="{Binding EffectsPluginOn, Converter={StaticResource BoolToVis}}" />
-                    <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all"
+                    <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all clips"
                             Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
+                    <!-- 2.5: clip transitions as a drop-down (shown with 2 or more clips) -->
+                    <Grid DockPanel.Dock="Right" Margin="0,0,10,0" Visibility="{Binding HasManyClips, Converter={StaticResource BoolToVis}}">
+                        <ToggleButton x:Name="TransitionButton" Focusable="False" AutomationProperties.Name="Transition"
+                                      IsChecked="{Binding IsOpen, ElementName=TransitionPopup, Mode=TwoWay}"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=TransitionPopup, Converter={StaticResource Not}}"
+                                      ToolTip="How the clips blend into each other when they are joined into one video">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Transition" VerticalAlignment="Center" />
+                                <TextBlock Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Margin="8,1,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </ToggleButton>
+                        <Popup x:Name="TransitionPopup" PlacementTarget="{Binding ElementName=TransitionButton}" Placement="Bottom"
+                               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4">
+                            <local:TransitionPanel x:Name="TransitionPanel" />
+                        </Popup>
+                    </Grid>
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Effects" Click="Effects_Click"
                             Visibility="{Binding EffectsPluginOn, Converter={StaticResource BoolToVis}}"
-                            ToolTip="Clip transitions and the speed up / slow motion / zoom effects (F2). Changes are kept automatically." />
+                            ToolTip="Speed up / slow motion / zoom effects (F2). Changes are kept automatically." />
                     <!-- (Bitrate presets plugin) -->
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Bitrate presets" Click="Presets_Click"
                             Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}"

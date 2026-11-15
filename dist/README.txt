@@ -39,7 +39,7 @@ Esc leaves it. Drag the grip between the preview and the clip list to resize the
 PLUGINS (button at the top right)
 Optional parts of the program are plugins you can switch on and off, delete, and restore from GitHub. Each is a
 folder in "plugins" with its version and changelog:
-- Timeline effects: speed up / slow motion / zoom sections, clip transitions and RIFE (on by default).
+- Timeline effects: speed up / slow motion / zoom sections and RIFE (on by default).
 - Bitrate presets: per-clip bitrates with hotkeys (on by default).
 - Picture adjustments: brightness, contrast, saturation and denoise (off by default). Its sun button at the
   bottom right of the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
@@ -87,8 +87,9 @@ EXPORT SETTINGS (right side)
   keeps the open clips when you close the program and opens them again on the next start.
 
 EXPORT (Ctrl+E)
-With several clips you choose between one joined video (using the transition set in "Effects") or a separate
-file per clip. ClipShrinker encodes with NVENC, checks the file size, and re-encodes with a corrected bitrate
+With several clips you choose between one joined video or a separate file per clip. The joined video uses the
+transition picked with the "Transition" button next to "Clear all clips" (shown with 2 or more clips; point at
+an effect in its list to see a preview). ClipShrinker encodes with NVENC, checks the file size, and re-encodes with a corrected bitrate
 (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.
 

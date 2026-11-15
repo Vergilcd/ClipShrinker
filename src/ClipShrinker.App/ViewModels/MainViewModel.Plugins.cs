@@ -118,7 +118,11 @@ public sealed partial class MainViewModel
                 if (Core.Py.PyJson.Str(k) is { } s) pluginsKnown.Add(s);
         foreach (var id in PluginIds.Builtin)
         {
-            if (!Directory.Exists(AppPaths.PluginDir(id)) && !pluginsKnown.Contains(id))
+            bool there = Directory.Exists(AppPaths.PluginDir(id));
+            // 2.5: a built-in plugin from an older app version gets this version's plugin.json + changelog
+            bool older = there && PluginManifest.Read(AppPaths.PluginDir(id)) is { } cur && EmbeddedManifest(id) is { } emb
+                         && PluginManifest.CompareVersions(cur.Version, emb.Version) < 0;
+            if ((!there && !pluginsKnown.Contains(id)) || older)
             {
                 try { WriteBuiltinFiles(id); }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException) { Debug.WriteLine($"plugin {id}: {e.Message}"); }

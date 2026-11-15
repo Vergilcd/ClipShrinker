@@ -2,7 +2,7 @@
   "id": "timeline-effects",
   "name": "Timeline effects",
   "author": "Vergil",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "builtin": true,
-  "description": "Speed up, slow motion and zoom sections on the timeline, clip transitions when joining, and RIFE AI slow-motion smoothing (RIFE is downloaded into this plugin's folder)."
+  "description": "Speed up, slow motion and zoom sections on the timeline, and RIFE AI slow-motion smoothing (RIFE is downloaded into this plugin's folder)."
 }

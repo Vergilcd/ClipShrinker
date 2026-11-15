@@ -5,15 +5,22 @@ Newest version first.
 
 
 2.5.0
-- Picture adjustments: new Denoise slider (0 to 100 %) on the Picture card. It removes grain and noise from
-  dark or low-light footage, in the preview and the export, and is saved with projects. It runs on the
-  graphics card through OpenCL (any recent NVIDIA, AMD or Intel driver); without OpenCL it runs on the CPU,
-  where exports get much slower. Clips that stay HDR ("Convert HDR" off) are not denoised, because the
-  filter works in 8-bit. Exports with denoise take longer even on the graphics card (about 3 to 4 times on
-  an RTX 5070).
+- Picture adjustments: new Denoise slider (0 to 100 %, light to strong) on the Picture card. It removes
+  grain and noise from dark or low-light footage, in the preview and the export, and is saved with projects.
+  It runs on the graphics card through OpenCL (any recent NVIDIA, AMD or Intel driver); without OpenCL it
+  runs on the CPU, where exports get much slower. Clips that stay HDR ("Convert HDR" off) are not denoised,
+  because the filter works in 8-bit. Exports with denoise take longer even on the graphics card (about 3 to
+  4 times on an RTX 5070).
+- Built-in plugins that came with an older version get their new plugin.json and changelog on the first start
+  (Picture adjustments 1.1.0, Timeline effects 1.1.0).
 - The bundled ffmpeg is rebuilt (November 2026 sources) with the denoise filters and the OpenCL loader built
   in. ffmpeg's best-known denoiser (hqdn3d) is not included: it is only allowed in GPL builds, and Clip
   Shrinker's ffmpeg stays LGPL. The OpenCL loader is Apache 2.0, see OpenCL-ICD-Loader-LICENSE.txt.
+- Clip transitions are part of the app again instead of the Timeline effects plugin, so joined videos keep
+  their transition with the plugin off. They moved out of the Effects window into a "Transition" drop-down
+  next to the clear button (transition effect with the hover preview, and its length). The button is shown
+  when 2 or more clips are in the list.
+- "Clear all" is now called "Clear all clips".
 
 
 2.4.0

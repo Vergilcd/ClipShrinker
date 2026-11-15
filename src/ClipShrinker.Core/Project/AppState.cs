@@ -180,7 +180,7 @@ public sealed class AppState
         return new ExportSettings
         {
             TargetMb = targetMb, BitrateMbps = bitrate, ResMode = Res, Codec = Text.CodecKey(Codec), AudioK = Audio,
-            Ratio = Ratio, Xfade = join && Plugins.Features.TimelineEffects ? C.TransitionMode(Trans) : null, T = tlen, Tonemap = Hdr,
+            Ratio = Ratio, Xfade = join ? C.TransitionMode(Trans) : null, T = tlen, Tonemap = Hdr,
             FastAudio = FastAudio, SlowAudio = SlowAudio, SlowPitch = SlowPitch, FastPitch = FastPitch, Vhs = Vhs,
             SlowInterp = SlowInterp, FastVol = FastVol, SlowVol = SlowVol, ZoomFx = ZoomFx, ZoomSnd = ZoomSnd,
             ZoomLen = ZoomLen.Replace(",", "."), ZoomVol = ZoomVol, MixAudio = Atrk.StartsWith("Mix"),
@@ -198,7 +198,7 @@ public sealed class AppState
         double total = Py.Py.Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
         double? br = Bitrate.Trim().Length > 0 ? BitrateMbps() : null;
         string crop = Crop.Split(' ')[0];
-        bool joined = n > 1 && Plugins.Features.TimelineEffects && !string.IsNullOrEmpty(C.TransitionMode(Trans));
+        bool joined = n > 1 && !string.IsNullOrEmpty(C.TransitionMode(Trans));
         if (joined)                                          // transitions overlap the clips
         {
             double T = Py.Py.ParseFloat(Tlen.Replace(",", ".")) is { } t ? Py.Py.Max(0.1, Py.Py.Min(3.0, t)) : 0.4;
