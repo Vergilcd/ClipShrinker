@@ -4,6 +4,14 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.2.1
+- Play starts without the black flash: the preview keeps showing the current frame until the first playback
+  frame is ready (ffmpeg needs about 0.2 s to seek), then switches straight to the moving picture. Also in
+  full screen.
+- The first play after starting the program no longer tries a GPU scaling mode the bundled ffmpeg doesn't
+  have, so it starts a little sooner.
+
+
 2.2.0
 - The hints under the preview are now buttons: "Speed Up [S]", "Slow Down [D]" and "Zoom [Z]", in the
   colours of their sections, with the current hotkey (it follows the Shortcuts window). Click one to add the
