@@ -192,8 +192,19 @@ public sealed partial class MainViewModel : ObservableObject
     public string Atrk { get => S.Atrk; set => Set(ref S.Atrk, value); }
     public IReadOnlyList<string> AudioTrackModes => AppState.AudioTrackModes;
     public bool MuteMic { get => S.MuteMic; set => Set(ref S.MuteMic, value); }
-    public string Prefix { get => S.Prefix; set => Set(ref S.Prefix, value); }
-    public string Suffix { get => S.Suffix; set => Set(ref S.Suffix, value); }
+    public string Prefix { get => S.Prefix; set { if (Set(ref S.Prefix, value)) NameTextChanged(); } }
+    public string Suffix { get => S.Suffix; set { if (Set(ref S.Suffix, value)) NameTextChanged(); } }
+
+    /// <summary>"Keep original file name". Shown ticked and greyed out while Prefix and Suffix are both empty
+    /// (the file name would be empty without it); the saved choice comes back once one of them has text.</summary>
+    public bool KeepName { get => S.KeepsName; set => Set(ref S.KeepName, value); }
+    public bool KeepNameEnabled => S.HasNameText;
+
+    void NameTextChanged()
+    {
+        OnPropertyChanged(nameof(KeepName));
+        OnPropertyChanged(nameof(KeepNameEnabled));
+    }
 
     // effects window
     public string Trans { get => S.Trans; set => Set(ref S.Trans, value); }

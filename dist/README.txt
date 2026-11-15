@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.2.2 (NVENC)
+CLIP SHRINKER 2.3.0 (NVENC)
 ===========================
 
 GETTING STARTED
@@ -68,7 +68,9 @@ EXPORT SETTINGS (right side)
   Prefix and suffix can hold dynamic labels that are filled in for each file: {date}, {time}, {preset} (the
   clip's bitrate preset), {res} (output height, e.g. 1080p), {size} (the size limit) and {codec} (HEVC or
   H264). The small buttons above Prefix insert one at the cursor of the box you used last. An empty suffix
-  adds nothing; put {codec} in it to get the old clip_HEVC.mp4 names.
+  adds nothing; put {codec} in it to get the old clip_HEVC.mp4 names. Untick "Keep original file name" to
+  leave the clip's name out, so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick
+  is greyed out while Prefix and Suffix are both empty.
 
 EXPORT (Ctrl+E)
 With several clips you choose between one joined video (using the transition set in "Effects") or a separate
