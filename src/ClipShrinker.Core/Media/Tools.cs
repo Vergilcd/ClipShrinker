@@ -158,7 +158,10 @@ public sealed class Tools
             Size: Or(Str(fmt, "size")) is { } sz ? long.Parse(sz) : fileSize(),
             Trc: trc is "smpte2084" or "arib-std-b67" ? trc : null,
             Prim: Str(v, "color_primaries"),
-            Space: Str(v, "color_space"));
+            Space: Str(v, "color_space"),
+            // 2.6: the first audio track's bitrate, for the "Original" audio setting (0 = not known)
+            AudioBitrate: streams.FirstOrDefault(x => Type(x) == "audio") is { ValueKind: JsonValueKind.Object } a0
+                          && Py.Py.ParseFloat(Str(a0, "bit_rate") ?? "") is { } ab && !double.IsNaN(ab) ? ab : 0);
     }
 }
 

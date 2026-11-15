@@ -37,8 +37,10 @@ public static class C
     public const string Glitch = "glitch";
     /// <summary>Every codec label (2.6: all encoders; the app lists the ones that work on this PC).</summary>
     public static readonly string[] Codecs = [.. Media.Encoders.Labels];
-    public static readonly string[] ResSizeMode = ["Auto", "100%", "75%", "50%"];
-    public static readonly string[] ResBitrateMode = ["Original", "75%", "50%"];
+    /// <summary>2.6: 75% gave way to fixed heights (4K, 1440p, 1080p, 720p; never upscaled). A saved "75%" falls back to
+    /// the default.</summary>
+    public static readonly string[] ResSizeMode = ["Auto", "100%", "4K", "1440p", "1080p", "720p", "50%"];
+    public static readonly string[] ResBitrateMode = ["Original", "4K", "1440p", "1080p", "720p", "50%"];
     public static readonly double[] TickSteps = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200];
     public const double MinView = 1.0;
     public const int MaxThumbCache = 800;

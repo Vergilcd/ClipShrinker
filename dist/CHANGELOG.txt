@@ -18,9 +18,22 @@ Newest version first.
   sun button (also in full screen). Values can be dragged or typed (3, +3 dB, -6dB; Enter confirms). Heard in
   the preview, used on every audio track of the export, saved with projects. A limiter catches peaks when
   something is boosted. Only one of the Picture and Equalizer cards is open at a time.
-- Top bar: a notice left of "Plugins" shows "GPU encoding ON" (green) when the chosen codec encodes on the
-  graphics card, or "GPU encoding OFF" (orange) when it runs on the CPU. Hovering it lists the encoders that
+- Top bar: a notice left of "Plugins" shows "GPU Encoding is ON" (green) when the chosen codec encodes on the
+  graphics card, or "GPU Encoding is OFF" (orange) when it runs on the CPU. Hovering it lists the encoders that
   work on the PC and whether GPU decoding and GPU denoise work (handy for bug reports).
+- Resolution: the 75% option is replaced by 4K, 1440p, 1080p and 720p (the picture is made that high, never
+  larger than the clip). {res} in file names follows (an export at 2160 lines is named 4K). A 75% setting
+  saved by an older version falls back to the default.
+- Audio: "Original" in "Bitrate per track" keeps the clips' own audio bitrate (raised to the next AAC step,
+  at most 320k; 192k when a clip does not report one). "Keep separate tracks" is now "Keep as separate
+  tracks" (older settings and projects are read as before).
+- Codec: the Windows CPU encoder is only listed when no graphics card encoder works.
+- Export panel wording: "per export" next to Max size, "ignored if empty" next to Bitrate, "Export folder"
+  (was "Save folder") with the hint "Asks at export when empty.", and a new hint above the dynamic label
+  buttons.
+- The effect buttons read "Speed Up | S", "Slow Down | D", "Zoom | Z" (with the current hotkeys).
+- Plugins window: a changelog opens across the whole card, and the scroll bar sits beside the cards instead
+  of over them.
 - Every built-in plugin is on after the first start, so new users see all features. Switches set in an
   earlier version are kept.
 - About window: a line next to the GitHub link checks for a newer release when the window opens (blinking

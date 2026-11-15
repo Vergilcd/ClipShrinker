@@ -10,8 +10,8 @@ them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
 You need Windows 10 or 11 (64-bit). Exports are fastest on a graphics card: NVIDIA (NVENC, GTX 10xx or newer),
 AMD (AMF) or Intel (Quick Sync), each with a current driver. Without one, Windows' own encoder is used, on the
 graphics card when it can and on the CPU otherwise (slower, H.264 only). The program tests what works on the
-PC at start-up and lists only those in Codec. The notice left of "Plugins" shows "GPU encoding ON" (green)
-or "GPU encoding OFF" (orange) for the chosen codec; hover over it for what was found.
+PC at start-up and lists only those in Codec. The notice left of "Plugins" shows "GPU Encoding is ON" (green)
+or "GPU Encoding is OFF" (orange) for the chosen codec; hover over it for what was found.
 SmartScreen may warn about the unsigned exe; click More info, then Run anyway.
 
 To pin it to the taskbar, start the program, right-click its taskbar button and choose "Pin to taskbar".
@@ -75,26 +75,31 @@ The line under a clip's title shows its length after editing. Pitch, frame blend
 zoom motion are set in "Effects". RIFE (plugins\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
-- Size: "Max size (MB)" applies per file, or to the whole video when joining. Enter a value in "or Bitrate
-  (Mbps)" instead to use a fixed bitrate; the size limit is then ignored and resolution offers only
-  Original / 75% / 50%.
-- Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick one per clip in its title
-  bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto bitrate" means the size or
-  bitrate above. Presets are used when clips are saved as separate files.
-- Video: resolution, codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD,
-  Intel, or Windows on the GPU / CPU; a project from another PC switches to the closest one), centered crop
-  to 21:9, 16:9, 16:10 or 4:3 (only wider clips get cut), and "Convert HDR clips to SDR".
-- Audio: 128k to 320k per track. ShadowPlay can record game and microphone as two tracks. "Keep separate
-  tracks" saves both (Game audio / Microphone), "Mix into one track" combines them (use this for Discord,
-  browsers and phones), and "Mute microphone" leaves the mic out.
-- File names: prefix and suffix. Prefix and suffix can hold dynamic labels that are filled in for each file: {date}, {time}, {preset} (the
-  clip's bitrate preset), {res} (output height, e.g. 1080p), {size} (the size limit) and {codec} (HEVC or
-  H264). The small buttons above Prefix insert one at the cursor of the box you used last. An empty suffix
-  adds nothing; put {codec} in it to get the old clip_HEVC.mp4 names. Untick "Keep original file name" to
-  leave the clip's name out, so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick
-  is greyed out while Prefix and Suffix are both empty.
-- Saving: the save folder (leave it empty to get a save dialog every time) and "Save session on exit", which
-  keeps the open clips when you close the program and opens them again on the next start.
+- Size: "Max size (MB)" applies per export: per file, or to the whole video when joining. Enter a value in
+  "or Bitrate (Mbps)" instead to use a fixed bitrate (it is ignored when empty); the size limit is then
+  ignored and resolution offers Original, 4K, 1440p, 1080p, 720p or 50%.
+- Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
+  one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
+  bitrate" means the size or bitrate above. Presets are used when clips are saved as separate files.
+- Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger
+  than it is), codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
+  or Windows on the GPU, and the Windows CPU encoder only when no graphics card encoder works; a project from
+  another PC switches to the closest one), centered crop to 21:9, 16:9, 16:10 or 4:3 (only wider clips get
+  cut), and "Convert HDR clips to SDR".
+- Audio: Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track. ShadowPlay can
+  record game and microphone as two tracks. "Keep as separate tracks" saves both (Game audio / Microphone),
+  "Mix into one track" combines them (use this for Discord, browsers and phones), and "Mute microphone"
+  leaves the mic out.
+- File names: prefix and suffix. They can hold dynamic labels that are filled in for each file: {date},
+  {time}, {preset} (the clip's bitrate preset), {res} (output height, e.g. 1080p, 1440p or 4K), {size} (the
+  size limit) and {codec} (HEVC or H264). Click a label button to insert it at the cursor of the box you
+  used last, or type its code (shown when you hover the button). An empty suffix adds nothing; put {codec}
+  in it to get the old clip_HEVC.mp4 names. Untick "Keep original file name" to leave the clip's name out,
+  so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick is greyed out while
+  Prefix and Suffix are both empty.
+- Saving: "Export folder" (exports are saved there without asking; when empty, a save dialog asks at every
+  export) and "Save session on exit", which keeps the open clips when you close the program and opens them
+  again on the next start.
 
 EXPORT (Ctrl+E)
 With several clips you choose between one joined video or a separate file per clip. The joined video uses the

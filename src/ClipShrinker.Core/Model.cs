@@ -33,7 +33,7 @@ public readonly record struct ZoomSpan(double OutStart, double OutEnd, double Le
 
 /// <summary>What ffprobe found out about a file (reference probe()).</summary>
 public sealed record MediaInfo(int W, int H, double Fps, double Dur, int NAudio, double Bitrate, long Size,
-                               string? Trc, string? Prim, string? Space)
+                               string? Trc, string? Prim, string? Space, double AudioBitrate = 0)
 {
     public bool Audio => NAudio > 0;
 }
@@ -51,6 +51,8 @@ public sealed record ExportClip
     /// <summary>null = not known (then Audio decides: 1 or 0), like c.get("naudio", ...).</summary>
     public int? NAudio { get; init; }
     public double Bitrate { get; init; }
+    /// <summary>2.6: source bitrate of the first audio track in bits/s (0 = not known).</summary>
+    public double AudioBitrate { get; init; }
     public string? Trc { get; init; }
     public string? Prim { get; init; }
     public string? Space { get; init; }
@@ -81,7 +83,7 @@ public sealed record ExportClip
         return new ExportClip
         {
             Path = path, Start = start, End = end, W = info.W, H = info.H, Fps = info.Fps, Audio = info.Audio,
-            NAudio = info.NAudio, Bitrate = info.Bitrate, Trc = info.Trc, Prim = info.Prim, Space = info.Space,
+            NAudio = info.NAudio, Bitrate = info.Bitrate, AudioBitrate = info.AudioBitrate, Trc = info.Trc, Prim = info.Prim, Space = info.Space,
             Pieces = vis.Count > 0 ? Timing.BuildPieces(start, end, vis) : null, Zooms = zs,
         };
     }

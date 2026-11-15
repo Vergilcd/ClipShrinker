@@ -190,11 +190,16 @@ public sealed partial class MainViewModel : ObservableObject
     public string Res { get => S.Res; set { if (value is not null) Set(ref S.Res, value); } }
     public IReadOnlyList<string> ResOptions => S.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode;
     public bool SizeEnabled => S.BitrateMbps() is null;
-    public string SizeHint => S.BitrateMbps() is null ? "per file" : "ignored";
+    public string SizeHint => S.BitrateMbps() is null ? "per export" : "ignored";
     public string Codec { get => S.Codec; set { if (value is not null) Set(ref S.Codec, value); } }   // (null while the list changes)
     /// <summary>2.6: only the encoders that work on this PC (all of them until the start-up check has answered).</summary>
-    public IReadOnlyList<string> Codecs => workingEncoders is { Count: > 0 } w
+    public IReadOnlyList<string> Codecs => OfferedKeys is { Count: > 0 } w
         ? Core.Media.Encoders.All.Where(e => w.Contains(e.Key)).Select(e => e.Label).ToList() : C.Codecs;
+
+    /// <summary>The working encoders the Codec list offers: the CPU ones only when no graphics card encoder works.</summary>
+    IReadOnlyList<string>? OfferedKeys => workingEncoders is null ? null
+        : workingEncoders.Any(k => Core.Media.Encoders.ByKey(k)?.Gpu == true)
+            ? workingEncoders.Where(k => Core.Media.Encoders.ByKey(k)?.Gpu == true).ToList() : workingEncoders;
     IReadOnlyList<string>? workingEncoders;
     bool cudaOk = true;
 
@@ -202,7 +207,7 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>null = the start-up check has not answered yet; true = the chosen codec encodes on the graphics card.</summary>
     public bool? GpuOn => workingEncoders is null ? null : Core.Media.Encoders.ByLabel(S.Codec)?.Gpu == true && workingEncoders.Count > 0;
 
-    public string GpuText => GpuOn switch { null => "Checking GPU...", true => "GPU encoding ON", false => "GPU encoding OFF" };
+    public string GpuText => GpuOn switch { null => "Checking GPU...", true => "GPU Encoding is ON", false => "GPU Encoding is OFF" };
 
     /// <summary>What the start-up check found (handy for bug reports).</summary>
     public string GpuTip
@@ -237,7 +242,7 @@ public sealed partial class MainViewModel : ObservableObject
     void EnsureCodec()
     {
         if (workingEncoders is null) return;
-        string fit = Core.Media.Encoders.Fallback(S.Codec, workingEncoders);
+        string fit = Core.Media.Encoders.Fallback(S.Codec, OfferedKeys!);
         if (fit != S.Codec) { S.Codec = fit; OnPropertyChanged(nameof(Codec)); }
     }
     public string Crop { get => S.Crop; set { if (Set(ref S.Crop, value)) PreviewSettingsChanged(); } }

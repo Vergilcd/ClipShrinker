@@ -265,7 +265,7 @@ public sealed class Encoder(IFfmpegRunner runner, IExportFileSystem fs, Action<d
         double total = Sum(durs) - (n - 1) * T;
         bool mix = st.MixAudio;
         int nTracks = GraphBuilder.OutTracks(clips, mix);
-        string audioK = st.AudioK;
+        string audioK = Text.ResolveAudioK(st.AudioK, clips);       // (2.6: "Original" = the clips' own audio bitrate)
         bool tonemap = st.Tonemap;
         bool muteFast = st.MuteFast;
         var fx = EffectSettings.FromExport(st);

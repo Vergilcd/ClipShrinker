@@ -11,8 +11,15 @@ namespace ClipShrinker.Core.Project;
 public sealed class AppState
 {
     /// <summary>2.0: 128k and up (1.0.8 also had 48k / 64k / 96k; a saved lower value falls back to 128k).</summary>
-    public static readonly string[] AudioRates = ["128k", "192k", "256k", "320k"];
-    public static readonly string[] AudioTrackModes = ["Keep separate tracks", "Mix into one track"];
+    /// <summary>"Original" (2.6) = the clips' own audio bitrate (Text.ResolveAudioK).</summary>
+    public static readonly string[] AudioRates = ["Original", "128k", "192k", "256k", "320k"];
+    public static readonly string[] AudioTrackModes = ["Keep as separate tracks", "Mix into one track"];
+
+    /// <summary>2.6 renamed "Keep separate tracks"; settings and projects from before still say the old name.</summary>
+    static void Migrate(JsonObject s)
+    {
+        if (s["atrk"] is JsonValue v && v.TryGetValue(out string? a) && a == "Keep separate tracks") s["atrk"] = "Keep as separate tracks";
+    }
     public static readonly string[] ExportModes = ["separate", "join"];
 
     public string Size = "50", Bitrate = "", Res = "Auto", ResBeforeBitrate = "Auto", Codec = "HEVC (hevc_nvenc)";
@@ -61,6 +68,7 @@ public sealed class AppState
     public static AppState FromSettings(JsonObject? s)
     {
         s ??= [];
+        Migrate(s);
         string Saved(string key, string def, IEnumerable<string>? allowed = null) =>
             s.TryGetPropertyValue(key, out var v) ? (Str(v) is { } x && (allowed is null || allowed.Contains(x)) ? x : def) : def;
         bool SavedB(string key, bool def) => s.TryGetPropertyValue(key, out var v) ? Bool(v) ?? def : def;
@@ -143,6 +151,7 @@ public sealed class AppState
     public void ApplyProject(JsonObject? st)
     {
         if (st is null) return;
+        Migrate(st);
         bool Put(ref string field, string key, IEnumerable<string>? allowed = null)
         {
             if (Str(st[key]) is { } v && (allowed is null || allowed.Contains(v))) { field = v; return true; }
