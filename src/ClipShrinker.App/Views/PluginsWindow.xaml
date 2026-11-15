@@ -1,0 +1,98 @@
+<Window x:Class="ClipShrinker.App.Views.PluginsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ClipShrinker.App.ViewModels"
+        xmlns:app="clr-namespace:ClipShrinker.App"
+        Title="Plugins" Width="660" SizeToContent="Height" MaxHeight="820" ResizeMode="NoResize" ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner" Background="{DynamicResource ApplicationBackgroundBrush}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <app:NotBoolToVisConverter x:Key="NotBoolToVis" />
+    </Window.Resources>
+    <DockPanel Margin="22,18,22,18">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Button DockPanel.Dock="Right" Content="Open plugin folder" Focusable="False" VerticalAlignment="Center"
+                    Command="{Binding OpenPluginsFolderCommand}" ToolTip="Open the plugins folder in Explorer" />
+            <StackPanel>
+                <TextBlock Text="PLUGINS" Style="{StaticResource SectionText}" Margin="0" />
+                <TextBlock Text="Switch features on or off. Each plugin is a folder with its version and changelog."
+                           Style="{StaticResource SmallMutedText}" Margin="0,4,0,0" />
+                <TextBlock Text="{Binding PluginsDirText}" Style="{StaticResource SmallMutedText}" Margin="0,1,0,0" />
+            </StackPanel>
+        </DockPanel>
+
+        <Button DockPanel.Dock="Bottom" Content="Close" HorizontalAlignment="Right" Margin="0,14,0,0" Padding="18,5,18,6"
+                Style="{StaticResource AccentButtonStyle}" Click="Close_Click" Focusable="False" />
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Plugins}" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:PluginItem}">
+                        <Border Margin="0,10,0,0" Padding="16,12,14,12" CornerRadius="8" BorderThickness="1"
+                                Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}">
+                            <DockPanel>
+                                <!-- right: switch + delete, or restore when deleted -->
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="12,0,0,0">
+                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Enabled}" Content="{x:Null}"
+                                              AutomationProperties.Name="{Binding Name}" Margin="0,4,6,0" VerticalAlignment="Top"
+                                              Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"
+                                              ToolTip="Switch this plugin on or off" />
+                                    <Button Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Padding="9,6" MinWidth="0" FontSize="14"
+                                            Style="{StaticResource DangerButton}" Margin="8,0,0,0" Focusable="False" VerticalAlignment="Top"
+                                            Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.DeletePluginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}" AutomationProperties.Name="Delete"
+                                            ToolTip="Delete this plugin and its folder (a plugin that came with Clip Shrinker can be restored later)" />
+                                    <Button Content="Restore" Focusable="False" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}"
+                                            Visibility="{Binding CanRestore, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.RestorePluginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Download this plugin again from GitHub and switch it on" />
+                                </StackPanel>
+
+                                <StackPanel x:Name="Info">
+                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Byline}" Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                    <TextBlock Text="{Binding Busy}" Margin="0,4,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource SmallMutedText}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Busy}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!-- changelog: a small toggle (text and arrow centred on one line) and the text below it -->
+                                    <ToggleButton x:Name="LogToggle" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="10,4,8,5" Focusable="False"
+                                                  Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"
+                                                  AutomationProperties.Name="Changelog" ToolTip="Show what changed in each version of this plugin">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Changelog" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="LogArrow" Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
+                                                       VerticalAlignment="Center" Margin="8,1,0,0" />
+                                        </StackPanel>
+                                    </ToggleButton>
+                                    <TextBox x:Name="LogText" Text="{Binding Changelog, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="220"
+                                             FontFamily="Consolas" FontSize="12" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0"
+                                             Padding="10,8" Visibility="Collapsed" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Installed}" Value="False">
+                                <Setter TargetName="Info" Property="Opacity" Value="0.45" />
+                            </DataTrigger>
+                            <Trigger SourceName="LogToggle" Property="IsChecked" Value="True">
+                                <Setter TargetName="LogText" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="LogArrow" Property="Text" Value="&#xE70E;" />
+                            </Trigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

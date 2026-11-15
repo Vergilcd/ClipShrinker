@@ -57,6 +57,8 @@ public sealed record ExportClip
     /// <summary>null = no speed sections.</summary>
     public IReadOnlyList<Piece>? Pieces { get; init; }
     public IReadOnlyList<Zoom> Zooms { get; init; } = [];
+    /// <summary>Extra video filters from plugins (Picture adjustments), after crop / scale / tone-mapping. null = none.</summary>
+    public IReadOnlyList<string>? PluginVf { get; init; }
 
     /// <summary>clip_naudio(c).</summary>
     public int AudioTracks => NAudio ?? (Audio ? 1 : 0);
@@ -109,6 +111,8 @@ public sealed record EffectSettings
     public int ZoomVol { get; init; } = 80;
     /// <summary>Zooms of the clip being previewed (ZOOM["play"]).</summary>
     public IReadOnlyList<Zoom> ZoomPlay { get; init; } = [];
+    /// <summary>The preview's Picture adjustments filter (null = none). Exports take it from ExportClip.PluginVf.</summary>
+    public string? PictureVf { get; init; }
 
     public static EffectSettings Default { get; } = new();
 

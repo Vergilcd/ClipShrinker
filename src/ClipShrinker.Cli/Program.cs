@@ -28,6 +28,7 @@ public static class Program
           --tools <dir>           folder with ffmpeg.exe / ffprobe.exe (default: next to this exe, then PATH)
           --rife <dir>            folder with rife-ncnn-vulkan.exe and a rife-v4 model (default: <tools>\rife)
           --no-rife               treat RIFE as not installed
+          --picture               Picture adjustments plugin on (pic_* values from the project or --settings)
           --log-commands <file>   write every command that ran to a JSON file
         """;
 
@@ -51,7 +52,7 @@ public static class Program
     static Dictionary<string, string?> Options(string[] a)
     {
         var o = new Dictionary<string, string?>();
-        string[] flags = ["--join", "--separate", "--no-rife"];
+        string[] flags = ["--join", "--separate", "--no-rife", "--picture"];
         for (int i = 0; i < a.Length; i++)
         {
             if (flags.Contains(a[i])) o[a[i]] = null;
@@ -85,6 +86,7 @@ public static class Program
             Console.Error.WriteLine("Warning: this ffmpeg build has no NVENC encoder. Update your NVIDIA driver or use a full ffmpeg build.");
 
         var state = AppState.FromSettings(o.GetValueOrDefault("--settings") is { } sp ? SettingsStore.Load(sp) : null);
+        state.PictureOn = o.ContainsKey("--picture");
         var presets = o.GetValueOrDefault("--presets") is { } pp ? PresetStore.Load(pp) : [];
         Preset? PresetByName(string name) => presets.FirstOrDefault(p => p.Name == name);
 

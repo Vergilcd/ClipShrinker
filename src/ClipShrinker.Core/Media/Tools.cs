@@ -65,6 +65,25 @@ public sealed class Tools
         catch (System.ComponentModel.Win32Exception) { return false; }
     }
 
+    /// <summary>True when this ffmpeg has the named filter (the slim build leaves many out). Asked once per name.</summary>
+    public bool HasFilter(string name)
+    {
+        if (Ffmpeg is null) return false;
+        lock (filterCache)
+            if (filterCache.TryGetValue(name, out var known)) return known;
+        bool has;
+        try
+        {
+            has = Capture([Ffmpeg, "-hide_banner", "-filters"]).Out.Split('\n')
+                .Any(l => l.Split(' ', StringSplitOptions.RemoveEmptyEntries) is { Length: >= 2 } p && p[1] == name);
+        }
+        catch (System.ComponentModel.Win32Exception) { has = false; }
+        lock (filterCache) filterCache[name] = has;
+        return has;
+    }
+
+    readonly Dictionary<string, bool> filterCache = [];
+
     /// <summary>ffprobe a file (reference probe()). Throws MediaException with ffprobe's message.</summary>
     public MediaInfo Probe(string path)
     {

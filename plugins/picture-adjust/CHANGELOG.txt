@@ -1,0 +1,8 @@
+PICTURE ADJUSTMENTS - CHANGELOG
+===============================
+
+1.0.0
+- New: brightness, contrast and saturation (-100 to +100 %) for every clip, on a card over the preview (sun
+  button next to full screen, also in full screen). Drag a slider or type a value; used in the preview and the
+  export, saved with projects.
+- Denoise is planned for the next version (it needs the hqdn3d filter in the bundled ffmpeg).

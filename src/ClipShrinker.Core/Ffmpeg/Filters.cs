@@ -279,6 +279,10 @@ public static class Filters
         return f;
     }
 
-    public static List<string> ClipVfilters(ExportClip c, int W, int H, double? ratio, bool tonemap) =>
-        ClipVfilters(c.W, c.H, c.Trc, W, H, ratio, tonemap);
+    public static List<string> ClipVfilters(ExportClip c, int W, int H, double? ratio, bool tonemap)
+    {
+        var f = ClipVfilters(c.W, c.H, c.Trc, W, H, ratio, tonemap);
+        if (c.PluginVf is { } extra) f.AddRange(extra);
+        return f;
+    }
 }

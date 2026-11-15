@@ -9,10 +9,12 @@ public static class PreviewCommands
     public static string Ffmpeg { get; set; } = "ffmpeg";
 
     /// <summary>One frame as PNG on stdout, optionally center-cropped and tone-mapped.</summary>
-    public static List<string> GrabFrame(string path, double t, int w, int h, (int W, int H)? crop = null, string? trc = null)
+    public static List<string> GrabFrame(string path, double t, int w, int h, (int W, int H)? crop = null, string? trc = null,
+                                         string? picture = null)
     {
         string vf = (crop is { } c ? $"crop={I(c.W)}:{I(c.H)}," : "") +
-                    $"scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease" + (trc is not null ? "," + Geometry.TonemapChain(trc) : "");
+                    $"scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease" + (trc is not null ? "," + Geometry.TonemapChain(trc) : "")
+                    + (picture is not null ? "," + picture : "");
         return [Ffmpeg, "-v", "error", "-ss", F(t, 3), "-i", path, "-frames:v", "1",
                 "-vf", vf, "-f", "image2pipe", "-vcodec", "png", "-"];
     }
@@ -46,7 +48,7 @@ public static class PreviewCommands
         var zs = fx.ZoomPlay.Count > 0
             ? Timing.ZoomSpans(fx.ZoomPlay, pcs, crop?.W ?? w, crop?.H ?? h, w, h) : [];
         bool plain = Timing.IsPlain(pieces);
-        bool gpu = hwdec == 2 && plain && crop is null && trc is null && zs.Count == 0;
+        bool gpu = hwdec == 2 && plain && crop is null && trc is null && zs.Count == 0 && fx.PictureVf is null;
         if (gpu) cmd.AddRange(["-hwaccel", "cuda", "-hwaccel_output_format", "cuda"]);
         else if (hwdec != 0) cmd.AddRange(["-hwaccel", "cuda"]);
         cmd.AddRange(["-probesize", "5000000", "-analyzeduration", "1000000",
@@ -57,6 +59,7 @@ public static class PreviewCommands
         {
             string vf = (crop is { } c ? $"crop={I(c.W)}:{I(c.H)}," : "") + $"fps={G(fps)},scale={I(w)}:{I(h)}:flags=fast_bilinear";
             if (trc is not null) vf += "," + Geometry.TonemapChain(trc);
+            if (fx.PictureVf is { } pic) vf += "," + pic;
             cmd.AddRange(["-vf", vf]);
         }
         else
@@ -65,6 +68,7 @@ public static class PreviewCommands
             if (crop is { } c) bas.Add($"crop={I(c.W)}:{I(c.H)}");
             bas.Add($"scale={I(w)}:{I(h)}:flags=fast_bilinear");
             if (trc is not null) bas.Add(Geometry.TonemapChain(trc));
+            if (fx.PictureVf is { } pic) bas.Add(pic);
             string zf = zs.Count > 0 ? Filters.ZoomVfilter(zs, w, h, fx) + "," : "";
             var graph = new List<string> { "[0:v:0]" + string.Join(",", bas.Append("setpts=PTS-STARTPTS")) + "[pb]" };
             graph.AddRange(Filters.SegVideo("pb", pcs, start, "q", "pm", (w, h), fps, null, fx));

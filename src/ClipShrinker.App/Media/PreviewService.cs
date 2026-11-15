@@ -23,7 +23,7 @@ public sealed record PlayRequest(string Path, double Start, double End, double T
 public sealed class PreviewService(Dispatcher ui)
 {
     readonly object gate = new();
-    (string Path, double T, (int W, int H)? Crop, int W, int H, string? Trc)? pendingStill;
+    (string Path, double T, (int W, int H)? Crop, int W, int H, string? Trc, string? Picture)? pendingStill;
     bool stillBusy;
     volatile int playGen;
     Process? playProc, audioProc;
@@ -52,11 +52,11 @@ public sealed class PreviewService(Dispatcher ui)
 
     // ------------------------------------------------------------------ still frames
     /// <summary>Asks for a frame at t; while one is being made only the newest request is kept.</summary>
-    public void RequestStill(string path, double t, (int W, int H)? crop, int w, int h, string? trc)
+    public void RequestStill(string path, double t, (int W, int H)? crop, int w, int h, string? trc, string? picture = null)
     {
         lock (gate)
         {
-            pendingStill = (path, t, crop, w, h, trc);
+            pendingStill = (path, t, crop, w, h, trc, picture);
             if (stillBusy) return;
             stillBusy = true;
         }
@@ -67,14 +67,14 @@ public sealed class PreviewService(Dispatcher ui)
     {
         while (true)
         {
-            (string Path, double T, (int W, int H)? Crop, int W, int H, string? Trc) req;
+            (string Path, double T, (int W, int H)? Crop, int W, int H, string? Trc, string? Picture) req;
             lock (gate)
             {
                 if (pendingStill is not { } p) { stillBusy = false; return; }
                 req = p;
                 pendingStill = null;
             }
-            var png = ThumbnailService.GrabFrame(PreviewCommands.GrabFrame(req.Path, req.T, req.W, req.H, req.Crop, req.Trc));
+            var png = ThumbnailService.GrabFrame(PreviewCommands.GrabFrame(req.Path, req.T, req.W, req.H, req.Crop, req.Trc, req.Picture));
             if (png is null) continue;
             try
             {

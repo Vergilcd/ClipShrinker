@@ -4,6 +4,27 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.4.0
+- Plugins: a new "Plugins" button (left of About) lists the plugins with an on / off switch, their version,
+  author and changelog, a red delete button and "Open plugin folder". Each plugin is a folder in plugins\ with
+  a plugin.json and a CHANGELOG.txt. A deleted plugin that came with Clip Shrinker stays in the list greyed
+  out, with a Restore button that downloads it again from GitHub.
+- Timeline effects is now a plugin: speed up / slow motion / zoom sections, the effect buttons under the
+  preview, the Effects button and window (F2), clip transitions and RIFE. Switched off, these are hidden and
+  left out of the preview and the export; sections already on the clips are kept and come back with it.
+  RIFE moved from library\rife into plugins\timeline-effects\rife (moved automatically on the first start).
+- Bitrate presets is now a plugin: the Bitrate presets button, the preset list in the clip title bars,
+  "Preset (all clips)" and the preset hotkeys. Switched off, clips export with the Export panel's size / bitrate.
+- New plugin "Picture adjustments" (off by default): brightness, contrast and saturation (-100% to +100%) on a
+  card over the preview, opened with the sun button next to full screen (also in full screen). Values can be
+  dragged or typed (25, +25%, -40 %; Enter confirms). Used in the preview and the export, saved with projects.
+  (Denoise follows in 2.5.0.)
+- Export panel: the save folder has its own SAVING section under FILE NAMES, together with "Save session on
+  exit" (was "Restore the last session on start" in the Effects window).
+- Shortcuts window: the plugin shortcuts are at the end under "EFFECTS (plugin)" (F2 included) and are only
+  listed while the Timeline effects plugin is on.
+
+
 2.3.0
 - New "Keep original file name" tick under Suffix, ticked by default (file names as before). Unticked, the
   clip's name is left out and only the prefix and suffix with their dynamic labels name the file, e.g.

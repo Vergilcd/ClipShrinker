@@ -31,9 +31,28 @@ public static class AppPaths
 
     public static Tools LocateTools() => Tools.Locate(ToolDirs);
 
-    /// <summary>rife\ next to ffmpeg (library\rife in the release layout).</summary>
+    /// <summary>plugins\ next to the exe: one folder per plugin with plugin.json and CHANGELOG.txt.</summary>
+    public static string PluginsDir => Path.Combine(ExeDir, "plugins");
+    public static string PluginDir(string id) => Path.Combine(PluginsDir, id);
+
+    /// <summary>Since 2.4 RIFE belongs to the Timeline effects plugin: plugins\timeline-effects\rife.</summary>
+    public static string RifeDir => Path.Combine(PluginDir(Core.Plugins.PluginIds.TimelineEffects), "rife");
+
+    /// <summary>The plugin's rife\ folder; older layouts (rife\ next to ffmpeg, e.g. the Dev folder in Debug) still work.</summary>
     public static RifeInstall? FindRife(Tools t) =>
-        t.Ffmpeg is { } f ? RifeInstall.Find(Path.Combine(Path.GetDirectoryName(f)!, "rife")) : null;
+        RifeInstall.Find(RifeDir) ?? (t.Ffmpeg is { } f ? RifeInstall.Find(Path.Combine(Path.GetDirectoryName(f)!, "rife")) : null);
+
+    /// <summary>2.3 and older kept RIFE in library\rife: it moves into the Timeline effects plugin folder (once).</summary>
+    public static void MoveOldRife()
+    {
+        string old = Path.Combine(LibraryDir, "rife");
+        try
+        {
+            if (Directory.Exists(old) && !Directory.Exists(RifeDir) && Directory.Exists(Path.GetDirectoryName(RifeDir)))
+                Directory.Move(old, RifeDir);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
 
     /// <summary>Debug builds: the 2.0 text files in CSharp\dist (the release script copies them next to the exe).</summary>
     static readonly Lazy<string?> DistDocs = new(() =>
@@ -48,7 +67,15 @@ public static class AppPaths
     /// <summary>Folder with CHANGELOG.txt, LICENSE.txt, README.txt (the exe folder; in Debug CSharp\dist).</summary>
     public static string DocsDir => File.Exists(Path.Combine(ExeDir, "CHANGELOG.txt")) ? ExeDir : DistDocs.Value ?? DevRoot.Value ?? ExeDir;
 
-    /// <summary>The library folder with rife\LICENSE.txt (next to the exe; in Debug the Dev folder's).</summary>
-    public static string DocsLibraryDir =>
-        Directory.Exists(Path.Combine(LibraryDir, "rife")) || DevRoot.Value is null ? LibraryDir : Path.Combine(DevRoot.Value, "library");
+    /// <summary>RIFE's LICENSE.txt: in the plugin folder, else an older library\rife (in Debug the Dev folder's).</summary>
+    public static string RifeLicense
+    {
+        get
+        {
+            string p = Path.Combine(RifeDir, "LICENSE.txt");
+            if (File.Exists(p)) return p;
+            string lib = Directory.Exists(Path.Combine(LibraryDir, "rife")) || DevRoot.Value is null ? LibraryDir : Path.Combine(DevRoot.Value, "library");
+            return Path.Combine(lib, "rife", "LICENSE.txt");
+        }
+    }
 }

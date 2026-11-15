@@ -42,6 +42,7 @@ public sealed partial class MainViewModel : ObservableObject
         restoreSession = Bool("restore_session") ?? false;
         saveDir = Str("save_dir") ?? "";
         InitPreviewSettings();
+        InitPlugins();
         Clips.CollectionChanged += (_, _) => { Renumber(); Refresh(); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
         Refresh();
     }
@@ -257,7 +258,7 @@ public sealed partial class MainViewModel : ObservableObject
     async Task DownloadRife()
     {
         if (RifeBusy.Length > 0 || RifeInstalled) return;
-        string dir = Path.Combine(Tools.Ffmpeg is { } f ? Path.GetDirectoryName(f)! : AppPaths.LibraryDir, "rife");
+        string dir = AppPaths.RifeDir;                       // (2.4: inside the Timeline effects plugin)
         void Step(string text, int? pct) => Application.Current.Dispatcher.BeginInvoke(() =>
         {
             RifeBusy = text;
@@ -269,13 +270,12 @@ public sealed partial class MainViewModel : ObservableObject
         try { await Task.Run(() => Core.Rife.RifeDownloader.Install(dir, Step)); }
         catch (Exception e) when (e is IOException or System.Net.Http.HttpRequestException or InvalidDataException or TaskCanceledException or UnauthorizedAccessException)
         {
-            msg = $"Download failed ({e.Message}). Unzip the release from github.com/nihui/rife-ncnn-vulkan into the library\\rife folder.";
+            msg = $"Download failed ({e.Message}). Unzip the release from github.com/nihui/rife-ncnn-vulkan into the plugins\\timeline-effects\\rife folder.";
         }
         await Application.Current.Dispatcher.InvokeAsync(() => { });   // let the last progress step land first
         RifeBusy = "";
         RefreshRife();
-        if (msg.Length > 0) { RifeStatus = msg; Dialogs.Toast("RIFE download failed - see Effects"); }
-        else Dialogs.Toast("RIFE installed - choose it under Effects > Slow motion effects > Smoothing");
+        if (msg.Length > 0) { RifeStatus = msg; Dialogs.Toast("RIFE download failed - see Effects"); }        else Dialogs.Toast("RIFE installed - choose it under Effects > Slow motion effects > Smoothing");
     }
 
     // ------------------------------------------------------------------ summary
@@ -674,6 +674,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool OnActionKey(string act)
     {
         if (Exporting || TargetClip is not { } row) return false;
+        if (act is "speed" or "slow" or "zoom" && !EffectsPluginOn) return false;   // (Timeline effects plugin)
         var ed = row.Editor;
         if (act is "speed" or "slow" or "zoom") StopPlayback();
         bool changed = act switch
@@ -705,7 +706,7 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>A bitrate preset's own key: applies it to the selected clips.</summary>
     public bool OnPresetKey(string key)
     {
-        if (Exporting || Clips.Count == 0) return false;
+        if (Exporting || Clips.Count == 0 || !PresetsPluginOn) return false;
         var p = presets.FirstOrDefault(q => q.Key.Length > 0 && q.Key == key);
         if (p is null) return false;
         var sel = Clips.Where(selection.Contains).ToList();
@@ -918,6 +919,7 @@ public sealed partial class MainViewModel : ObservableObject
         settings["zoomed"] = zoomed;
         settings["restore_session"] = RestoreSession;
         settings["save_dir"] = SaveDir;
+        SavePluginSettings();
         settings["keys"] = new JsonObject(Keys.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)JsonValue.Create(kv.Value))));
         if (geometry is not null) settings["geometry"] = geometry;
         if (sash is not null) settings["sash"] = sash;

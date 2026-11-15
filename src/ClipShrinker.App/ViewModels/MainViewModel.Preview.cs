@@ -87,7 +87,7 @@ public sealed partial class MainViewModel
         lastPreview = (row, t);
         SetActive(row);
         var (w, h) = PvDims();
-        Preview.RequestStill(row.Path, t, PreviewPlan.Crop(row.Row.Info, S.Ratio), w, h, S.Hdr ? row.Row.Info.Trc : null);
+        Preview.RequestStill(row.Path, t, PreviewPlan.Crop(row.Row.Info, S.Ratio), w, h, S.Hdr ? row.Row.Info.Trc : null, S.PictureFilter());
         BracketChanged?.Invoke();
     }
 

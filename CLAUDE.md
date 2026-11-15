@@ -10,6 +10,10 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
 - `tests/ClipShrinker.Tests` xUnit tests; `tests/fixtures` golden JSON made from 1.0.8 by `tools/dump_*.py`.
 - `dist/` holds README.txt, CHANGELOG.txt, LICENSE.txt, THIRD-PARTY-NOTICES.txt and the ffmpeg texts. The release
   script copies them next to the exe, where the About window reads them (Debug builds find `dist/` directly).
+- `plugins/<id>/` (2.4): plugin.json + CHANGELOG.txt of the built-in plugins (timeline-effects, bitrate-presets,
+  picture-adjust). Embedded in the exe (seeded on first start, offline fallback for Restore), copied into the
+  release, and fetched from raw.githubusercontent .../main/plugins by Restore. Their code is still in the app;
+  `Core.Plugins.Features` / `AppState.PictureOn` gate it. RIFE lives in plugins\timeline-effects\rife.
 - Binaries NOT in git (see .gitignore): ffmpeg.exe, ffprobe.exe, library/rife/, ClipShrinker.exe, test media.
   `tools/make_release.ps1` takes ffmpeg/ffprobe/RIFE from a `Dev\library` folder next to the repo folder.
 
@@ -33,7 +37,9 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.
 - GUI checks: `tools/gui_export_check.ps1` (`-Exe` for the packaged exe) and `tools/gui_phase6_check.ps1` (backs up
-  and restores library settings/presets/session; refuses to run while the app is open).
+  and restores library settings/presets/session; refuses to run while the app is open). `tools/gui_plugins_check.ps1`
+  checks the Plugins window, switching / deleting / restoring and saves screenshots to %TEMP%\cs_plugins_shots.
+- Tests that flip `Features` go in the "PluginFlags" xUnit collection (runs alone).
 
 ## Gotchas
 - .bat/.ps1/.txt must keep CRLF (.gitattributes handles it).

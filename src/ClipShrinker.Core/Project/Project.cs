@@ -18,7 +18,14 @@ public sealed class TimelineClip(string path, MediaInfo info)
     public List<SpeedSection> Sections { get; } = [];
     public List<ZoomSection> Zooms { get; } = [];
 
-    public ExportClip ToExport() => ExportClip.FromTimeline(Path, Start, End, Info, Sections, Zooms);
+    /// <summary>The clip as the encoder gets it. Without the Timeline effects plugin its speed / zoom sections are
+    /// kept (they come back when the plugin is switched on again) but left out of the export and the preview.</summary>
+    public ExportClip ToExport() => Plugins.Features.TimelineEffects
+        ? ExportClip.FromTimeline(Path, Start, End, Info, Sections, Zooms)
+        : ExportClip.FromTimeline(Path, Start, End, Info, [], []);
+
+    /// <summary>The bitrate preset the export uses (none while the Bitrate presets plugin is off).</summary>
+    public string? ActivePreset => Plugins.Features.BitratePresets ? Preset : null;
 }
 
 public sealed class ProjectException(string message) : Exception(message);

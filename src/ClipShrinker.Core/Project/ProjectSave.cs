@@ -26,7 +26,7 @@ public static class ProjectSave
             if (!string.IsNullOrEmpty(baseDir) && RelPath(r.Path, baseDir) is { } rel) c["rel"] = rel;
             clips.Add(c);
         }
-        return new JsonObject
+        var data = new JsonObject
         {
             ["app"] = "Clip Shrinker", ["format"] = 1, ["clips"] = clips, ["active"] = active,
             ["settings"] = new JsonObject
@@ -39,6 +39,12 @@ public static class ProjectSave
                 ["slow_interp"] = s.SlowInterp, ["hdr"] = s.Hdr, ["mode"] = s.Mode, ["trans"] = s.Trans, ["tlen"] = s.Tlen,
             },
         };
+        if (s.PictureChanged)                                // (Picture adjustments plugin; older versions ignore them)
+        {
+            var st = (JsonObject)data["settings"]!;
+            st["pic_bright"] = s.PicBright; st["pic_contrast"] = s.PicContrast; st["pic_sat"] = s.PicSat;
+        }
+        return data;
     }
 
     /// <summary>os.path.relpath on Windows: null when the paths are on different drives (Python raises ValueError).</summary>

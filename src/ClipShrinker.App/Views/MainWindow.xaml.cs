@@ -45,10 +45,12 @@ public partial class MainWindow : Window, IDialogs
         vm.RevealRequested += Reveal;
         vm.BracketChanged += DrawBracket;
         vm.KeysChanged += RefreshHints;
+        vm.PluginsChanged += OnPluginsChanged;
         PreviewImg.SizeChanged += (_, _) => DrawBracket();
         previewTimer.Tick += (_, _) => { previewTimer.Stop(); vm.PreviewResized(); };
         BuildBracket();
         BuildTokenButtons();
+        RightPill.Children.Insert(0, PicturePanel.ToggleButton());
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
     }
 
@@ -257,7 +259,11 @@ public partial class MainWindow : Window, IDialogs
         switch (act)
         {
             case "shortcuts": Shortcuts_Click(this, e); break;
-            case "effects": ToggleEffects(); break;
+            case "effects":
+                if (!vm.EffectsPluginOn) return false;
+                ToggleEffects();
+                break;
+            case "delete_section" when !vm.EffectsPluginOn: return false;
             case "export": vm.GoOrAbortCommand.Execute(null); break;
             case "open": vm.OpenProjectDialogCommand.Execute(null); break;
             case "save": vm.SaveProject(false); break;
@@ -493,9 +499,11 @@ public partial class MainWindow : Window, IDialogs
         full.Show();
     }
 
-    /// <summary>The Effects window is kept and only hidden, so it opens where it was (reference show_settings / hide_settings).</summary>
+    /// <summary>The Effects window is kept and only hidden, so it opens where it was (reference show_settings / hide_settings).
+    /// It belongs to the Timeline effects plugin.</summary>
     void ToggleEffects()
     {
+        if (!vm.EffectsPluginOn) { effects?.Hide(); return; }
         effects ??= new EffectsWindow(vm) { Owner = this };
         if (effects.IsVisible) { effects.Hide(); return; }
         if (!effects.Placed)
@@ -507,6 +515,30 @@ public partial class MainWindow : Window, IDialogs
         }
         effects.Show();
         effects.Activate();
+    }
+
+    PluginsWindow? pluginsWin;
+
+    void Plugins_Click(object sender, RoutedEventArgs e)
+    {
+        if (pluginsWin is { IsLoaded: true }) { pluginsWin.Activate(); return; }
+        pluginsWin = new PluginsWindow(vm) { Owner = this };
+        pluginsWin.Show();
+    }
+
+    /// <summary>A plugin was switched off or deleted: its windows close.</summary>
+    void OnPluginsChanged()
+    {
+        if (!vm.EffectsPluginOn) effects?.Hide();
+        if (!vm.PresetsPluginOn && presetsWin is { IsLoaded: true }) presetsWin.Close();
+        if (shortcuts is { IsLoaded: true } open)                // rebuilt with / without the plugin sections
+        {
+            var (l, t) = (open.Left, open.Top);
+            open.Close();
+            shortcuts = new ShortcutsWindow(vm) { Owner = this, Left = l, Top = t };
+            shortcuts.Show();
+            pluginsWin?.Activate();
+        }
     }
 
     void About_Click(object sender, RoutedEventArgs e)

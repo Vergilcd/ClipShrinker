@@ -1,0 +1,6 @@
+BITRATE PRESETS - CHANGELOG
+===========================
+
+1.0.0
+- Split out of Clip Shrinker 2.3 into its own plugin: the Bitrate presets window, the preset list in each
+  clip's title bar, "Preset (all clips)" in the Export panel and the preset hotkeys.

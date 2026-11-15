@@ -1,0 +1,8 @@
+{
+  "id": "bitrate-presets",
+  "name": "Bitrate presets",
+  "author": "Vergil",
+  "version": "1.0.0",
+  "builtin": true,
+  "description": "Named bitrates with their own hotkeys, picked per clip in its title bar or for all clips at once, used when the clips are exported as separate files."
+}

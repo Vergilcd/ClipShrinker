@@ -24,7 +24,13 @@ The Release tag `binaries` on GitHub holds these in `binaries.zip`.
 
     powershell -ExecutionPolicy Bypass -File tools\make_release.ps1
 
-It publishes one self-contained `ClipShrinker.exe` (win-x64), copies the `dist\` texts and the library files into
+It publishes one self-contained `ClipShrinker.exe` (win-x64), copies the `dist\` texts, ffmpeg / ffprobe into
+`library\`, the repo's `plugins\` folder with RIFE in `plugins\timeline-effects\rife\` into
 `..\Release\ClipShrinker\` and zips them as `..\Release\ClipShrinker-<version>.zip`.
+
+## Plugins
+Each folder in `plugins\` is one plugin: `plugin.json` (id, name, author, version, builtin, description) and
+`CHANGELOG.txt`. Bump a plugin's version and changelog when its part of the app changes. The Plugins window's
+Restore downloads these two files from `main` on GitHub, so a changed plugin.json must be merged to reach users.
 
 The slim ffmpeg build recipe is in `tools/ffmpeg-build/`.
