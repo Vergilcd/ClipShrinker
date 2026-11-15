@@ -30,6 +30,16 @@ public sealed class PreviewService(Dispatcher ui)
     WaveOut? wave;
     int playLevel = 2;                      // 2 = GPU decode + scale, 1 = GPU decode, 0 = software (steps down on failure)
 
+    /// <summary>2.2.1: does this ffmpeg have scale_cuda (level 2)? The slim build does not, so level 2 failed on every
+    /// first play of a session (~65 ms lost before the retry). Checked once in the background, from the first preview on.</summary>
+    static readonly Task<bool> scaleCuda = Task.Run(() =>
+    {
+        try { return Tools.Capture([PreviewCommands.Ffmpeg, "-hide_banner", "-filters"]).Out.Contains("scale_cuda"); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException or InvalidOperationException) { return true; }
+    });
+
+    static PreviewService() { }             // (runs the check when the first preview is made, not at the first play)
+
     public event Action<BitmapSource>? StillReady;
     /// <summary>A playback frame was drawn; the time is source seconds.</summary>
     public event Action<double>? FrameShown;
@@ -170,6 +180,7 @@ public sealed class PreviewService(Dispatcher ui)
         bool firstPass = true;
         double start = r.Start, end = r.End;
         var buf = new byte[fsize];
+        if (playLevel == 2 && !scaleCuda.Result) playLevel = 1;           // (the playback thread: it may wait for the check)
         while (gen == playGen)
         {
             if (!firstPass && r.Trim() is { } tr) (start, end) = tr;      // the markers may have been moved meanwhile

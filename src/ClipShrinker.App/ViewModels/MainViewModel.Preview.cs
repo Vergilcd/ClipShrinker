@@ -139,7 +139,8 @@ public sealed partial class MainViewModel
         playRow = row;
         Playing = true;
         Preview.Play(req);
-        PreviewImage = Preview.Frame;
+        // 2.2.1: the still frame stays up until the first playback frame is drawn (FrameShown swaps the picture);
+        // showing the new, still empty bitmap at once flashed black while ffmpeg seeks (~0.2 s).
         BracketChanged?.Invoke();
     }
 
