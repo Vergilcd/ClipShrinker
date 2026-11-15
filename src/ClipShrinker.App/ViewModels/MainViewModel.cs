@@ -33,7 +33,8 @@ public sealed partial class MainViewModel : ObservableObject
     {
         settings = SettingsStore.Load(AppPaths.SettingsFile);
         S = AppState.FromSettings(settings);
-        Keys = LoadKeys();
+        // (the preset hotkeys as saved: a newly added shortcut must not take one of them)
+        Keys = LoadKeys(PresetStore.Load(AppPaths.PresetsFile, C.FixedKeys).Select(p => p.Key).Where(k => k.Length > 0).ToHashSet());
         presets = PresetStore.Load(AppPaths.PresetsFile, PresetReserved);
         Tools = AppPaths.LocateTools();
         if (Tools.Ffmpeg is not null) Core.Ffmpeg.PreviewCommands.Ffmpeg = Tools.Ffmpeg;
@@ -52,13 +53,18 @@ public sealed partial class MainViewModel : ObservableObject
     public bool Zoomed => Bool("zoomed") ?? false;
 
     /// <summary>Saved shortcuts; a damaged or clashing set falls back to the defaults (reference App.__init__).</summary>
-    Dictionary<string, string> LoadKeys()
+    Dictionary<string, string> LoadKeys(IReadOnlySet<string> presetKeys)
     {
         var keys = new Dictionary<string, string>(C.KeyDefaults);
         if (settings["keys"] is JsonObject sk)
             foreach (var (a, v) in sk)
                 if (keys.ContainsKey(a) && Core.Py.PyJson.Str(v) is { Length: > 0 } s && !C.FixedKeys.Contains(s))
                     keys[a] = s;
+        // a shortcut that is newer than the saved set: its default key may already be taken by a rebound one
+        foreach (var (a, alt) in C.KeyFallbacks)
+            if (!(settings["keys"] is JsonObject saved && saved.ContainsKey(a))
+                && (presetKeys.Contains(keys[a]) || keys.Any(kv => kv.Key != a && kv.Value == keys[a])))
+                keys[a] = alt;
         return keys.Values.Distinct().Count() < keys.Count ? new Dictionary<string, string>(C.KeyDefaults) : keys;
     }
 
@@ -128,7 +134,13 @@ public sealed partial class MainViewModel : ObservableObject
     public bool DarkMode
     {
         get => Theme == "dark";
-        set { Theme = value ? "dark" : "light"; App.SetTheme(Theme); OnPropertyChanged(); }
+        set
+        {
+            Theme = value ? "dark" : "light";
+            App.SetTheme(Theme);
+            OnPropertyChanged();
+            foreach (var c in Clips) c.NotifyChanged();         // the timelines' trim stripes follow the theme
+        }
     }
 
     // ------------------------------------------------------------------ export settings (AppState fields)
@@ -667,6 +679,18 @@ public sealed partial class MainViewModel : ObservableObject
         return true;
     }
 
+    /// <summary>An effect button was dropped on a clip's timeline at time t: that clip becomes the active one, the
+    /// playhead goes there and the effect is added as with its hotkey.</summary>
+    public void AddEffectAt(ClipItemViewModel row, string act, double t)
+    {
+        if (Exporting || !Clips.Contains(row)) return;
+        StopPlayback();
+        SetActive(row);
+        row.Editor.Playhead = Math.Max(0, Math.Min(row.Editor.Dur, t));
+        OnActionKey(act);
+        RequestPreview(row, row.Editor.Playhead);
+    }
+
     /// <summary>A bitrate preset's own key: applies it to the selected clips.</summary>
     public bool OnPresetKey(string key)
     {
@@ -753,8 +777,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (join || clips.Count == 1)
         {
             string stem = ExportPlanner.Stem(clips[0].Path);
-            string? output = InitDir() is { } d ? ExportPlanner.AutoPath(S, d, stem, inputs)
-                : Dialogs.SaveFile(join ? "Save joined video as" : "Save as", S.OutStem(stem) + ".mp4", firstDir);
+            var names = ExportPlanner.OneFileName(S, st, rows, clips, join, PresetByName);
+            string? output = InitDir() is { } d ? ExportPlanner.AutoPath(S, d, stem, inputs, null, names)
+                : Dialogs.SaveFile(join ? "Save joined video as" : "Save as", S.OutStem(stem, names) + ".mp4", firstDir);
             if (output is null) return;
             if (inputs.Contains(Path.GetFullPath(output).ToLowerInvariant()))
             {

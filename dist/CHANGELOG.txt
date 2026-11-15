@@ -4,6 +4,48 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.2.2
+- Softer stripes over the trimmed-away parts of a timeline: 15% black in dark mode and 7% white in light mode
+  instead of strong black, and they follow the Dark mode switch.
+- The stripes are drawn as smooth lines that run straight off the top and bottom edges, so they no longer
+  look jagged or show slanted ends.
+
+
+2.2.1
+- Play starts without the black flash: the preview keeps showing the current frame until the first playback
+  frame is ready (ffmpeg needs about 0.2 s to seek), then switches straight to the moving picture. Also in
+  full screen.
+- The first play after starting the program no longer tries a GPU scaling mode the bundled ffmpeg doesn't
+  have, so it starts a little sooner.
+
+
+2.2.0
+- The hints under the preview are now buttons: "Speed Up [S]", "Slow Down [D]" and "Zoom [Z]", in the
+  colours of their sections, with the current hotkey (it follows the Shortcuts window). Click one to add the
+  effect at the playhead of the active clip, or drag it by its dotted handle onto any clip's timeline to add
+  it there (a dashed line shows where). The hint "Space = play / pause" is gone; it is in the Shortcuts window.
+- File names: the dynamic label buttons sit above Prefix and Suffix, with a short explanation under them.
+- An empty suffix no longer adds the codec name: clip.mp4 instead of clip_HEVC.mp4. Use the {codec} label to
+  keep the old names. (A file that would overwrite its source gets " (2)" added.)
+
+
+2.1.0
+- Clip title bars are 20% taller, with a larger bitrate drop-down and buttons. "Reset zoom" is dark grey
+  (white with black text in light mode); the remove button is grey with a red X (white in light mode).
+- Clips that aren't selected show a 25% taller thumbnail strip.
+- The trimmed-away parts of a timeline get dark slanted stripes.
+- Play, sound and volume now sit on the preview (bottom left), leaving the bar under it free. While playing
+  they show only when the mouse is over the preview.
+- New full-screen preview: the button at the bottom right of the preview or F (can be changed in Shortcuts).
+  Esc, F or a double-click leaves it; the other shortcuts keep working. If F is already used by one of your
+  shortcuts or bitrate presets, full screen gets F11 instead.
+- Play also works with the playhead outside the trimmed part: it plays once to the end of the video and stops
+  instead of looping.
+- Name fields for the prefix and suffix: {date}, {time}, {preset}, {res}, {size} and {codec} are filled in
+  for each exported file. Buttons under Suffix insert them at the cursor.
+- Effects window: the section headings no longer end in "effects".
+
+
 2.0.0
 Rewritten in C# (.NET 10, WPF) for a faster, smoother Windows interface. Exports match 1.0.8 exactly: same
 ffmpeg commands, size search and file names, checked against 1.0.8 with automated tests.

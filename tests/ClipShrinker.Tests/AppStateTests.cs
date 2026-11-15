@@ -15,7 +15,7 @@ public class AppStateTests
     public void SummaryLines()
     {
         var s = AppState.FromSettings(null);
-        Assert.Equal(["No clips yet", "HEVC  ·  Auto resolution  ·  crop 16:9", "Max 50 MB per file", "clip_HEVC.mp4"], s.SummaryLines([]));
+        Assert.Equal(["No clips yet", "HEVC  ·  Auto resolution  ·  crop 16:9", "Max 50 MB per file", "clip.mp4"], s.SummaryLines([]));
         var a = Row(@"C:\v\a.mp4", 20);
         var b = Row(@"C:\v\b.mp4", 10);
         b.Sections.Add(new SpeedSection(2, 6, 2.0));      // 10 s -> 8 s
@@ -61,6 +61,7 @@ public class AppStateTests
         var s = AppState.FromSettings(null);
         var rows = new List<TimelineClip> { Row(@"C:\v\a.mp4", 5), Row(@"D:\w\a.mp4", 5), Row(@"C:\v\b.mov", 5) };
         rows[2].Preset = "Low";
+        s.Suffix = "{codec}";                               // 2.2: no codec name unless asked for
         var clips = ExportPlanner.PrepareClips(s, rows);
         var st = s.ToExportSettings(false, out _)!;
         var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { @"C:\out\a_HEVC.mp4" };

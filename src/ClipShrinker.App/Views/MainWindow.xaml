@@ -91,6 +91,38 @@
                             <Canvas x:Name="Bracket" Width="{Binding ActualWidth, ElementName=PreviewImg}" Height="{Binding ActualHeight, ElementName=PreviewImg}"
                                     IsHitTestVisible="True" Background="{x:Null}" />
                         </Grid>
+                        <!-- play / sound / volume (bottom left) and full screen (bottom right) on top of the preview.
+                             Always shown while paused; while playing only when the mouse is over the preview. -->
+                        <Grid x:Name="PreviewOverlay" Margin="10" Visibility="{Binding HasClips, Converter={StaticResource BoolToVis}}">
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Playing}" Value="True" />
+                                                <Condition Binding="{Binding IsMouseOver, ElementName=PreviewBox}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Opacity" Value="0" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="#99000000" CornerRadius="19" Padding="2">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource OverlayButton}" Content="{Binding PlayIcon}" Command="{Binding TogglePlayCommand}"
+                                            AutomationProperties.Name="Play"
+                                            ToolTip="Play / pause the active clip (Space). Starts at the yellow playhead and loops the trimmed part; outside the trimmed part it plays to the end once." />
+                                    <Button Style="{StaticResource OverlayButton}" Content="{Binding SpeakerIcon}" Command="{Binding ToggleMuteCommand}"
+                                            AutomationProperties.Name="Sound" ToolTip="Preview sound on / off (M)" />
+                                    <Slider Width="90" Minimum="0" Maximum="100" Value="{Binding PvVol}" VerticalAlignment="Center" Margin="2,0,12,0" Focusable="False"
+                                            IsMoveToPointEnabled="True" ToolTip="Preview volume (only the preview - the export is not changed)" />
+                                </StackPanel>
+                            </Border>
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#99000000" CornerRadius="19" Padding="2">
+                                <Button x:Name="FullscreenButton" Style="{StaticResource OverlayButton}" Content="&#xE740;" Click="Fullscreen_Click"
+                                        AutomationProperties.Name="Full screen" />
+                            </Border>
+                        </Grid>
                         <Border x:Name="ToastBox" Background="Black" Padding="14,6" Margin="0,0,0,14" CornerRadius="4"
                                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="Collapsed" IsHitTestVisible="False">
                             <TextBlock x:Name="ToastText" Foreground="White" FontSize="13" TextWrapping="Wrap" MaxWidth="700" TextAlignment="Center" />
@@ -98,17 +130,8 @@
                     </Grid>
                 </Border>
                 <DockPanel Grid.Row="1" Margin="0,4,0,0" LastChildFill="False">
-                    <Button Style="{StaticResource IconButton}" Margin="0" Content="{Binding PlayIcon}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                            Command="{Binding TogglePlayCommand}" AutomationProperties.Name="Play"
-                            ToolTip="Play / pause the active clip (Space). Starts at the yellow playhead and loops the trimmed part." />
-                    <Button Style="{StaticResource IconButton}" Margin="10,0,2,0" Content="{Binding SpeakerIcon}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                            Command="{Binding ToggleMuteCommand}" ToolTip="Preview sound on / off (M)" />
-                    <Slider Width="90" Minimum="0" Maximum="100" Value="{Binding PvVol}" VerticalAlignment="Center" Margin="0,0,6,0" Focusable="False"
-                            IsMoveToPointEnabled="True" ToolTip="Preview volume (only the preview - the export is not changed)" />
-                    <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontWeight="Bold" Foreground="#3B82F6" x:Name="HintSpeed" />
-                    <TextBlock VerticalAlignment="Center" Margin="14,0,0,0" FontWeight="Bold" Foreground="#EC4899" x:Name="HintSlow" />
-                    <TextBlock VerticalAlignment="Center" Margin="14,0,0,0" FontWeight="Bold" x:Name="HintZoom" />
-                    <TextBlock VerticalAlignment="Center" Margin="14,0,0,0" x:Name="HintPlay" />
+                    <!-- effect buttons: click = add at the playhead of the active clip, drag onto a timeline = add there -->
+                    <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all"
                             Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Effects" Click="Effects_Click"
@@ -130,18 +153,18 @@
                                 <Border x:Name="Card" Margin="2,0,2,8" CornerRadius="9" BorderThickness="2"
                                         BorderBrush="{DynamicResource CsBorder}" Background="#202020">
                                     <DockPanel>
-                                        <Border x:Name="Head" DockPanel.Dock="Top" Padding="14,4,8,4" CornerRadius="7,7,0,0"
+                                        <Border x:Name="Head" DockPanel.Dock="Top" Padding="14,5,8,5" CornerRadius="7,7,0,0"
                                                 Background="{DynamicResource CsHead}"
                                                 MouseLeftButtonDown="Head_MouseDown" MouseMove="Head_MouseMove" MouseLeftButtonUp="Head_MouseUp"
                                                 ToolTip="Click to select - drag up or down to change the order of the clips">
                                             <DockPanel>
-                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadDangerButton}" Content="&#xE711;" FontSize="10"
+                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadRemoveButton}" Content="&#xE711;" FontSize="12"
                                                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" ToolTip="Remove this clip from the list"
                                                         Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding ZoomLabel}" FontSize="11" VerticalAlignment="Center" Margin="8,0" x:Name="ZoomText" />
-                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadDangerButton}" Content="Reset zoom" FontSize="11" Click="Fit_Click"
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding ZoomLabel}" FontSize="12" VerticalAlignment="Center" Margin="8,0" x:Name="ZoomText" />
+                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadButton}" Content="Reset zoom" Click="Fit_Click"
                                                         ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)" />
-                                                <ComboBox DockPanel.Dock="Right" Width="200" Margin="0,0,10,0" FontSize="11" Padding="8,2" MinHeight="0" Focusable="False"
+                                                <ComboBox DockPanel.Dock="Right" Width="240" Height="24" Margin="0,0,10,0" FontSize="12" Padding="9,2" MinHeight="0" Focusable="False" VerticalContentAlignment="Center"
                                                           Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
                                                           ItemsSource="{Binding PresetLabels}" SelectedItem="{Binding PresetLabel}" PreviewMouseWheel="Combo_NoWheel"
                                                           ToolTip="Bitrate of this clip when the clips are exported as separate files: Auto bitrate = the size / bitrate from the Export panel. Presets are made in the Bitrate presets window.">
@@ -161,7 +184,7 @@
                                                         </Style>
                                                     </ComboBox.Style>
                                                 </ComboBox>
-                                                <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             </DockPanel>
                                         </Border>
                                         <local:TimelineView />
@@ -301,18 +324,25 @@
                     <Separator Grid.Row="13" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
                     <TextBlock Grid.Row="14" Grid.ColumnSpan="2" Text="FILE NAMES" Style="{StaticResource SectionText}" />
 
-                    <TextBlock Grid.Row="15" Text="Prefix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox Grid.Row="15" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
-                             AutomationProperties.Name="Prefix" Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}"
-                             ToolTip="Added before the clip name with an underscore, e.g. prefix_clip_HEVC.mp4 (empty = nothing)" />
+                    <!-- dynamic labels: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
+                    <StackPanel Grid.Row="15" Grid.ColumnSpan="2" Margin="0,0,0,4">
+                        <WrapPanel x:Name="TokenPanel" />
+                        <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,1,0,0"
+                                   Text="Click a dynamic label to add to the prefix or suffix depending on which one is active." />
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="16" Text="Suffix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox Grid.Row="16" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
-                             AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}"
-                             ToolTip="Added after an underscore to the exported file names, e.g. clip_suffix.mp4. Empty = the codec name (clip_HEVC.mp4)" />
+                    <TextBlock Grid.Row="16" Text="Prefix:" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="PrefixBox" Grid.Row="16" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                             AutomationProperties.Name="Prefix" Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
+                             ToolTip="Added before the clip name with an underscore, e.g. prefix_clip.mp4 (empty = nothing). May hold dynamic labels like {date}." />
 
-                    <TextBlock Grid.Row="17" Text="Save folder:" Style="{StaticResource FieldLabel}" />
-                    <StackPanel Grid.Row="17" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                    <TextBlock Grid.Row="17" Text="Suffix:" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="SuffixBox" Grid.Row="17" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                             AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
+                             ToolTip="Added after the clip name with an underscore, e.g. clip_suffix.mp4 (empty = nothing). May hold dynamic labels like {codec}." />
+
+                    <TextBlock Grid.Row="18" Text="Save folder:" Style="{StaticResource FieldLabel}" />
+                    <StackPanel Grid.Row="18" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
                         <TextBox Width="146" AutomationProperties.Name="Save folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Exports are saved here without asking (empty = a save dialog asks every time)" />
                         <Button Content="..." Margin="6,0,0,0" Padding="10,4" MinWidth="0" Focusable="False" Click="PickSaveDir_Click" ToolTip="Choose the folder" />

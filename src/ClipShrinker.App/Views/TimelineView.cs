@@ -17,13 +17,40 @@ namespace ClipShrinker.App.Views;
 /// </summary>
 public sealed class TimelineView : Canvas
 {
+    /// <summary>Drag-and-drop data of an effect button under the preview: "speed", "slow" or "zoom".</summary>
+    public const string EffectFormat = "ClipShrinker.Effect";
+    double? dropX;                                             // an effect button is dragged over this timeline
     ClipItemViewModel? vm;
     TimelineEditor? Ed => vm?.Editor;
     readonly TextBox startBox = TimeBox("#22C55E"), endBox = TimeBox("#EF4444");
     readonly Dictionary<SpeedSection, TextBox> speedBoxes = new(ReferenceEqualityComparer.Instance);
 
     static readonly Brush Bg = Frozen("#202020");
-    static readonly Brush Shade = Frozen(Color.FromArgb(191, 0, 0, 0));        // trimmed away (75 %)
+    static readonly Brush Shade = Frozen(Color.FromArgb(166, 0, 0, 0));        // trimmed away (65 %, plus the stripes)
+    static readonly Pen HatchDark = FrozenPen(Color.FromArgb(38, 0, 0, 0), 5.5);         // 15 % black
+    static readonly Pen HatchLight = FrozenPen(Color.FromArgb(18, 255, 255, 255), 5.5);  // 7 % white (white stands out more)
+    static Pen FrozenPen(Color c, double w) { var p = new Pen(Frozen(c), w); p.Freeze(); return p; }
+    const double HatchStep = 16;
+
+    /// <summary>Slanted stripes over a trimmed-away part (2.2.2): 15 % black in dark mode, 7 % white in light mode.
+    /// Drawn as real lines (a tiled brush was rendered at low resolution and scaled up, which made the edges jagged
+    /// on scaled displays). They lie on a grid in timeline coordinates, so both trimmed-away ends line up.</summary>
+    void DrawHatch(DrawingContext dc, Rect r)
+    {
+        var bg = (TryFindResource("ApplicationBackgroundBrush") as SolidColorBrush)?.Color ?? Col("#202020");
+        var pen = bg.R + bg.G + bg.B > 3 * 128 ? HatchLight : HatchDark;
+        dc.PushClip(new RectangleGeometry(r));
+        // lines x + y = k * step, going up to the right. Each line starts and ends well outside the rectangle, so
+        // the clip cuts it straight along the edges: the square ends of the pen never show as slanted corners.
+        double e = 2 * pen.Thickness, top = r.Top - e, bottom = r.Bottom + e;
+        double k0 = Math.Floor((r.Left + top) / HatchStep) - 1, k1 = Math.Ceiling((r.Right + bottom) / HatchStep) + 1;
+        for (double k = k0; k <= k1; k++)
+        {
+            double s = k * HatchStep;
+            dc.DrawLine(pen, new Point(s - bottom, bottom), new Point(s - top, top));
+        }
+        dc.Pop();
+    }
     static readonly Brush Yellow = Frozen("#FBBF24");
     static readonly Brush Dark111 = Frozen("#111111");
     static readonly Typeface Ui = new("Segoe UI");
@@ -35,6 +62,7 @@ public sealed class TimelineView : Canvas
         Background = Bg;
         Focusable = true;
         FocusVisualStyle = null;
+        AllowDrop = true;
         Children.Add(startBox);
         Children.Add(endBox);
         HookTimeBox(startBox, true);
@@ -42,6 +70,7 @@ public sealed class TimelineView : Canvas
         DataContextChanged += (_, _) => Attach(DataContext as ClipItemViewModel);
         SizeChanged += (_, _) => { if (vm is not null) vm.SetWidth(ActualWidth); UpdateClip(); Redraw(); };
     }
+
 
     static SolidColorBrush Frozen(string hex) => Frozen((Color)ColorConverter.ConvertFromString(hex));
     static SolidColorBrush Frozen(Color c) { var b = new SolidColorBrush(c); b.Freeze(); return b; }
@@ -99,8 +128,13 @@ public sealed class TimelineView : Canvas
         if (x11 < W0) dc.DrawRectangle(Bg, null, R(x11, y0, W0, y1));
         double mid = (y0 + y1) / 2;
         double ty0 = Math.Max(y0, mid - ed.ThumbHeight / 2), ty1 = Math.Min(y1, mid + ed.ThumbHeight / 2);
-        if (xs > Math.Max(x00, 0)) dc.DrawRectangle(Shade, null, R(Math.Max(x00, 0), ty0, Math.Min(xs, W0), ty1));
-        if (xe < Math.Min(x11, W0)) dc.DrawRectangle(Shade, null, R(Math.Max(xe, 0), ty0, Math.Min(x11, W0), ty1));
+        foreach (var r in new[] { xs > Math.Max(x00, 0) ? R(Math.Max(x00, 0), ty0, Math.Min(xs, W0), ty1) : Rect.Empty,
+                                  xe < Math.Min(x11, W0) ? R(Math.Max(xe, 0), ty0, Math.Min(x11, W0), ty1) : Rect.Empty })
+        {
+            if (r.IsEmpty) continue;
+            dc.DrawRectangle(Shade, null, r);
+            DrawHatch(dc, r);
+        }
         double lineW = ov ? 3 : (act ? 4 : 3);               // section edges: about twice the 2 px playhead
 
         // speed sections: tinted strip and edge lines; the header (same colour as the lines) is drawn further down
@@ -188,6 +222,12 @@ public sealed class TimelineView : Canvas
             dc.DrawRectangle(Frozen("#444444"), null, R(Lx, oy0, Rx, oy1));
             dc.DrawRectangle(Frozen("#BBBBBB"), null, R(Lx + (Rx - Lx) * ed.ViewA / dur, oy0,
                                                         Lx + (Rx - Lx) * (ed.ViewA + ed.ViewLen) / dur, oy1));
+        }
+
+        if (dropX is { } dx)                                                  // where a dragged effect button would land
+        {
+            var pen = new Pen(Brushes.White, 2) { DashStyle = DashStyles.Dash };
+            dc.DrawLine(pen, new Point(dx, 0), new Point(dx, tlb));
         }
 
         if (act)                                                              // playhead
@@ -446,6 +486,35 @@ public sealed class TimelineView : Canvas
         if (Ed is not { } ed) return;
         var p = e.GetPosition(this);
         if (ed.RightClick(p.X, p.Y, W)) Changed();
+        e.Handled = true;
+    }
+
+    // ------------------------------------------------------------------ effect buttons dropped on the timeline
+    protected override void OnDragEnter(DragEventArgs e) => DragHover(e);
+    protected override void OnDragOver(DragEventArgs e) => DragHover(e);
+
+    void DragHover(DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(EffectFormat) || Ed is null) return;
+        e.Effects = DragDropEffects.Copy;
+        dropX = e.GetPosition(this).X;
+        InvalidateVisual();
+        e.Handled = true;                                      // (the window would refuse anything but video files)
+    }
+
+    protected override void OnDragLeave(DragEventArgs e)
+    {
+        base.OnDragLeave(e);
+        dropX = null;
+        InvalidateVisual();
+    }
+
+    protected override void OnDrop(DragEventArgs e)
+    {
+        dropX = null;
+        InvalidateVisual();
+        if (e.Data.GetData(EffectFormat) is not string act || vm is null || Ed is not { } ed || Host is not { } host) return;
+        host.AddEffectAt(vm, act, ed.T(e.GetPosition(this).X, W));
         e.Handled = true;
     }
 

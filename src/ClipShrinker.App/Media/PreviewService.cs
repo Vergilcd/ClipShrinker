@@ -10,10 +10,11 @@ using ClipShrinker.Core.Media;
 
 namespace ClipShrinker.App.Media;
 
-/// <summary>Everything a playback run needs; Trim() gives the current trim markers (they may be moved while it plays).</summary>
+/// <summary>Everything a playback run needs; Trim() gives the current trim markers (they may be moved while it plays).
+/// Once = play T0 .. End a single time and stop (the playhead was outside the trim), instead of looping the trim.</summary>
 public sealed record PlayRequest(string Path, double Start, double End, double T0, (int W, int H)? Crop, int W, int H, double Fps,
                                  bool UseSound, string? Trc, IReadOnlyList<SpeedSection> Sections, EffectSettings Effects,
-                                 int NAudio, Func<(double Start, double End)?> Trim);
+                                 int NAudio, Func<(double Start, double End)?> Trim, bool Once = false);
 
 /// <summary>
 /// The preview (reference request_preview / _preview_loop and start_playback / _play_loop / _deliver / _draw_frame):
@@ -29,10 +30,22 @@ public sealed class PreviewService(Dispatcher ui)
     WaveOut? wave;
     int playLevel = 2;                      // 2 = GPU decode + scale, 1 = GPU decode, 0 = software (steps down on failure)
 
+    /// <summary>2.2.1: does this ffmpeg have scale_cuda (level 2)? The slim build does not, so level 2 failed on every
+    /// first play of a session (~65 ms lost before the retry). Checked once in the background, from the first preview on.</summary>
+    static readonly Task<bool> scaleCuda = Task.Run(() =>
+    {
+        try { return Tools.Capture([PreviewCommands.Ffmpeg, "-hide_banner", "-filters"]).Out.Contains("scale_cuda"); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException or InvalidOperationException) { return true; }
+    });
+
+    static PreviewService() { }             // (runs the check when the first preview is made, not at the first play)
+
     public event Action<BitmapSource>? StillReady;
     /// <summary>A playback frame was drawn; the time is source seconds.</summary>
     public event Action<double>? FrameShown;
     public event Action? PlaybackFailed;
+    /// <summary>A play-once run reached its end.</summary>
+    public event Action? PlaybackEnded;
     public WriteableBitmap? Frame { get; private set; }
     public bool Playing { get; private set; }
     public bool SoundOn { get; set; } = true;
@@ -167,6 +180,7 @@ public sealed class PreviewService(Dispatcher ui)
         bool firstPass = true;
         double start = r.Start, end = r.End;
         var buf = new byte[fsize];
+        if (playLevel == 2 && !scaleCuda.Result) playLevel = 1;           // (the playback thread: it may wait for the check)
         while (gen == playGen)
         {
             if (!firstPass && r.Trim() is { } tr) (start, end) = tr;      // the markers may have been moved meanwhile
@@ -199,7 +213,7 @@ public sealed class PreviewService(Dispatcher ui)
                         if (due > now) Thread.Sleep(TimeSpan.FromSeconds(due - now));
                         else if (n > 0 && now - due > 0.15) { n++; continue; }   // far behind: drop frames to catch up
                         double ts = Timing.OutToSrc(pieces, n / r.Fps);
-                        if (r.Trim() is { } cur && ts > cur.End + 0.03) break;   // the end marker was moved back: loop now
+                        if (!r.Once && r.Trim() is { } cur && ts > cur.End + 0.03) break;   // the end marker was moved back: loop now
                         Deliver(gen, buf, ts);
                         n++;
                     }
@@ -216,6 +230,11 @@ public sealed class PreviewService(Dispatcher ui)
             if (n == 0)
             {
                 if (gen == playGen) ui.BeginInvoke(() => PlaybackFailed?.Invoke());
+                return;
+            }
+            if (r.Once)
+            {
+                if (gen == playGen) ui.BeginInvoke(() => { if (gen == playGen) PlaybackEnded?.Invoke(); });
                 return;
             }
             firstPass = false;

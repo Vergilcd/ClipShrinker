@@ -21,13 +21,22 @@ public static class ExportPlanner
     public static string Stem(string path) => Path.GetFileNameWithoutExtension(path);
 
     /// <summary>folder/stem_tag.mp4, made unique (name (2).mp4 ...) so nothing is overwritten.</summary>
-    public static string AutoPath(AppState state, string folder, string stem, ICollection<string> taken, Func<string, bool>? exists = null)
+    public static string AutoPath(AppState state, string folder, string stem, ICollection<string> taken, Func<string, bool>? exists = null,
+                                  NameContext? ctx = null)
     {
         exists ??= File.Exists;
-        string bas = Path.Combine(folder, state.OutStem(stem));
+        string bas = Path.Combine(folder, state.OutStem(stem, ctx));
         string p = bas + ".mp4";
         for (int i = 2; exists(p) || taken.Contains(p.ToLowerInvariant()); i++) p = $"{bas} ({I(i)}).mp4";
         return p;
+    }
+
+    /// <summary>The name fields of the joined video, or of the single clip (with its own bitrate preset).</summary>
+    public static NameContext OneFileName(AppState state, ExportSettings st, IReadOnlyList<TimelineClip> rows, IReadOnlyList<ExportClip> clips,
+                                          bool join, Func<string, Preset?> presetByName)
+    {
+        var over = !join && rows[0].Preset is { } n ? presetByName(n) : null;
+        return new NameContext(DateTime.Now, over?.Name, clips, join ? st : state.ClipOverride(st, over));
     }
 
     /// <summary>Joined video, or the single clip (which keeps its own bitrate preset).</summary>
@@ -46,12 +55,14 @@ public static class ExportPlanner
     {
         var jobs = new List<ExportJob>();
         var used = new HashSet<string>();
+        var now = DateTime.Now;                              // one time for all files of this export
         for (int i = 0; i < clips.Count; i++)
         {
-            string p = AutoPath(state, folder, Stem(clips[i].Path), used, exists);
-            used.Add(p.ToLowerInvariant());
             var over = rows[i].Preset is { } n ? presetByName(n) : null;
-            jobs.Add(new ExportJob(p, [clips[i]], state.ClipOverride(st, over), over is not null));
+            var cst = state.ClipOverride(st, over);
+            string p = AutoPath(state, folder, Stem(clips[i].Path), used, exists, new NameContext(now, over?.Name, [clips[i]], cst));
+            used.Add(p.ToLowerInvariant());
+            jobs.Add(new ExportJob(p, [clips[i]], cst, over is not null));
         }
         return jobs;
     }

@@ -32,6 +32,7 @@ public sealed partial class MainViewModel
             if (playRow is { } r && Clips.Contains(r)) { r.Editor.FollowPlayhead(t); r.NotifyChanged(); }
         };
         p.PlaybackFailed += () => { StopPlayback(); Dialogs.Toast("Could not play the preview"); };
+        p.PlaybackEnded += StopPlayback;                      // played once outside the trim: no loop
         return p;
     }
 
@@ -75,7 +76,10 @@ public sealed partial class MainViewModel
         WaveOut.Volume = Math.Max(0, Math.Min(100, PvVol)) / 100.0;
     }
 
-    (int W, int H) PvDims() => PreviewPlan.Dims(PreviewBox.W, PreviewBox.H);
+    /// <summary>The preview is shown full screen (a larger frame is made).</summary>
+    public bool FullScreen { get; set; }
+
+    (int W, int H) PvDims() => PreviewPlan.Dims(PreviewBox.W, PreviewBox.H, FullScreen);
 
     /// <summary>Shows the frame of row at t (and makes row the active clip).</summary>
     public void RequestPreview(ClipItemViewModel row, double t)
@@ -127,14 +131,16 @@ public sealed partial class MainViewModel
         var secs = ed.Vis().Select(v => new SpeedSection(v.A, v.B, v.Sec.Speed)).ToList();
         var zooms = ed.VisZ().Select(v => new Zoom(v.A, v.B, v.Z.X, v.Z.Y, v.Z.W)).ToList();
         var clip = row.Row;
-        var req = new PlayRequest(row.Path, clip.Start, clip.End, PreviewPlan.StartTime(clip, ed.Playhead), PreviewPlan.Crop(i, S.Ratio),
+        var (t0, end, once) = PreviewPlan.PlayRange(clip, ed.Playhead);
+        var req = new PlayRequest(row.Path, clip.Start, end, t0, PreviewPlan.Crop(i, S.Ratio),
                                   w, h, PreviewPlan.PlayFps(i), SoundOn && i.Audio, S.Hdr ? i.Trc : null, secs,
                                   PreviewPlan.Effects(S, zooms), S.MuteMic ? 1 : i.NAudio,
-                                  () => Clips.Contains(row) ? (clip.Start, clip.End) : null);
+                                  () => Clips.Contains(row) ? (clip.Start, clip.End) : null, once);
         playRow = row;
         Playing = true;
         Preview.Play(req);
-        PreviewImage = Preview.Frame;
+        // 2.2.1: the still frame stays up until the first playback frame is drawn (FrameShown swaps the picture);
+        // showing the new, still empty bitmap at once flashed black while ffmpeg seeks (~0.2 s).
         BracketChanged?.Invoke();
     }
 
