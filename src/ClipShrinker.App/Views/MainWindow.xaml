@@ -130,10 +130,8 @@
                     </Grid>
                 </Border>
                 <DockPanel Grid.Row="1" Margin="0,4,0,0" LastChildFill="False">
-                    <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontWeight="Bold" Foreground="#3B82F6" x:Name="HintSpeed" />
-                    <TextBlock VerticalAlignment="Center" Margin="14,0,0,0" FontWeight="Bold" Foreground="#EC4899" x:Name="HintSlow" />
-                    <TextBlock VerticalAlignment="Center" Margin="14,0,0,0" FontWeight="Bold" x:Name="HintZoom" />
-                    <TextBlock VerticalAlignment="Center" Margin="14,0,0,0" x:Name="HintPlay" />
+                    <!-- effect buttons: click = add at the playhead of the active clip, drag onto a timeline = add there -->
+                    <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all"
                             Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Effects" Click="Effects_Click"
@@ -326,22 +324,22 @@
                     <Separator Grid.Row="13" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
                     <TextBlock Grid.Row="14" Grid.ColumnSpan="2" Text="FILE NAMES" Style="{StaticResource SectionText}" />
 
-                    <TextBlock Grid.Row="15" Text="Prefix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox x:Name="PrefixBox" Grid.Row="15" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
-                             AutomationProperties.Name="Prefix" Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
-                             ToolTip="Added before the clip name with an underscore, e.g. prefix_clip_HEVC.mp4 (empty = nothing). May hold name fields like {date}." />
-
-                    <TextBlock Grid.Row="16" Text="Suffix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox x:Name="SuffixBox" Grid.Row="16" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
-                             AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
-                             ToolTip="Added after an underscore to the exported file names, e.g. clip_suffix.mp4. Empty = the codec name (clip_HEVC.mp4). May hold name fields like {date}." />
-
-                    <!-- name fields: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
-                    <StackPanel Grid.Row="17" Grid.ColumnSpan="2" Margin="0,4,0,2">
-                        <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,0,0,5"
-                                   Text="Name fields are filled in for each exported file. Click one to insert it at the cursor in Prefix or Suffix:" />
+                    <!-- dynamic labels: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
+                    <StackPanel Grid.Row="15" Grid.ColumnSpan="2" Margin="0,0,0,4">
                         <WrapPanel x:Name="TokenPanel" />
+                        <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,1,0,0"
+                                   Text="Click a dynamic label to add to the prefix or suffix depending on which one is active." />
                     </StackPanel>
+
+                    <TextBlock Grid.Row="16" Text="Prefix:" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="PrefixBox" Grid.Row="16" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                             AutomationProperties.Name="Prefix" Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
+                             ToolTip="Added before the clip name with an underscore, e.g. prefix_clip.mp4 (empty = nothing). May hold dynamic labels like {date}." />
+
+                    <TextBlock Grid.Row="17" Text="Suffix:" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="SuffixBox" Grid.Row="17" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                             AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
+                             ToolTip="Added after the clip name with an underscore, e.g. clip_suffix.mp4 (empty = nothing). May hold dynamic labels like {codec}." />
 
                     <TextBlock Grid.Row="18" Text="Save folder:" Style="{StaticResource FieldLabel}" />
                     <StackPanel Grid.Row="18" Grid.Column="1" Orientation="Horizontal" Margin="0,3">

@@ -17,6 +17,9 @@ namespace ClipShrinker.App.Views;
 /// </summary>
 public sealed class TimelineView : Canvas
 {
+    /// <summary>Drag-and-drop data of an effect button under the preview: "speed", "slow" or "zoom".</summary>
+    public const string EffectFormat = "ClipShrinker.Effect";
+    double? dropX;                                             // an effect button is dragged over this timeline
     ClipItemViewModel? vm;
     TimelineEditor? Ed => vm?.Editor;
     readonly TextBox startBox = TimeBox("#22C55E"), endBox = TimeBox("#EF4444");
@@ -36,6 +39,7 @@ public sealed class TimelineView : Canvas
         Background = Bg;
         Focusable = true;
         FocusVisualStyle = null;
+        AllowDrop = true;
         Children.Add(startBox);
         Children.Add(endBox);
         HookTimeBox(startBox, true);
@@ -214,6 +218,12 @@ public sealed class TimelineView : Canvas
             dc.DrawRectangle(Frozen("#444444"), null, R(Lx, oy0, Rx, oy1));
             dc.DrawRectangle(Frozen("#BBBBBB"), null, R(Lx + (Rx - Lx) * ed.ViewA / dur, oy0,
                                                         Lx + (Rx - Lx) * (ed.ViewA + ed.ViewLen) / dur, oy1));
+        }
+
+        if (dropX is { } dx)                                                  // where a dragged effect button would land
+        {
+            var pen = new Pen(Brushes.White, 2) { DashStyle = DashStyles.Dash };
+            dc.DrawLine(pen, new Point(dx, 0), new Point(dx, tlb));
         }
 
         if (act)                                                              // playhead
@@ -472,6 +482,35 @@ public sealed class TimelineView : Canvas
         if (Ed is not { } ed) return;
         var p = e.GetPosition(this);
         if (ed.RightClick(p.X, p.Y, W)) Changed();
+        e.Handled = true;
+    }
+
+    // ------------------------------------------------------------------ effect buttons dropped on the timeline
+    protected override void OnDragEnter(DragEventArgs e) => DragHover(e);
+    protected override void OnDragOver(DragEventArgs e) => DragHover(e);
+
+    void DragHover(DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(EffectFormat) || Ed is null) return;
+        e.Effects = DragDropEffects.Copy;
+        dropX = e.GetPosition(this).X;
+        InvalidateVisual();
+        e.Handled = true;                                      // (the window would refuse anything but video files)
+    }
+
+    protected override void OnDragLeave(DragEventArgs e)
+    {
+        base.OnDragLeave(e);
+        dropX = null;
+        InvalidateVisual();
+    }
+
+    protected override void OnDrop(DragEventArgs e)
+    {
+        dropX = null;
+        InvalidateVisual();
+        if (e.Data.GetData(EffectFormat) is not string act || vm is null || Ed is not { } ed || Host is not { } host) return;
+        host.AddEffectAt(vm, act, ed.T(e.GetPosition(this).X, W));
         e.Handled = true;
     }
 

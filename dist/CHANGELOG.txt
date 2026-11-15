@@ -4,6 +4,16 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.2.0
+- The hints under the preview are now buttons: "Speed Up [S]", "Slow Down [D]" and "Zoom [Z]", in the
+  colours of their sections, with the current hotkey (it follows the Shortcuts window). Click one to add the
+  effect at the playhead of the active clip, or drag it by its dotted handle onto any clip's timeline to add
+  it there (a dashed line shows where). The hint "Space = play / pause" is gone; it is in the Shortcuts window.
+- File names: the dynamic label buttons sit above Prefix and Suffix, with a short explanation under them.
+- An empty suffix no longer adds the codec name: clip.mp4 instead of clip_HEVC.mp4. Use the {codec} label to
+  keep the old names. (A file that would overwrite its source gets " (2)" added.)
+
+
 2.1.0
 - Clip title bars are 20% taller, with a larger bitrate drop-down and buttons. "Reset zoom" is dark grey
   (white with black text in light mode); the remove button is grey with a red X (white in light mode).

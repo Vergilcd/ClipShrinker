@@ -206,7 +206,33 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <!-- The small "insert a name field" buttons under Prefix / Suffix -->
+            <!-- The Speed Up / Slow Down / Zoom buttons under the preview: click or drag onto a timeline -->
+            <Style x:Key="EffectChip" TargetType="Button">
+                <Setter Property="Padding" Value="8,3,10,4" />
+                <Setter Property="Margin" Value="0,0,8,0" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" CornerRadius="4" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.85" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.7" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!-- The small "insert a dynamic label" buttons above Prefix / Suffix -->
             <Style x:Key="TokenButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FontSize" Value="11" />
                 <Setter Property="Padding" Value="6,1,6,2" />

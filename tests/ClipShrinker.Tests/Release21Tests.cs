@@ -16,7 +16,7 @@ public class Release21Tests
     public void PlainPrefixAndSuffixAreUnchanged()
     {
         var s = AppState.FromSettings(null);
-        Assert.Equal("a_HEVC", s.OutStem("a"));
+        Assert.Equal("a", s.OutStem("a"));                 // 2.2: an empty suffix adds nothing
         s.Prefix = "pre";
         s.Suffix = "post";
         Assert.Equal("pre_a_post", s.OutStem("a"));

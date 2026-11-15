@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.1.0 (NVENC)
+CLIP SHRINKER 2.2.0 (NVENC)
 ===========================
 
 GETTING STARTED
@@ -43,6 +43,8 @@ EFFECTS (the band above the thumbnails)
   its header: 4 is four times faster, 0.5 is half speed (0.1 to 100, Enter confirms).
 - Z adds a zoom section (white, header at the bottom of the timeline). While the playhead is inside it, a
   bracket on the preview marks the zoomed area; drag it to move it or drag its corners to resize it.
+- The Speed Up, Slow Down and Zoom buttons under the preview do the same: click one to add the effect at the
+  playhead of the active clip, or drag it onto any clip's timeline to add it where you drop it.
 - Drag a section's edge lines to resize it, or its header or body to move it. Click to select a section;
   Delete or Backspace removes it, and right-click removes the one under the mouse. Sections can't overlap and
   stay inside the trimmed part.
@@ -63,9 +65,10 @@ EXPORT SETTINGS (right side)
   tracks" saves both (Game audio / Microphone), "Mix into one track" combines them (use this for Discord,
   browsers and phones), and "Mute microphone" leaves the mic out.
 - File names: prefix, suffix and save folder. Leave the folder empty to get a save dialog every time.
-  Prefix and suffix can hold name fields that are filled in for each file: {date}, {time}, {preset} (the
-  clip's bitrate preset), {res} (output height, e.g. 1080p), {size} (the size limit) and {codec}. The small
-  buttons under Suffix insert one at the cursor.
+  Prefix and suffix can hold dynamic labels that are filled in for each file: {date}, {time}, {preset} (the
+  clip's bitrate preset), {res} (output height, e.g. 1080p), {size} (the size limit) and {codec} (HEVC or
+  H264). The small buttons above Prefix insert one at the cursor of the box you used last. An empty suffix
+  adds nothing; put {codec} in it to get the old clip_HEVC.mp4 names.
 
 EXPORT (Ctrl+E)
 With several clips you choose between one joined video (using the transition set in "Effects") or a separate

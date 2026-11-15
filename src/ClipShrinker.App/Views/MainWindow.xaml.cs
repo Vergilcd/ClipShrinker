@@ -385,12 +385,56 @@ public partial class MainWindow : Window, IDialogs
         return null;
     }
 
+    /// <summary>The effect buttons under the preview, labelled with their current hotkeys (rebuilt when a key changes).</summary>
+    static readonly (string Act, string Name, string Bg, string Border, string Fg, string What)[] EffectButtons =
+    [
+        ("speed", "Speed Up", "#3B82F6", "#3B82F6", "#FFFFFF", "a speed-up section (blue)"),
+        ("slow", "Slow Down", "#EC4899", "#EC4899", "#FFFFFF", "a slow-down section (pink)"),
+        ("zoom", "Zoom", "#F4F4F5", "#C8C8C8", "#000000", "a zoom section (white)"),
+    ];
+    Point? chipDown;                                           // where the mouse went down on an effect button
+    bool chipDragged;                                          // that press became a drag: no click
+
     void RefreshHints()
     {
-        HintSpeed.Text = $"{Text.ChordLabel(vm.Keys["speed"])} = speed up";
-        HintSlow.Text = $"{Text.ChordLabel(vm.Keys["slow"])} = slow down";
-        HintZoom.Text = $"{Text.ChordLabel(vm.Keys["zoom"])} = zoom in";
-        HintPlay.Text = $"{Text.ChordLabel(vm.Keys["play"])} = play / pause";
+        EffectChips.Children.Clear();
+        foreach (var (act, name, bg, border, fg, what) in EffectButtons)
+        {
+            static SolidColorBrush B(string hex) => new((Color)ColorConverter.ConvertFromString(hex));
+            string key = Text.ChordLabel(vm.Keys[act]);
+            var content = new StackPanel { Orientation = Orientation.Horizontal };
+            content.Children.Add(new TextBlock
+            {
+                Text = "\u283F", FontFamily = new FontFamily("Segoe UI Symbol"), FontSize = 13, Opacity = 0.75,
+                Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center,
+            });
+            content.Children.Add(new TextBlock { Text = $"{name} [{key}]", FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
+            var b = new Button
+            {
+                Style = (Style)FindResource("EffectChip"), Content = content, Background = B(bg), BorderBrush = B(border), Foreground = B(fg),
+                ToolTip = $"Click to add {what} at the playhead of the active clip ({key}), or drag it onto a clip's timeline to add it there.",
+            };
+            System.Windows.Automation.AutomationProperties.SetName(b, name);
+            b.PreviewMouseLeftButtonDown += (_, e) => { chipDown = e.GetPosition(this); chipDragged = false; };
+            b.PreviewMouseMove += (_, e) =>
+            {
+                if (chipDown is not { } p0 || e.LeftButton != MouseButtonState.Pressed) return;
+                var p = e.GetPosition(this);
+                if (Math.Abs(p.X - p0.X) < SystemParameters.MinimumHorizontalDragDistance
+                    && Math.Abs(p.Y - p0.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+                chipDown = null;
+                chipDragged = true;
+                vm.StopPlayback();
+                DragDrop.DoDragDrop(b, new DataObject(TimelineView.EffectFormat, act), DragDropEffects.Copy);
+            };
+            b.Click += (_, _) =>
+            {
+                chipDown = null;
+                if (chipDragged) { chipDragged = false; return; }
+                vm.OnActionKey(act);
+            };
+            EffectChips.Children.Add(b);
+        }
         FullscreenButton.ToolTip = $"Full-screen preview ({Text.ChordLabel(vm.Keys["fullscreen"])}). Esc leaves it.";
     }
 

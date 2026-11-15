@@ -200,16 +200,17 @@ public sealed class AppState
         d["trans"] = Trans; d["tlen"] = Tlen; d["prefix"] = Prefix; d["suffix"] = Suffix;
     }
 
-    /// <summary>clip -> prefix_clip_tag (the output file name without extension). 2.1: the prefix and suffix may hold
-    /// name fields ({date}, {time}, {preset}, {res}, {size}, {codec}, see NameTokens), filled in for this file.</summary>
+    /// <summary>clip -> prefix_clip_suffix (the output file name without extension). The prefix and suffix may hold
+    /// dynamic labels ({date}, {time}, {preset}, {res}, {size}, {codec}, see NameTokens), filled in for this file.
+    /// 2.2: an empty suffix adds nothing (1.0.8 - 2.1 added the codec name; {codec} does that now).</summary>
     public string OutStem(string stem, NameContext? ctx = null)
     {
         ctx ??= new NameContext(DateTime.Now);
         string pre = Text.CleanSuffix(NameTokens.Expand(Prefix, this, ctx));
-        string tag = Text.CleanSuffix(NameTokens.Expand(Suffix, this, ctx)) is { Length: > 0 } s ? s : CodecTag;
-        return (pre.Length > 0 ? pre + "_" : "") + $"{stem}_{tag}";
+        string suf = Text.CleanSuffix(NameTokens.Expand(Suffix, this, ctx));
+        return (pre.Length > 0 ? pre + "_" : "") + stem + (suf.Length > 0 ? "_" + suf : "");
     }
 
-    /// <summary>HEVC / H264: the default suffix and the {codec} field.</summary>
+    /// <summary>HEVC / H264: the {codec} label.</summary>
     public string CodecTag => Codec.Contains("HEVC") ? "HEVC" : "H264";
 }

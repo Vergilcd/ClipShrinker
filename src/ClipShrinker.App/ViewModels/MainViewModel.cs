@@ -673,6 +673,18 @@ public sealed partial class MainViewModel : ObservableObject
         return true;
     }
 
+    /// <summary>An effect button was dropped on a clip's timeline at time t: that clip becomes the active one, the
+    /// playhead goes there and the effect is added as with its hotkey.</summary>
+    public void AddEffectAt(ClipItemViewModel row, string act, double t)
+    {
+        if (Exporting || !Clips.Contains(row)) return;
+        StopPlayback();
+        SetActive(row);
+        row.Editor.Playhead = Math.Max(0, Math.Min(row.Editor.Dur, t));
+        OnActionKey(act);
+        RequestPreview(row, row.Editor.Playhead);
+    }
+
     /// <summary>A bitrate preset's own key: applies it to the selected clips.</summary>
     public bool OnPresetKey(string key)
     {
