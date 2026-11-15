@@ -25,7 +25,8 @@ if ($extra) { throw "publish made more than the exe: $($extra.Name -join ', ')" 
 Remove-Item $Out -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory "$Out\library" | Out-Null
 Copy-Item "$Pub\ClipShrinker.exe" $Out
-foreach ($f in "README.txt", "CHANGELOG.txt", "LICENSE.txt", "THIRD-PARTY-NOTICES.txt", "ffmpeg-LICENSE.txt", "ffmpeg-build-settings.txt") {
+foreach ($f in "README.txt", "CHANGELOG.txt", "LICENSE.txt", "THIRD-PARTY-NOTICES.txt", "ffmpeg-LICENSE.txt", "ffmpeg-build-settings.txt",
+           "OpenCL-ICD-Loader-LICENSE.txt") {
     Copy-Item "$Root\dist\$f" $Out
 }
 Copy-Item "$Dev\library\ffmpeg.exe", "$Dev\library\ffprobe.exe" "$Out\library"

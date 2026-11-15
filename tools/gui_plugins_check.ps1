@@ -112,6 +112,11 @@ $sat.SetFocus(); $sat.GetCurrentPattern([System.Windows.Automation.ValuePattern]
 Check ((Range "Saturation") -eq -100) "typed -100% moved the saturation slider"
 $br = Find $win $A::NameProperty "Brightness %"
 Check ($br.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq "+60%") "the slider shows +60% in its box"
+$dn = Find $win $A::NameProperty "Denoise %"                       # 2.5: denoise 0 .. 100, no negative values
+$dn.SetFocus(); $dn.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("-20"); Key 13
+Check ((Range "Denoise") -eq 0) "typed -20 gives denoise 0"
+$dn.SetFocus(); $dn.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("45 %"); Key 13
+Check ((Range "Denoise") -eq 45) "typed 45 % moved the denoise slider"
 Start-Sleep 2
 Shot $win "3b_picture_overlay"
 Invoke (Find $win $A::NameProperty "Full screen")                 # full screen (the card is open there too)
@@ -122,7 +127,7 @@ Shot $fs "3c_fullscreen"
 Key 0x1B
 Start-Sleep 1
 Invoke (Find $win $A::NameProperty "Reset")
-Check ((Range "Brightness") -eq 0 -and (Range "Saturation") -eq 0) "Reset"
+Check ((Range "Brightness") -eq 0 -and (Range "Saturation") -eq 0 -and (Range "Denoise") -eq 0) "Reset"
 Invoke (Find $win $A::NameProperty "Plugins")
 $pw = Win "Plugins"
 

@@ -21,6 +21,11 @@ If something fails, library\clipshrinker.log names the missing piece; send me th
 features.sh) and rebuild.
 
 AV1: the slim build includes the NVIDIA AV1 encoder (av1_nvenc, RTX 40 series) and the dav1d software decoder.
+Denoise (Clip Shrinker 2.5.0): nlmeans on the CPU and nlmeans_opencl on the graphics card. The Khronos OpenCL loader
+is built from source and linked in statically, so ffmpeg.exe needs no OpenCL.dll to start. hqdn3d is NOT included:
+ffmpeg only allows it in GPL builds and this build is LGPL (configure leaves GPL-only filters out silently, so
+check "ffmpeg -filters" after a build).
+
 Known gaps in the slim build (the full build has them):
  - GPU preview scaling (scale_cuda) - the preview falls back to a slightly slower path automatically
  - decoders for rare formats (see DECODERS in features.sh)

@@ -80,6 +80,9 @@ public sealed partial class MainViewModel : ObservableObject
         if ((Tools.Ffmpeg is null || Tools.Ffprobe is null) && !await DownloadFfmpeg()) return false;
         _ = Task.Run(() =>
         {
+            // 2.5: GPU denoise needs a working OpenCL device; until this answers (or without one) denoise runs on the CPU
+            S.OpenCl = Tools.OpenClWorks();
+            if (S.PicDenoise != 0) Ui(PreviewSettingsChanged);
             if (!Tools.HasNvenc())
                 Ui(() => Dialogs.Warn("NVENC not available", "This ffmpeg build has no NVENC encoder. " +
                                       "Update your NVIDIA driver or use a full ffmpeg build."));

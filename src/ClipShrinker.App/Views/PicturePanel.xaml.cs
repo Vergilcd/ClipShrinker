@@ -56,7 +56,7 @@ public partial class PicturePanel : UserControl
         var b = new Button
         {
             Style = (Style)Application.Current.FindResource("OverlayButton"), Content = "",
-            ToolTip = "Picture: brightness, contrast, saturation (Picture adjustments plugin)",
+            ToolTip = "Picture: brightness, contrast, saturation, denoise (Picture adjustments plugin)",
         };
         System.Windows.Automation.AutomationProperties.SetName(b, "Picture");
         b.SetBinding(ButtonBase.CommandProperty, new Binding(nameof(MainViewModel.TogglePicturePanelCommand)));

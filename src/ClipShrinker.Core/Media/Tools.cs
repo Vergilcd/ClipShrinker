@@ -84,6 +84,20 @@ public sealed class Tools
 
     readonly Dictionary<string, bool> filterCache = [];
 
+    /// <summary>2.5: GPU denoise works here: this ffmpeg has nlmeans_opencl and a tiny test picture goes through it
+    /// on an OpenCL device (graphics driver with OpenCL). Takes ~0.3 s; ask once and keep the answer.</summary>
+    public bool OpenClWorks()
+    {
+        if (Ffmpeg is null || !HasFilter("nlmeans_opencl")) return false;
+        try
+        {
+            return Capture([Ffmpeg, "-hide_banner", "-v", "error", .. Plugins.PictureAdjust.OpenClArgs,
+                            "-filter_complex", "color=s=64x64:d=0.04," + Plugins.PictureAdjust.DenoiseFilter(50, gpu: true),
+                            "-c:v", "rawvideo", "-f", "null", "-"]).Code == 0;
+        }
+        catch (System.ComponentModel.Win32Exception) { return false; }
+    }
+
     /// <summary>ffprobe a file (reference probe()). Throws MediaException with ffprobe's message.</summary>
     public MediaInfo Probe(string path)
     {

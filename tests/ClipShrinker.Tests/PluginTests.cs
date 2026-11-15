@@ -167,6 +167,79 @@ public class PluginTests
         Assert.Equal((0, -40), (other.PicBright, other.PicSat));       // the project's picture replaces the current one
     }
 
+    // ------------------------------------------------------------------ denoise (2.5)
+    [Fact]
+    public void DenoiseFilterStrings()
+    {
+        Assert.Null(PictureAdjust.DenoiseFilter(0, gpu: true));
+        Assert.Equal("nlmeans=s=1.09:p=3:r=5", PictureAdjust.DenoiseFilter(1, gpu: false));
+        Assert.Equal("nlmeans=s=10.00:p=3:r=5", PictureAdjust.DenoiseFilter(100, gpu: false));
+        Assert.Equal("format=yuv420p,hwupload,nlmeans_opencl=s=5.50:p=3:r=5,hwdownload,format=yuv420p", PictureAdjust.DenoiseFilter(50, gpu: true));
+        Assert.Equal("nlmeans=s=10.00:p=3:r=5", PictureAdjust.DenoiseFilter(500, gpu: false));     // clamped
+    }
+
+    [Fact]
+    public void DenoiseComesBeforeColourAndNotOnKeptHdr()
+    {
+        string colour = PictureAdjust.Filter(10, 0, 0)!;
+        Assert.Equal("nlmeans=s=5.50:p=3:r=5," + colour, PictureAdjust.Filter(10, 0, 0, 50, gpu: false));
+        Assert.Equal(colour, PictureAdjust.Filter(10, 0, 0, 50, gpu: false, hdrKept: true));
+        Assert.Null(PictureAdjust.Filter(0, 0, 0, 50, gpu: true, hdrKept: true));
+        Assert.Null(PictureAdjust.Filter(0, 0, 0, 0, gpu: true));
+    }
+
+    [Theory]
+    [InlineData("30", 30)]
+    [InlineData("30 %", 30)]
+    [InlineData("-20", 0)]
+    [InlineData("250%", 100)]
+    [InlineData("", 0)]
+    public void TypedDenoise(string text, int want) => Assert.Equal(want, PictureAdjust.ParseDenoise(text));
+
+    [Fact]
+    public void DenoiseIsShownWithoutSign() => Assert.Equal(("0%", "40%"), (PictureAdjust.FormatDenoise(0), PictureAdjust.FormatDenoise(40)));
+
+    [Fact]
+    public void OpenClArgsOnlyForTheGpuFilter()
+    {
+        Assert.Empty(PictureAdjust.HwArgs([null, "nlmeans=s=2:p=3:r=5"]));
+        Assert.Equal(PictureAdjust.OpenClArgs, PictureAdjust.HwArgs([PictureAdjust.DenoiseFilter(20, gpu: true)]));
+        var cmd = PreviewCommands.GrabFrame("a.mp4", 1, 640, 360, picture: PictureAdjust.DenoiseFilter(20, gpu: true));
+        int i = cmd.IndexOf("-init_hw_device");
+        Assert.True(i > 0 && i < cmd.IndexOf("-i"));                  // global options go before the input
+        Assert.DoesNotContain("-init_hw_device", PreviewCommands.GrabFrame("a.mp4", 1, 640, 360, picture: "nlmeans=s=2:p=3:r=5"));
+    }
+
+    [Fact]
+    public void DenoiseInExportsSavingAndProjects()
+    {
+        var s = AppState.FromSettings(null);
+        s.PictureOn = true;
+        s.PicDenoise = 40;
+        Assert.True(s.PictureChanged);
+        var hdr = new TimelineClip("C:/v/h.mp4", new MediaInfo(3840, 2160, 60, 30, 1, 8e6, 0, "smpte2084", "bt2020", "bt2020nc"));
+        s.Hdr = false;                                                  // HDR kept: no denoise on that clip
+        var clips = ExportPlanner.PrepareClips(s, [Clip(), hdr]);
+        Assert.Equal([PictureAdjust.DenoiseFilter(40, gpu: false)!], clips[0].PluginVf!);
+        Assert.Null(clips[1].PluginVf);
+        s.Hdr = true;                                                   // converted to SDR: denoised too
+        Assert.NotNull(ExportPlanner.PrepareClips(s, [hdr])[0].PluginVf);
+        s.OpenCl = true;
+        Assert.Contains("nlmeans_opencl", ExportPlanner.PrepareClips(s, [Clip()])[0].PluginVf![0]);
+
+        var d = new JsonObject();
+        s.WriteTo(d);
+        Assert.Equal(40, AppState.FromSettings(d).PicDenoise);
+        Assert.Equal(100, AppState.FromSettings(new JsonObject { ["pic_denoise"] = 999 }).PicDenoise);
+        Assert.Equal(0, AppState.FromSettings(new JsonObject { ["pic_denoise"] = -5 }).PicDenoise);
+        var st = (JsonObject)ProjectSave.Data([Clip()], 0, s, null)["settings"]!;
+        Assert.Equal(40, (int)st["pic_denoise"]!);
+        var other = AppState.FromSettings(null);
+        other.PicDenoise = 70;
+        other.ApplyProject(new JsonObject());
+        Assert.Equal(0, other.PicDenoise);                              // a project without picture values: neutral
+    }
+
     // ------------------------------------------------------------------ plugins switched off
     [Fact]
     public void TimelineEffectsOffDropsSectionsTransitionsAndKeys()

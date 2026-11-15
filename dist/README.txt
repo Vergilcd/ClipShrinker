@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.4.0 (NVENC)
+CLIP SHRINKER 2.5.0 (NVENC)
 ===========================
 
 GETTING STARTED
@@ -41,10 +41,12 @@ Optional parts of the program are plugins you can switch on and off, delete, and
 folder in "plugins" with its version and changelog:
 - Timeline effects: speed up / slow motion / zoom sections, clip transitions and RIFE (on by default).
 - Bitrate presets: per-clip bitrates with hotkeys (on by default).
-- Picture adjustments: brightness, contrast and saturation (off by default). Its sun button at the bottom
-  right of the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
+- Picture adjustments: brightness, contrast, saturation and denoise (off by default). Its sun button at the
+  bottom right of the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
-  saved with projects.
+  saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
+  (OpenCL, any recent NVIDIA, AMD or Intel driver) and on the CPU otherwise, where exports get much slower.
+  Clips that stay HDR ("Convert HDR" off) are not denoised.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
 at the bottom shows where you are. "Reset zoom" shows the whole clip again.

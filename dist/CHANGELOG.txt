@@ -4,6 +4,18 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.5.0
+- Picture adjustments: new Denoise slider (0 to 100 %) on the Picture card. It removes grain and noise from
+  dark or low-light footage, in the preview and the export, and is saved with projects. It runs on the
+  graphics card through OpenCL (any recent NVIDIA, AMD or Intel driver); without OpenCL it runs on the CPU,
+  where exports get much slower. Clips that stay HDR ("Convert HDR" off) are not denoised, because the
+  filter works in 8-bit. Exports with denoise take longer even on the graphics card (about 3 to 4 times on
+  an RTX 5070).
+- The bundled ffmpeg is rebuilt (November 2026 sources) with the denoise filters and the OpenCL loader built
+  in. ffmpeg's best-known denoiser (hqdn3d) is not included: it is only allowed in GPL builds, and Clip
+  Shrinker's ffmpeg stays LGPL. The OpenCL loader is Apache 2.0, see OpenCL-ICD-Loader-LICENSE.txt.
+
+
 2.4.0
 - Plugins: a new "Plugins" button (left of About) lists the plugins with an on / off switch, their version,
   author and changelog, a red delete button and "Open plugin folder". Each plugin is a folder in plugins\ with

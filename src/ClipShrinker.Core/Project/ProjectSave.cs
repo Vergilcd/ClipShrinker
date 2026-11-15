@@ -42,7 +42,7 @@ public static class ProjectSave
         if (s.PictureChanged)                                // (Picture adjustments plugin; older versions ignore them)
         {
             var st = (JsonObject)data["settings"]!;
-            st["pic_bright"] = s.PicBright; st["pic_contrast"] = s.PicContrast; st["pic_sat"] = s.PicSat;
+            st["pic_bright"] = s.PicBright; st["pic_contrast"] = s.PicContrast; st["pic_sat"] = s.PicSat; st["pic_denoise"] = s.PicDenoise;
         }
         return data;
     }

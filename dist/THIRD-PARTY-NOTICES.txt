@@ -4,7 +4,9 @@ Clip Shrinker - third-party components
 ClipShrinker itself is MIT licensed (see LICENSE.txt). It uses these components, each under its own licence:
 
 - ffmpeg / ffprobe (LGPL build) - see ffmpeg-LICENSE.txt
-- RIFE ncnn Vulkan (smooth slow motion, in library\rife) - MIT, see library\rife\LICENSE.txt
+- Khronos OpenCL ICD loader (built into ffmpeg.exe, for the GPU denoise of Picture adjustments) - Apache 2.0,
+  Copyright (c) The Khronos Group Inc., see OpenCL-ICD-Loader-LICENSE.txt (https://github.com/KhronosGroup/OpenCL-ICD-Loader)
+- RIFE ncnn Vulkan (smooth slow motion, in plugins\timeline-effects\rife) - MIT, see its LICENSE.txt
 - .NET runtime and WPF (built into ClipShrinker.exe) - MIT, Copyright (c) .NET Foundation and Contributors
   (https://github.com/dotnet/runtime, https://github.com/dotnet/wpf)
 - CommunityToolkit.Mvvm - MIT, Copyright (c) .NET Foundation and Contributors

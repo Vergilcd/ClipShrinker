@@ -1,8 +1,12 @@
 PICTURE ADJUSTMENTS - CHANGELOG
 ===============================
 
+1.1.0 (Clip Shrinker 2.5.0)
+- New: Denoise (0 to 100 %) on the Picture card, for grain and noise in dark or low-light footage. Runs on the
+  graphics card through OpenCL, or on the CPU (slower exports) when OpenCL is not available. Not used on clips
+  that stay HDR.
+
 1.0.0
 - New: brightness, contrast and saturation (-100 to +100 %) for every clip, on a card over the preview (sun
   button next to full screen, also in full screen). Drag a slider or type a value; used in the preview and the
   export, saved with projects.
-- Denoise is planned for the next version (it needs the hqdn3d filter in the bundled ffmpeg).
