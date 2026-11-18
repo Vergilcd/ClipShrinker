@@ -20,7 +20,7 @@ Set a size limit (eg. 50 MB), trim on a thumbnail timeline, join multiple clips,
 - **Project saving & loading** with optional session saving at exit
 - **Portable:** no installation needed, everything is bundled
 
-## Additional features with built in plugins
+## Additional features with removable modules
 - **Bitrate export** - Set a bitrate by pre-saved presets or apply one to all clips
 - **Picture adjustments** with simple denoiser, brightness, contrast and saturation sliders
 - **Sound equalizer** with five bands and an overall volume slider in dB
@@ -28,10 +28,10 @@ Set a size limit (eg. 50 MB), trim on a thumbnail timeline, join multiple clips,
 - **Slow motion effect** adjustable length on timeline (with RIFE frame interpolation available)
 - **Zoom effect** adjustable level and placement on preview and length on timeline
 
-## Modular build with plugins
+## Modular build
 <img width="646" height="779" alt="image" src="https://github.com/user-attachments/assets/0fe992fc-8611-417d-8a06-f00c35f3b3c0" />
 
-Switch off or even delete plugins that you do not need (all plugins are on by default)
+Switch off or even delete modules that you do not need (all plugins are on by default)
 
 ## Customizable shortcuts
 <img width="1131" height="745" alt="image" src="https://github.com/user-attachments/assets/e492440b-0bbb-45db-b6b4-7890617f3131" />
