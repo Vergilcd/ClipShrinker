@@ -1,0 +1,8 @@
+SOUND EQUALIZER - CHANGELOG
+===========================
+
+1.0.0 (Clip Shrinker 2.6.0)
+- New: five bands (60 Hz, 250 Hz, 1 kHz, 4 kHz, 12 kHz; -12 to +12 dB) and Volume (-20 to +20 dB) on a card
+  over the preview, opened with the equalizer button next to full screen (also in full screen). Drag a slider
+  or type a value; heard in the preview, used in the export (every audio track), saved with projects. A
+  limiter catches peaks when something is boosted.

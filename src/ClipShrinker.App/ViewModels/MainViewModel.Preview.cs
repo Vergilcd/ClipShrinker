@@ -132,9 +132,10 @@ public sealed partial class MainViewModel
         var zooms = ed.VisZ().Select(v => new Zoom(v.A, v.B, v.Z.X, v.Z.Y, v.Z.W)).ToList();
         var clip = row.Row;
         var (t0, end, once) = PreviewPlan.PlayRange(clip, ed.Playhead);
+        bool hasSounds = SoundModuleOn && clip.Sounds.Count > 0;           // (2.7: a silent clip can have sounds)
         var req = new PlayRequest(row.Path, clip.Start, end, t0, PreviewPlan.Crop(i, S.Ratio),
-                                  w, h, PreviewPlan.PlayFps(i), SoundOn && i.Audio, S.Hdr ? i.Trc : null, secs,
-                                  PreviewPlan.Effects(S, zooms), S.MuteMic ? 1 : i.NAudio,
+                                  w, h, PreviewPlan.PlayFps(i), SoundOn && (i.Audio || hasSounds), S.Hdr ? i.Trc : null, secs,
+                                  PreviewPlan.Effects(S, zooms, SoundModuleOn ? clip.Sounds : null), !i.Audio ? 0 : S.MuteMic ? 1 : i.NAudio,
                                   () => Clips.Contains(row) ? (clip.Start, clip.End) : null, once);
         playRow = row;
         Playing = true;

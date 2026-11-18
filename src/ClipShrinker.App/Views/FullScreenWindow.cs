@@ -58,8 +58,8 @@ public sealed class FullScreenWindow : Window
         exit.Click += (_, _) => Close();
 
         var right = new StackPanel { Orientation = Orientation.Horizontal };
-        right.Children.Add(EqualizerPanel.ToggleButton());      // (Sound equalizer plugin)
-        right.Children.Add(PicturePanel.ToggleButton());        // (Picture adjustments plugin)
+        right.Children.Add(EqualizerPanel.ToggleButton());      // (Sound equalizer module)
+        right.Children.Add(PicturePanel.ToggleButton());        // (Picture adjustments module)
         right.Children.Add(exit);
 
         overlay = new Grid { Margin = new Thickness(16) };

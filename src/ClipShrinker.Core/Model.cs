@@ -59,8 +59,11 @@ public sealed record ExportClip
     /// <summary>null = no speed sections.</summary>
     public IReadOnlyList<Piece>? Pieces { get; init; }
     public IReadOnlyList<Zoom> Zooms { get; init; } = [];
-    /// <summary>Extra video filters from plugins (Picture adjustments), after crop / scale / tone-mapping. null = none.</summary>
-    public IReadOnlyList<string>? PluginVf { get; init; }
+    /// <summary>Extra video filters from modules (Picture adjustments), after crop / scale / tone-mapping. null = none.</summary>
+    public IReadOnlyList<string>? ModuleVf { get; init; }
+    /// <summary>2.7: sounds of the Sound track module mixed into this clip's first audio track (null = none). Their files
+    /// are extra ffmpeg inputs after the clips and the RIFE frame folders.</summary>
+    public IReadOnlyList<SoundUse>? Sounds { get; init; }
 
     /// <summary>clip_naudio(c).</summary>
     public int AudioTracks => NAudio ?? (Audio ? 1 : 0);
@@ -113,7 +116,9 @@ public sealed record EffectSettings
     public int ZoomVol { get; init; } = 80;
     /// <summary>Zooms of the clip being previewed (ZOOM["play"]).</summary>
     public IReadOnlyList<Zoom> ZoomPlay { get; init; } = [];
-    /// <summary>The preview's Picture adjustments filter (null = none). Exports take it from ExportClip.PluginVf.</summary>
+    /// <summary>2.7: Sound track sounds of the clip being previewed (source times).</summary>
+    public IReadOnlyList<SoundBlock> SoundPlay { get; init; } = [];
+    /// <summary>The preview's Picture adjustments filter (null = none). Exports take it from ExportClip.ModuleVf.</summary>
     public string? PictureVf { get; init; }
     /// <summary>2.6: the Sound equalizer filter (preview sound and export audio tracks; null = none).</summary>
     public string? AudioAf { get; init; }

@@ -34,30 +34,30 @@ public sealed class AppState
     /// <summary>2.3: the clip's own name stays in the exported file name (off = only the prefix and suffix).</summary>
     public bool KeepName = true;
 
-    // Picture adjustments plugin: percentages (-100 .. 100, 0 = unchanged); denoise 0 .. 100 (2.5)
+    // Picture adjustments module: percentages (-100 .. 100, 0 = unchanged); denoise 0 .. 100 (2.5)
     public int PicBright, PicContrast, PicSat, PicDenoise;
     /// <summary>Denoise may run on the graphics card (OpenCL works on this PC; set by the app, not saved).</summary>
     public bool OpenCl;
-    /// <summary>The plugin is switched on (set by the app, not saved here).</summary>
+    /// <summary>The module is switched on (set by the app, not saved here).</summary>
     public bool PictureOn;
     /// <summary>2.6: this ffmpeg has the nlmeans (denoise) filter; without it denoise is left out (set by the app).</summary>
     public bool DenoiseOk = true;
 
-    // Sound equalizer plugin (2.6): five bands in dB (-12 .. 12) and the overall volume in dB (-20 .. 20)
-    public int[] EqBands = new int[Plugins.Equalizer.Bands.Length];
+    // Sound equalizer module (2.6): five bands in dB (-12 .. 12) and the overall volume in dB (-20 .. 20)
+    public int[] EqBands = new int[Modules.Equalizer.Bands.Length];
     public int EqVolume;
-    /// <summary>The plugin is switched on (set by the app, not saved here).</summary>
+    /// <summary>The module is switched on (set by the app, not saved here).</summary>
     public bool EqOn;
 
-    /// <summary>The equalizer filter for the export and the preview sound, or null (plugin off, or nothing changed).</summary>
-    public string? EqFilter() => EqOn ? Plugins.Equalizer.Filter(EqBands, EqVolume) : null;
+    /// <summary>The equalizer filter for the export and the preview sound, or null (module off, or nothing changed).</summary>
+    public string? EqFilter() => EqOn ? Modules.Equalizer.Filter(EqBands, EqVolume) : null;
 
     /// <summary>The equalizer differs from the neutral one (then it is saved in projects too).</summary>
     public bool EqChanged => EqVolume != 0 || EqBands.Any(b => b != 0);
 
-    /// <summary>The Picture adjustments filter for every clip, or null (plugin off, or nothing changed).</summary>
+    /// <summary>The Picture adjustments filter for every clip, or null (module off, or nothing changed).</summary>
     public string? PictureFilter(bool hdrKept = false) =>
-        PictureOn ? Plugins.PictureAdjust.Filter(PicBright, PicContrast, PicSat, DenoiseOk ? PicDenoise : 0, OpenCl, hdrKept) : null;
+        PictureOn ? Modules.PictureAdjust.Filter(PicBright, PicContrast, PicSat, DenoiseOk ? PicDenoise : 0, OpenCl, hdrKept) : null;
 
     /// <summary>The picture values differ from the neutral ones (then they are saved in projects too).</summary>
     public bool PictureChanged => PicBright != 0 || PicContrast != 0 || PicSat != 0 || PicDenoise != 0;
@@ -113,11 +113,11 @@ public sealed class AppState
     /// <summary>pic_bright / pic_contrast / pic_sat (-100 .. 100) and pic_denoise (0 .. 100) from settings.json or a project.</summary>
     void ReadPicture(JsonObject s)
     {
-        int? P(string key) => IsPlainInt(s[key]) ? Plugins.PictureAdjust.Clamp((int)Math.Max(-1000, Math.Min(1000, AsLong(s[key]!)))) : null;
+        int? P(string key) => IsPlainInt(s[key]) ? Modules.PictureAdjust.Clamp((int)Math.Max(-1000, Math.Min(1000, AsLong(s[key]!)))) : null;
         if (P("pic_bright") is { } b) PicBright = b;
         if (P("pic_contrast") is { } c) PicContrast = c;
         if (P("pic_sat") is { } sat) PicSat = sat;
-        if (P("pic_denoise") is { } dn) PicDenoise = Plugins.PictureAdjust.ClampDenoise(dn);
+        if (P("pic_denoise") is { } dn) PicDenoise = Modules.PictureAdjust.ClampDenoise(dn);
     }
 
     /// <summary>eq_bands (5 x dB) and eq_vol (dB) from settings.json or a project.</summary>
@@ -125,8 +125,8 @@ public sealed class AppState
     {
         if (s["eq_bands"] is JsonArray arr)
             for (int i = 0; i < Math.Min(arr.Count, EqBands.Length); i++)
-                if (IsPlainInt(arr[i])) EqBands[i] = Plugins.Equalizer.ClampBand((int)Math.Max(-1000, Math.Min(1000, AsLong(arr[i]!))));
-        if (IsPlainInt(s["eq_vol"])) EqVolume = Plugins.Equalizer.ClampVolume((int)Math.Max(-1000, Math.Min(1000, AsLong(s["eq_vol"]!))));
+                if (IsPlainInt(arr[i])) EqBands[i] = Modules.Equalizer.ClampBand((int)Math.Max(-1000, Math.Min(1000, AsLong(arr[i]!))));
+        if (IsPlainInt(s["eq_vol"])) EqVolume = Modules.Equalizer.ClampVolume((int)Math.Max(-1000, Math.Min(1000, AsLong(s["eq_vol"]!))));
     }
 
     /// <summary>Fixed bitrate in Mbps from the entry, or null when it is empty / not a positive number.</summary>
@@ -184,7 +184,7 @@ public sealed class AppState
         // a project saved with picture adjustments brings them back; one without them opens with a neutral picture
         (PicBright, PicContrast, PicSat, PicDenoise) = (0, 0, 0, 0);
         ReadPicture(st);
-        (EqBands, EqVolume) = (new int[Plugins.Equalizer.Bands.Length], 0);
+        (EqBands, EqVolume) = (new int[Modules.Equalizer.Bands.Length], 0);
         ReadEq(st);
         BitrateChanged();
     }

@@ -31,18 +31,23 @@ public static class AppPaths
 
     public static Tools LocateTools() => Tools.Locate(ToolDirs);
 
-    /// <summary>plugins\ next to the exe: one folder per plugin with plugin.json and CHANGELOG.txt.</summary>
-    public static string PluginsDir => Path.Combine(ExeDir, "plugins");
-    public static string PluginDir(string id) => Path.Combine(PluginsDir, id);
+    /// <summary>modules\ next to the exe: one folder per module with module.json and CHANGELOG.txt.</summary>
+    public static string ModulesDir => Path.Combine(ExeDir, "modules");
+    public static string ModuleDir(string id) => Path.Combine(ModulesDir, id);
 
-    /// <summary>Since 2.4 RIFE belongs to the Timeline effects plugin: plugins\timeline-effects\rife.</summary>
-    public static string RifeDir => Path.Combine(PluginDir(Core.Plugins.PluginIds.TimelineEffects), "rife");
+    /// <summary>Since 2.4 RIFE belongs to the Timeline effects module: modules\timeline-effects\rife.</summary>
+    public static string RifeDir => Path.Combine(ModuleDir(Core.Modules.ModuleIds.TimelineEffects), "rife");
 
-    /// <summary>The plugin's rife\ folder; older layouts (rife\ next to ffmpeg, e.g. the Dev folder in Debug) still work.</summary>
+    /// <summary>The module's rife\ folder; older layouts (rife\ next to ffmpeg, e.g. the Dev folder in Debug) still work.</summary>
     public static RifeInstall? FindRife(Tools t) =>
         RifeInstall.Find(RifeDir) ?? (t.Ffmpeg is { } f ? RifeInstall.Find(Path.Combine(Path.GetDirectoryName(f)!, "rife")) : null);
 
-    /// <summary>2.3 and older kept RIFE in library\rife: it moves into the Timeline effects plugin folder (once).</summary>
+    /// <summary>2.6 and older called the modules "plugins": plugins\ next to the exe becomes modules\ (once) and each
+    /// plugin.json becomes module.json. When both folders are there (2.7 unzipped over an older version), whatever
+    /// modules\ does not have yet (RIFE, sounds, other files) moves over and plugins\ goes. True when something moved.</summary>
+    public static bool MoveOldModulesFolder() => Core.Modules.ModuleManifest.MoveOldFolder(Path.Combine(ExeDir, "plugins"), ModulesDir);
+
+    /// <summary>2.3 and older kept RIFE in library\rife: it moves into the Timeline effects module folder (once).</summary>
     public static void MoveOldRife()
     {
         string old = Path.Combine(LibraryDir, "rife");
@@ -67,7 +72,7 @@ public static class AppPaths
     /// <summary>Folder with CHANGELOG.txt, LICENSE.txt, README.txt (the exe folder; in Debug CSharp\dist).</summary>
     public static string DocsDir => File.Exists(Path.Combine(ExeDir, "CHANGELOG.txt")) ? ExeDir : DistDocs.Value ?? DevRoot.Value ?? ExeDir;
 
-    /// <summary>RIFE's LICENSE.txt: in the plugin folder, else an older library\rife (in Debug the Dev folder's).</summary>
+    /// <summary>RIFE's LICENSE.txt: in the module folder, else an older library\rife (in Debug the Dev folder's).</summary>
     public static string RifeLicense
     {
         get

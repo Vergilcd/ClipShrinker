@@ -143,6 +143,7 @@ public static class Text
         ["trim_start"] = "Set the trim start at the playhead", ["trim_end"] = "Set the trim end at the playhead",
         ["speed"] = "Add a speed-up section (blue) at the playhead", ["slow"] = "Add a slow-down section (pink) at the playhead",
         ["zoom"] = "Add a zoom section (white) at the playhead", ["effects"] = "Open effect settings",
+        ["sound"] = "Add the picked sound at the playhead (Sound track module)",
         ["shortcuts"] = "Show this window", ["export"] = "Start the export", ["open"] = "Open a project",
         ["save"] = "Save the project", ["save_as"] = "Save the project under a new name", ["undo"] = "Undo",
         ["redo"] = "Redo", ["redo_alt"] = "Redo (second key)", ["play"] = "Play / pause (loops the trimmed part)",

@@ -173,7 +173,7 @@ public sealed class TimelineEditor
     public List<(SpeedSection Sec, double A, double B)> Vis()
     {
         var res = new List<(SpeedSection, double, double)>();
-        if (!Plugins.Features.TimelineEffects) return res;  // plugin off: the sections are kept but not shown
+        if (!Modules.Features.TimelineEffects) return res;  // module off: the sections are kept but not shown
         foreach (var s in Clip.Sections.OrderBy(x => x.A))
         {
             double a = Max(s.A, Clip.Start), b = Min(s.B, Clip.End);
@@ -186,7 +186,7 @@ public sealed class TimelineEditor
     public List<(ZoomSection Z, double A, double B)> VisZ()
     {
         var res = new List<(ZoomSection, double, double)>();
-        if (!Plugins.Features.TimelineEffects) return res;
+        if (!Modules.Features.TimelineEffects) return res;
         foreach (var z in Clip.Zooms.OrderBy(x => x.A))
         {
             double a = Max(z.A, Clip.Start), b = Min(z.B, Clip.End);
@@ -285,7 +285,7 @@ public sealed class TimelineEditor
     /// <summary>Hotkey S / D: a new speed section (D: slow motion) at the playhead or in the next free gap.</summary>
     public SpeedSection? AddSection(double speed = 2.0)
     {
-        if (!Plugins.Features.TimelineEffects) return null;
+        if (!Modules.Features.TimelineEffects) return null;
         if (FreeGap(Vis().Select(v => (v.A, v.B))) is not { } gap)
         {
             Status("No free space for a speed section - trim handles / other sections are in the way");
@@ -308,7 +308,7 @@ public sealed class TimelineEditor
     /// <summary>Hotkey Z: a new zoom section (white) at the playhead or in the next free gap.</summary>
     public ZoomSection? AddZoom()
     {
-        if (!Plugins.Features.TimelineEffects) return null;
+        if (!Modules.Features.TimelineEffects) return null;
         if (FreeGap(VisZ().Select(v => (v.A, v.B))) is not { } gap)
         {
             Status("No free space for a zoom section - trim handles / other zoom sections are in the way");
@@ -328,7 +328,7 @@ public sealed class TimelineEditor
 
     public bool RemoveSection(SpeedSection? sec)
     {
-        if (sec is null || !Plugins.Features.TimelineEffects || !Clip.Sections.Contains(sec)) return false;
+        if (sec is null || !Modules.Features.TimelineEffects || !Clip.Sections.Contains(sec)) return false;
         PushUndo("remove speed section");
         Clip.Sections.Remove(sec);
         if (ReferenceEquals(Sel, sec)) Sel = null;
@@ -337,7 +337,7 @@ public sealed class TimelineEditor
 
     public bool RemoveZoom(ZoomSection? z)
     {
-        if (z is null || !Plugins.Features.TimelineEffects || !Clip.Zooms.Contains(z)) return false;
+        if (z is null || !Modules.Features.TimelineEffects || !Clip.Zooms.Contains(z)) return false;
         PushUndo("remove zoom section");
         Clip.Zooms.Remove(z);
         if (ReferenceEquals(ZSel, z)) ZSel = null;

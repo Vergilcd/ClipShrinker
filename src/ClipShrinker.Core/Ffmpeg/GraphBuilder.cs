@@ -12,7 +12,12 @@ public sealed record FilterGraph(string Graph, string VideoLabel, IReadOnlyList<
 public static class GraphBuilder
 {
     /// <summary>Number of audio tracks in the output file.</summary>
-    public static int OutTracks(IEnumerable<ExportClip> clips, bool mix = false) => OutTracks(clips.Select(c => c.AudioTracks), mix);
+    public static int OutTracks(IEnumerable<ExportClip> clips, bool mix = false)
+    {
+        var l = clips as IReadOnlyCollection<ExportClip> ?? clips.ToList();
+        int n = OutTracks(l.Select(c => c.AudioTracks), mix);
+        return n == 0 && l.Any(c => c.Sounds is { Count: > 0 }) ? 1 : n;   // (2.7: sounds on a silent video still need a track)
+    }
 
     public static int OutTracks(IEnumerable<int> trackCounts, bool mix = false)
     {
@@ -41,6 +46,7 @@ public static class GraphBuilder
         var allPieces = clips.Select(c => c.GetPieces()).ToList();
         var durs = allPieces.Select(Timing.Duration).ToList();
         var parts = new List<string>();
+        int soundInput = n + (rife?.Sum(kv => kv.Value.Count) ?? 0);   // (2.7: sound files come after clips and RIFE frames)
         for (int i = 0; i < n; i++)
         {
             var c = clips[i];
@@ -65,6 +71,7 @@ public static class GraphBuilder
             else parts.Add($"[{si}:v:0]" + string.Join(",", f.Concat(tail)) + $"[v{si}]");
 
             if (!anyAudio) continue;
+            int audioFirst = parts.Count;
             int na = c.AudioTracks;
             var streams = new List<string>();
             for (int k = 0; k < na; k++)
@@ -98,6 +105,13 @@ public static class GraphBuilder
                     parts.Add($"anullsrc=r=48000:cl=stereo,atrim=duration={F(durs[i], 3)}," +
                               $"asetpts=PTS-STARTPTS[a{si}_{I(t)}]");
                 }
+            }
+            if (c.Sounds is { Count: > 0 } snd)                // 2.7: the Sound track module's sounds on the first track
+            {
+                string l0 = $"a{si}_0";
+                for (int p = audioFirst; p < parts.Count; p++) parts[p] = parts[p].Replace($"[{l0}]", $"[{l0}s]");
+                parts.AddRange(Sounds.MixParts(l0 + "s", l0, snd, soundInput, 48000, $"sn{si}_"));
+                soundInput += snd.Count;
             }
         }
         List<string>? Labels(string prefix) => anyAudio ? Enumerable.Range(0, nOut).Select(t => prefix + I(t)).ToList() : null;

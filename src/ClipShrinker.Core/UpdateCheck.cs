@@ -22,5 +22,5 @@ public static class UpdateCheck
     }
 
     /// <summary>latest is a newer version than current (2.10.0 > 2.9.1).</summary>
-    public static bool IsNewer(string latest, string current) => Plugins.PluginManifest.CompareVersions(latest, current) > 0;
+    public static bool IsNewer(string latest, string current) => Modules.ModuleManifest.CompareVersions(latest, current) > 0;
 }

@@ -17,15 +17,23 @@ public sealed class TimelineClip(string path, MediaInfo info)
     public string? Preset { get; set; }
     public List<SpeedSection> Sections { get; } = [];
     public List<ZoomSection> Zooms { get; } = [];
+    /// <summary>2.7: sound files on this clip's Sound track lane.</summary>
+    public List<SoundBlock> Sounds { get; } = [];
 
-    /// <summary>The clip as the encoder gets it. Without the Timeline effects plugin its speed / zoom sections are
-    /// kept (they come back when the plugin is switched on again) but left out of the export and the preview.</summary>
-    public ExportClip ToExport() => Plugins.Features.TimelineEffects
-        ? ExportClip.FromTimeline(Path, Start, End, Info, Sections, Zooms)
-        : ExportClip.FromTimeline(Path, Start, End, Info, [], []);
+    /// <summary>The clip as the encoder gets it. Without the Timeline effects module its speed / zoom sections are
+    /// kept (they come back when the module is switched on again) but left out of the export and the preview.</summary>
+    public ExportClip ToExport()
+    {
+        var c = Modules.Features.TimelineEffects
+            ? ExportClip.FromTimeline(Path, Start, End, Info, Sections, Zooms)
+            : ExportClip.FromTimeline(Path, Start, End, Info, [], []);
+        // 2.7: the Sound track module's sounds (kept on the clip but left out while the module is off)
+        return Modules.Features.SoundTrack && Sounds.Count > 0 && Core.Sounds.ToUses(Sounds, Start, End, c.Pieces) is { Count: > 0 } u
+            ? c with { Sounds = u } : c;
+    }
 
-    /// <summary>The bitrate preset the export uses (none while the Bitrate presets plugin is off).</summary>
-    public string? ActivePreset => Plugins.Features.BitratePresets ? Preset : null;
+    /// <summary>The bitrate preset the export uses (none while the Bitrate presets module is off).</summary>
+    public string? ActivePreset => Modules.Features.BitratePresets ? Preset : null;
 }
 
 public sealed class ProjectException(string message) : Exception(message);
@@ -87,6 +95,7 @@ public static class ProjectFile
             }
             var row = new TimelineClip(p, info);
             ApplyClip(row, obj, presetByName);
+            ApplySounds(row, obj, exists, baseDir, missing);
             clips.Add(row);
         }
         var idx = data["active"];                 // isinstance(idx, int) is also true for a bool
@@ -131,6 +140,33 @@ public static class ProjectFile
             }
         }
         catch (PyValueError) { }
+    }
+
+    /// <summary>2.7: the clip's Sound track sounds. A missing sound file is skipped and listed with the missing files;
+    /// broken entries are skipped quietly.</summary>
+    static void ApplySounds(TimelineClip row, JsonObject? c, Func<string, bool> exists, string baseDir, List<string> missing)
+    {
+        if (c?["sounds"] is not JsonArray arr) return;
+        foreach (var n in arr)
+        {
+            if (n is not JsonObject o || Str(o["path"]) is not { Length: > 0 } p) continue;
+            if (!exists(p) && Str(o["rel"]) is { Length: > 0 } rel)
+            {
+                string alt = System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, rel));
+                if (exists(alt)) p = alt;
+            }
+            if (!exists(p)) { missing.Add(BaseName(p) + " (sound)"); continue; }
+            double Num(string k, double d) => o[k] is JsonValue v && v.TryGetValue(out double x) && double.IsFinite(x) ? x : d;
+            double dur = Math.Max(0, Num("dur", 0)), at = Math.Max(0, Num("at", 0)), inn = Math.Max(0, Num("in", 0));
+            double len = Num("len", 0);
+            if (dur > 0) { inn = Math.Min(inn, dur); len = Math.Min(len, dur - inn); }
+            if (len < Sounds.MinLen) continue;
+            row.Sounds.Add(new SoundBlock
+            {
+                Path = p, At = at, In = inn, Len = len, FileDur = dur > 0 ? dur : inn + len,
+                VolumeDb = Sounds.ClampVolume((int)Math.Round(Num("vol", 0))), Fade = Sounds.ClampFade(Num("fade", 0), len),
+            });
+        }
     }
 
     /// <summary>c.get(key, []) iterated: missing = empty, a non-list raises like Python would.</summary>

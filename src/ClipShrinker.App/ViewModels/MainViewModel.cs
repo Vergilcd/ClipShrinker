@@ -42,7 +42,7 @@ public sealed partial class MainViewModel : ObservableObject
         restoreSession = Bool("restore_session") ?? false;
         saveDir = Str("save_dir") ?? "";
         InitPreviewSettings();
-        InitPlugins();
+        InitModules();
         Clips.CollectionChanged += (_, _) => { Renumber(); Refresh(); OnPropertyChanged(nameof(HasManyClips)); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
         Refresh();
     }
@@ -334,7 +334,7 @@ public sealed partial class MainViewModel : ObservableObject
     async Task DownloadRife()
     {
         if (RifeBusy.Length > 0 || RifeInstalled) return;
-        string dir = AppPaths.RifeDir;                       // (2.4: inside the Timeline effects plugin)
+        string dir = AppPaths.RifeDir;                       // (2.4: inside the Timeline effects module)
         void Step(string text, int? pct) => Application.Current.Dispatcher.BeginInvoke(() =>
         {
             RifeBusy = text;
@@ -346,7 +346,7 @@ public sealed partial class MainViewModel : ObservableObject
         try { await Task.Run(() => Core.Rife.RifeDownloader.Install(dir, Step)); }
         catch (Exception e) when (e is IOException or System.Net.Http.HttpRequestException or InvalidDataException or TaskCanceledException or UnauthorizedAccessException)
         {
-            msg = $"Download failed ({e.Message}). Unzip the release from github.com/nihui/rife-ncnn-vulkan into the plugins\\timeline-effects\\rife folder.";
+            msg = $"Download failed ({e.Message}). Unzip the release from github.com/nihui/rife-ncnn-vulkan into the modules\\timeline-effects\\rife folder.";
         }
         await Application.Current.Dispatcher.InvokeAsync(() => { });   // let the last progress step land first
         RifeBusy = "";
@@ -722,15 +722,17 @@ public sealed partial class MainViewModel : ObservableObject
     public void OnDelete()
     {
         if (Exporting || Clips.Count == 0) return;
+        if (HasSelectedSound && RemoveSound(SelectedSoundClip, SelectedSound)) return;   // (2.7: a selected sound first)
         if (ActiveClip is { } row && (row.Editor.RemoveSection(row.Editor.Sel) || row.Editor.RemoveZoom(row.Editor.ZSel)))
             row.NotifyChanged();
         else DeleteSelected();
     }
 
-    /// <summary>Backspace: only a selected speed / zoom section.</summary>
+    /// <summary>Backspace: only a selected sound or speed / zoom section.</summary>
     public void OnBackspace()
     {
         if (Exporting || ActiveClip is not { } row) return;
+        if (HasSelectedSound && RemoveSound(SelectedSoundClip, SelectedSound)) return;
         if (row.Editor.RemoveSection(row.Editor.Sel) || row.Editor.RemoveZoom(row.Editor.ZSel)) row.NotifyChanged();
     }
 
@@ -751,7 +753,8 @@ public sealed partial class MainViewModel : ObservableObject
     public bool OnActionKey(string act)
     {
         if (Exporting || TargetClip is not { } row) return false;
-        if (act is "speed" or "slow" or "zoom" && !EffectsPluginOn) return false;   // (Timeline effects plugin)
+        if (act == "sound") return SoundModuleOn && AddCurrentSound();   // (2.7 Sound track module)
+        if (act is "speed" or "slow" or "zoom" && !EffectsModuleOn) return false;   // (Timeline effects module)
         var ed = row.Editor;
         if (act is "speed" or "slow" or "zoom") StopPlayback();
         bool changed = act switch
@@ -783,7 +786,7 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>A bitrate preset's own key: applies it to the selected clips.</summary>
     public bool OnPresetKey(string key)
     {
-        if (Exporting || Clips.Count == 0 || !PresetsPluginOn) return false;
+        if (Exporting || Clips.Count == 0 || !PresetsModuleOn) return false;
         var p = presets.FirstOrDefault(q => q.Key.Length > 0 && q.Key == key);
         if (p is null) return false;
         var sel = Clips.Where(selection.Contains).ToList();
@@ -996,7 +999,8 @@ public sealed partial class MainViewModel : ObservableObject
         settings["zoomed"] = zoomed;
         settings["restore_session"] = RestoreSession;
         settings["save_dir"] = SaveDir;
-        SavePluginSettings();
+        if (soundListH is { } slh) settings["sound_list_h"] = slh;
+        SaveModuleSettings();
         settings["keys"] = new JsonObject(Keys.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)JsonValue.Create(kv.Value))));
         if (geometry is not null) settings["geometry"] = geometry;
         if (sash is not null) settings["sash"] = sash;

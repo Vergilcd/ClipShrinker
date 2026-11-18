@@ -1,0 +1,149 @@
+<UserControl x:Class="ClipShrinker.App.Views.SoundsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClipShrinker.App.Views">
+    <!-- 2.7 Sound track module: the sound library and the selected sound's settings, as a drop-down under the
+         Sounds button next to Transition -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <!-- play / + on a sound chip: white icon, a faint white square on hover -->
+        <Style x:Key="SoundChipButton" TargetType="Button">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Margin" Value="2,0,0,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="3" Background="#00FFFFFF">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#55FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1" CornerRadius="8" Padding="16,12,16,14" Width="380">
+        <StackPanel>
+            <DockPanel Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right" Content="Open folder" Padding="10,3" Margin="6,0,0,0" Focusable="False"
+                        Command="{Binding OpenSoundFolderCommand}" ToolTip="Open modules\sound-track\sounds: sound files you put there show up in this list" />
+                <Button DockPanel.Dock="Right" Content="Add files..." Padding="10,3" Focusable="False" Click="AddFiles_Click"
+                        ToolTip="Copy sound files into the sound folder" />
+                <TextBlock Text="SOUNDS" Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="0" />
+            </DockPanel>
+
+            <!-- 2.7: each library sound is a green chip like the effect buttons: drag it onto a clip's Sounds lane, or
+                 + adds it at the playhead. The highlighted one is what the Sound key adds. -->
+            <ListBox x:Name="List" ItemsSource="{Binding SoundLibrary}" SelectedItem="{Binding CurrentLibrarySound}" MaxHeight="{Binding SoundListHeight}"
+                     AutomationProperties.Name="Sound library" MouseDoubleClick="List_DoubleClick" Background="Transparent" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" Padding="0"
+                     PreviewMouseLeftButtonDown="List_MouseDown" PreviewMouseMove="List_MouseMove">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Margin" Value="0,0,0,6" />
+                        <Setter Property="Cursor" Value="Hand" />
+                        <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                        <Setter Property="ToolTip" Value="Drag onto a clip's Sounds lane to place it there, or click + to add it at the playhead" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Bd" CornerRadius="4" Background="#1D9E75" BorderBrush="#1D9E75" BorderThickness="1" Height="34">
+                                        <Grid>
+                                            <local:SoundWave Path="{Binding Path}" Margin="24,3,64,3" />
+                                            <ContentPresenter VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding ComputedVerticalScrollBarVisibility, RelativeSource={RelativeSource AncestorType=ScrollViewer}}" Value="Visible">
+                                            <Setter Property="Margin" Value="0,0,16,6" />
+                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Opacity" Value="0.9" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="White" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="8,0,4,0" TextElement.Foreground="White">
+                            <TextBlock DockPanel.Dock="Left" Text="&#x283F;" FontFamily="Segoe UI Symbol" FontSize="13" Opacity="0.75"
+                                       Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource SoundChipButton}" Content="&#xE710;" AutomationProperties.Name="Add at the playhead"
+                                    Command="{Binding DataContext.AddLibrarySoundCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" ToolTip="Add at the playhead of the active clip" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource SoundChipButton}" Content="&#xE768;" AutomationProperties.Name="Listen"
+                                    Command="{Binding DataContext.PlayLibrarySoundCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" ToolTip="Listen (up to 30 s)" />
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,2,0,0" Text="{Binding SoundListHint}" />
+
+            <!-- the sound selected on a lane -->
+            <StackPanel Margin="0,12,0,0" Visibility="{Binding HasSelectedSound, Converter={StaticResource BoolToVis}}">
+                <Separator Margin="0,0,0,8" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Remove" Style="{StaticResource DangerButton}" Padding="10,3" Focusable="False"
+                            Command="{Binding RemoveSelectedSoundCommand}" ToolTip="Take this sound off the lane (Delete)" />
+                    <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                        <Run Text="Selected: " /><Run Text="{Binding SelectedSoundName, Mode=OneWay}" FontWeight="SemiBold" />
+                    </TextBlock>
+                </DockPanel>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60" /><ColumnDefinition Width="*" /><ColumnDefinition Width="56" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="32" /><RowDefinition Height="32" /></Grid.RowDefinitions>
+                    <TextBlock Text="Volume" VerticalAlignment="Center" />
+                    <Slider Grid.Column="1" Minimum="-20" Maximum="20" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            Value="{Binding SoundVolume}" AutomationProperties.Name="Sound volume" Focusable="False" IsMoveToPointEnabled="True"
+                            PreviewMouseUp="Slider_Up" MouseDoubleClick="Volume_DoubleClick" ToolTip="Loudness of this sound in dB (double-click = unchanged)" />
+                    <TextBlock Grid.Column="2" Text="{Binding SoundVolumeText}" TextAlignment="Right" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="1" Text="Fade" VerticalAlignment="Center" />
+                    <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="50" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            Value="{Binding SoundFade}" AutomationProperties.Name="Sound fade" Focusable="False" IsMoveToPointEnabled="True"
+                            PreviewMouseUp="Slider_Up" ToolTip="Fade in at the start and out at the end (0 to 5 s)" />
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding SoundFadeText}" TextAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+            </StackPanel>
+
+            <!-- drag down / up to make the list longer or shorter -->
+            <Thumb Height="10" Margin="0,8,0,-10" Cursor="SizeNS" DragDelta="Grip_DragDelta" DragCompleted="Grip_DragCompleted"
+                   ToolTip="Drag to make the list longer or shorter" AutomationProperties.Name="Resize the sound list">
+                <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb">
+                        <Grid Background="Transparent">
+                            <Rectangle x:Name="G" Width="48" Height="3" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource CsGrip}" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="G" Property="Fill" Value="{DynamicResource CsAccent}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+        </StackPanel>
+    </Border>
+</UserControl>

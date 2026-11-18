@@ -1,0 +1,12 @@
+TIMELINE EFFECTS - CHANGELOG
+============================
+
+1.1.0 (Clip Shrinker 2.5.0)
+- Clip transitions moved out of this plugin: they are an app feature now, with their own Transition button
+  next to "Clear all clips", and work with the plugin switched off.
+
+1.0.0
+- Split out of Clip Shrinker 2.3 into its own plugin: speed up / slow motion / zoom sections, the effect
+  buttons under the preview, the Effects window (F2), clip transitions and RIFE slow-motion smoothing.
+- RIFE now lives in this plugin's folder (plugins\timeline-effects\rife). A RIFE folder in library\ from
+  older versions is moved here on the first start.

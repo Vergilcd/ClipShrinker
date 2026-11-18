@@ -4,6 +4,26 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.7.0
+- New plugin "Sound track": put your own sound files on a Sounds lane under each clip's timeline. Drop sound
+  files on the lane, or open the new "Sounds" list (next to Transition): its green sounds, each with its
+  waveform, can be dragged onto a clip's lane, or added at the playhead with their + (A adds the highlighted
+  one). Drag a sound to move it, drag its
+  ends to trim it; right-click, Delete or Backspace removes it. A selected sound has its own volume (-20 to
+  +20 dB) and fade in / out. Sounds keep their normal speed inside speed sections, play in the preview, are
+  mixed into the clip's first audio track in the export (a clip without sound gets a track for them), and are
+  saved with projects and the session; a missing sound file is listed when a project opens. Undo covers all
+  of it. A limiter after the mix keeps loud sounds over loud game audio from clipping.
+- The library is the folder plugins\sound-track\sounds (created at start-up): "Add files..." copies sound
+  files there, "Open folder" opens it, and each sound in the list has a play button to listen to it.
+- Not in this version yet: lowering the game sound while a sound plays (ducking).
+- "Plugins" are now called "modules" (the Modules button, window and folder), because they are parts of the
+  program you switch on and off, not add-ons you install. The "plugins" folder of an older version is moved
+  into "modules" at the first start, with RIFE and your sounds; your on / off switches are kept.
+- The Sounds list can be made longer or shorter with the grip at its bottom; its scroll bar no longer covers
+  the sounds.
+
+
 2.6.0
 - Exports work without an NVIDIA card. Besides NVENC, Clip Shrinker can now encode on AMD (AMF) and Intel
   (Quick Sync) graphics, and with Windows' own encoder (Media Foundation), on the graphics card or, as a last

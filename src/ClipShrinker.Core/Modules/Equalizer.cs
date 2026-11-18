@@ -1,8 +1,8 @@
 using static ClipShrinker.Core.Py.Py;
 
-namespace ClipShrinker.Core.Plugins;
+namespace ClipShrinker.Core.Modules;
 
-/// <summary>2.6: the "Sound equalizer" plugin: five bands and an overall volume in dB, one audio filter for the export
+/// <summary>2.6: the "Sound equalizer" module: five bands and an overall volume in dB, one audio filter for the export
 /// (every output track) and the preview sound. Neutral values give no filter, so exports stay identical.</summary>
 public static class Equalizer
 {

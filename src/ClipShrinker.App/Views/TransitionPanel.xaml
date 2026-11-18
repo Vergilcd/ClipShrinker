@@ -1,7 +1,7 @@
 <UserControl x:Class="ClipShrinker.App.Views.TransitionPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- 2.5: clip transitions (an app feature, no longer part of the Timeline effects plugin). Opens as a drop-down
+    <!-- 2.5: clip transitions (an app feature, no longer part of the Timeline effects module). Opens as a drop-down
          under the Transition button next to "Clear all clips". -->
     <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1" CornerRadius="8" Padding="16,12,16,14">

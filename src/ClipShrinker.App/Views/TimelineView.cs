@@ -97,6 +97,7 @@ public sealed class TimelineView : Canvas
     {
         if (vm is null) return;
         Height = vm.TimelineHeight;
+        UpdateClip();
         SyncBoxes();
         InvalidateVisual();
     }
@@ -430,7 +431,8 @@ public sealed class TimelineView : Canvas
     /// (radius 9 minus the 2 px border), so the thumbnails reach the border without poking out of the corners.</summary>
     void UpdateClip()
     {
-        double w = ActualWidth, h = ActualHeight, r = 7;
+        double w = ActualWidth, h = ActualHeight, r = vm?.SoundLaneHeight > 0 ? 0 : 7;   // (2.7: the Sounds lane is the bottom then)
+        if (r == 0) { Clip = new RectangleGeometry(new Rect(0, 0, Math.Max(0, w), Math.Max(0, h))); return; }
         if (w < 2 * r || h < 2 * r) { Clip = null; return; }
         var g = new StreamGeometry();
         using (var c = g.Open())

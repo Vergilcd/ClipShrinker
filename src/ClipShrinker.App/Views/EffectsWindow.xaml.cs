@@ -6,7 +6,7 @@ using ClipShrinker.App.ViewModels;
 
 namespace ClipShrinker.App.Views;
 
-/// <summary>Speed up / slow motion / zoom effects (Timeline effects plugin). Hidden instead of closed, so it reopens
+/// <summary>Speed up / slow motion / zoom effects (Timeline effects module). Hidden instead of closed, so it reopens
 /// where it was. (The effect sample play buttons and the RIFE download come with the preview audio.)</summary>
 public partial class EffectsWindow : Window
 {

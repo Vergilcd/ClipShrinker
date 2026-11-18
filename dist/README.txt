@@ -1,16 +1,16 @@
-CLIP SHRINKER 2.6.0
+CLIP SHRINKER 2.7.0
 ===================
 
 GETTING STARTED
-Double-click ClipShrinker.exe. Keep the "library" and "plugins" folders next to it: library holds ffmpeg,
-ffprobe and your settings, plugins holds the plugins (Plugins button, top right) and RIFE. There is nothing to
+Double-click ClipShrinker.exe. Keep the "library" and "modules" folders next to it: library holds ffmpeg,
+ffprobe and your settings, modules holds the modules (Modules button, top right) and RIFE. There is nothing to
 install (.NET is built into the exe). If ffmpeg.exe or ffprobe.exe is missing, the program offers to download
 them once (the LGPL build from github.com/BtbN/FFmpeg-Builds).
 
 You need Windows 10 or 11 (64-bit). Exports are fastest on a graphics card: NVIDIA (NVENC, GTX 10xx or newer),
 AMD (AMF) or Intel (Quick Sync), each with a current driver. Without one, Windows' own encoder is used, on the
 graphics card when it can and on the CPU otherwise (slower, H.264 only). The program tests what works on the
-PC at start-up and lists only those in Codec. The notice left of "Plugins" shows "GPU Encoding is ON" (green)
+PC at start-up and lists only those in Codec. The notice left of "Modules" shows "GPU Encoding is ON" (green)
 or "GPU Encoding is OFF" (orange) for the chosen codec; hover over it for what was found.
 SmartScreen may warn about the unsigned exe; click More info, then Run anyway.
 
@@ -40,9 +40,10 @@ and sound, looping the trimmed part. With the playhead outside the trimmed part 
 video and stops. M mutes it. F (or the button at the bottom right of the preview) shows the preview full screen;
 Esc leaves it. Drag the grip between the preview and the clip list to resize the preview.
 
-PLUGINS (button at the top right)
-Optional parts of the program are plugins you can switch on and off, delete, and restore from GitHub. Each is a
-folder in "plugins" with its version and changelog. All of them are on after the first start:
+MODULES (button at the top right)
+Optional parts of the program are modules you can switch on and off, delete, and restore from GitHub. Each is a
+folder in "modules" with its version and changelog (2.6 and older called them plugins; an old "plugins"
+folder is moved into "modules" by itself). All of them are on after the first start:
 - Timeline effects: speed up / slow motion / zoom sections and RIFE.
 - Bitrate presets: per-clip bitrates with hotkeys.
 - Picture adjustments: brightness, contrast, saturation and denoise. Its sun button at the bottom right of
@@ -56,11 +57,20 @@ folder in "plugins" with its version and changelog. All of them are on after the
   export. Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
   and press Enter. Heard in the preview, used on every audio track of the export, and saved with projects. A
   limiter keeps boosted sound from clipping.
+- Sound track: your own sound files on a Sounds lane under each clip's thumbnails. Drop sound files (mp3,
+  wav, ogg, m4a, aac, flac, opus) on the lane where they should play, or open "Sounds" (next to Transition).
+  It lists the green sounds in modules\sound-track\sounds ("Add files..." copies files there, "Open folder"
+  opens it), each with its waveform: drag one onto a clip's lane, click its play button to listen, or its +
+  to add it at the playhead (A adds the highlighted one). On the lane: drag a sound to move it, drag its ends to trim it, right-click or
+  Delete removes it. Click a sound to select it; its volume (-20 to +20 dB) and fade in / out are set in
+  Sounds. Sounds keep their normal speed inside speed sections, are heard in the preview, are mixed into the
+  clip's first audio track in the export (the microphone track stays clean), and are saved with projects
+  (with paths relative to the project, like the clips). A limiter keeps loud sounds from clipping.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
 at the bottom shows where you are. "Reset zoom" shows the whole clip again.
 
-EFFECTS (the band above the thumbnails - Timeline effects plugin)
+EFFECTS (the band above the thumbnails - Timeline effects module)
 - S adds a speed-up section (blue), D a slow-down section (pink) at the playhead. Type the speed in the box on
   its header: 4 is four times faster, 0.5 is half speed (0.1 to 100, Enter confirms).
 - Z adds a zoom section (white, header at the bottom of the timeline). While the playhead is inside it, a
@@ -72,13 +82,13 @@ EFFECTS (the band above the thumbnails - Timeline effects plugin)
   stay inside the trimmed part.
 
 The line under a clip's title shows its length after editing. Pitch, frame blending, RIFE AI slow motion and
-zoom motion are set in "Effects". RIFE (plugins\timeline-effects\rife) needs a GPU with Vulkan support.
+zoom motion are set in "Effects". RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
 - Size: "Max size (MB)" applies per file: to each clip, or to the whole video when joining. Enter a value in
   "or Bitrate (Mbps)" instead to use a fixed bitrate (it is ignored when empty); the size limit is then
   ignored and resolution offers Original, 4K, 1440p, 1080p, 720p or 50%.
-- Presets (Bitrate presets plugin): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
+- Presets (Bitrate presets module): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
   one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
   bitrate" means the size or bitrate above. Presets are used when clips are saved as separate files.
 - Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger

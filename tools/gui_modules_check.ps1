@@ -1,12 +1,12 @@
-# 2.4 plugins check in the real (Debug) app: the Plugins window, switching plugins off / on, delete + restore,
-# the moved sidebar options. UI Automation for the controls; screenshots go to %TEMP%\cs_plugins_shots.
-# Backs up and restores library\settings.json / presets.json / last_session.json and the plugins folder.
-#   powershell -ExecutionPolicy Bypass -File tools\gui_plugins_check.ps1
+# 2.4 modules check in the real (Debug) app: the Modules window, switching modules off / on, delete + restore,
+# the moved sidebar options. UI Automation for the controls; screenshots go to %TEMP%\cs_modules_shots.
+# Backs up and restores library\settings.json / presets.json / last_session.json and the modules folder.
+#   powershell -ExecutionPolicy Bypass -File tools\gui_modules_check.ps1
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path "$PSScriptRoot\.."
 $Bin = "$Root\src\ClipShrinker.App\bin\Debug\net10.0-windows"
-$Exe = "$Bin\ClipShrinker.exe"; $Lib = "$Bin\library"; $Plug = "$Bin\plugins"
-$Shots = Join-Path $env:TEMP "cs_plugins_shots"; Remove-Item $Shots -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $Shots | Out-Null
+$Exe = "$Bin\ClipShrinker.exe"; $Lib = "$Bin\library"; $Plug = "$Bin\modules"
+$Shots = Join-Path $env:TEMP "cs_modules_shots"; Remove-Item $Shots -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $Shots | Out-Null
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Drawing
 Add-Type @"
 using System;
@@ -39,22 +39,22 @@ function Check($ok, $what) { if ($ok) { "  ok    $what" } else { "  FAIL  $what"
 $fails = 0
 
 if (Get-Process ClipShrinker -ErrorAction SilentlyContinue) { throw "Close ClipShrinker first: this check uses the same settings files." }
-$Bak = Join-Path $env:TEMP "cs_plugins_library_backup"; Remove-Item $Bak -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $Bak | Out-Null
+$Bak = Join-Path $env:TEMP "cs_modules_library_backup"; Remove-Item $Bak -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $Bak | Out-Null
 $LibFiles = 'settings.json', 'presets.json', 'last_session.json'
 foreach ($f in $LibFiles) { if (Test-Path "$Lib\$f") { Copy-Item "$Lib\$f" $Bak } }
-$hadPlugins = Test-Path $Plug
-if ($hadPlugins) { Copy-Item $Plug "$Bak\plugins" -Recurse }
+$hadModules = Test-Path $Plug
+if ($hadModules) { Copy-Item $Plug "$Bak\modules" -Recurse }
 function Restore-Lib {
     if ($script:proc -and -not $script:proc.HasExited) { $script:proc.Kill(); $script:proc.WaitForExit(5000) | Out-Null }
     foreach ($f in $LibFiles) { Remove-Item "$Lib\$f" -ErrorAction SilentlyContinue; if (Test-Path "$Bak\$f") { Copy-Item "$Bak\$f" $Lib } }
     Remove-Item $Plug -Recurse -Force -ErrorAction SilentlyContinue
-    if ($hadPlugins) { Copy-Item "$Bak\plugins" $Plug -Recurse }
+    if ($hadModules) { Copy-Item "$Bak\modules" $Plug -Recurse }
 }
 trap { Restore-Lib; break }
 
-Remove-Item $Plug -Recurse -Force -ErrorAction SilentlyContinue      # a first start: the built-in plugins are written
+Remove-Item $Plug -Recurse -Force -ErrorAction SilentlyContinue      # a first start: the built-in modules are written
 foreach ($f in $LibFiles) { Remove-Item "$Lib\$f" -ErrorAction SilentlyContinue }   # (default settings; the user's are put back at the end)
-$dir = Join-Path $env:TEMP "cs_plugins"; Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $dir | Out-Null
+$dir = Join-Path $env:TEMP "cs_modules"; Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $dir | Out-Null
 $proj = Join-Path $dir "p.clipproj"
 Copy-Item "$Root\tests\media\projects\single_effects.clipproj" $proj
 $proc = Start-Process $Exe -ArgumentList "`"$proj`"" -PassThru
@@ -63,13 +63,13 @@ Start-Sleep 4
 $win = $A::FromHandle($proc.MainWindowHandle)
 
 "1. first start"
-foreach ($id in 'timeline-effects', 'bitrate-presets', 'picture-adjust') { Check (Test-Path "$Plug\$id\plugin.json") "plugins\$id\plugin.json written" }
-Check (Has $win "Plugins") "Plugins button"
+foreach ($id in 'timeline-effects', 'bitrate-presets', 'picture-adjust') { Check (Test-Path "$Plug\$id\module.json") "modules\$id\module.json written" }
+Check (Has $win "Modules") "Modules button"
 Check (Has $win "Effects") "Effects button (Timeline effects on by default)"
 Check (Has $win "Speed Up") "effect buttons under the preview"
 Check (Has $win "Bitrate presets") "Bitrate presets button (on by default)"
-Check (HasButton $win "Picture") "Picture button on the preview (2.6: every plugin on by default)"
-Check (HasButton $win "Equalizer") "Equalizer button on the preview (2.6: every plugin on by default)"
+Check (HasButton $win "Picture") "Picture button on the preview (2.6: every module on by default)"
+Check (HasButton $win "Equalizer") "Equalizer button on the preview (2.6: every module on by default)"
 $sw = [Diagnostics.Stopwatch]::StartNew(); while (-not (Has $win "GPU Encoding is ON") -and $sw.Elapsed.TotalSeconds -lt 10) { Start-Sleep -Milliseconds 300 }
 Check (Has $win "GPU Encoding is ON") "top bar: GPU encoding ON (green) on this NVIDIA PC"
 Invoke (Find $win $A::NameProperty "About")
@@ -90,15 +90,15 @@ function Key($vk) { [W]::keybd_event($vk, 0, 0, [IntPtr]::Zero); [W]::keybd_even
 [W]::SetForegroundWindow([IntPtr]$win.Current.NativeWindowHandle) | Out-Null; Start-Sleep -Milliseconds 400
 Key 0x70                                                          # F1: Shortcuts
 $sc = Win "Shortcuts"
-Check (Has $sc "EFFECTS (plugin)") "Shortcuts: EFFECTS (plugin) section while the plugin is on"
+Check (Has $sc "EFFECTS (module)") "Shortcuts: EFFECTS (module) section while the module is on"
 Shot $sc "1b_shortcuts_on"
 $sc.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
 
-"2. Plugins window"
-Invoke (Find $win $A::NameProperty "Plugins")
-$pw = Win "Plugins"
+"2. Modules window"
+Invoke (Find $win $A::NameProperty "Modules")
+$pw = Win "Modules"
 Toggle (@($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Changelog")))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.Button' })[0]
-Shot $pw "2_plugins"
+Shot $pw "2_modules"
 $te = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Timeline effects"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
 $bp = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Bitrate presets"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
 $pa = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Picture adjustments"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.CheckBox' })[0]
@@ -113,7 +113,7 @@ $pw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close(
 [W]::SetForegroundWindow([IntPtr]$win.Current.NativeWindowHandle) | Out-Null; Start-Sleep -Milliseconds 400
 Key 0x70
 $sc = Win "Shortcuts"
-Check (-not (Has $sc "EFFECTS (plugin)")) "Shortcuts: no EFFECTS section while the plugin is off"
+Check (-not (Has $sc "EFFECTS (module)")) "Shortcuts: no EFFECTS section while the module is off"
 Shot $sc "3a_shortcuts_off"
 $sc.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
 Invoke (Find $win $A::NameProperty "Picture")
@@ -159,8 +159,8 @@ Shot $win "3d_sound_card"
 Invoke (Find $win $A::NameProperty "Reset")
 Check ((Range "Volume") -eq 0 -and (Range "60 Hz") -eq 0) "Reset (sound)"
 Invoke (Find $win $A::NameProperty "Equalizer")
-Invoke (Find $win $A::NameProperty "Plugins")
-$pw = Win "Plugins"
+Invoke (Find $win $A::NameProperty "Modules")
+$pw = Win "Modules"
 
 "4. delete Bitrate presets, then restore"
 $del = @($pw.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Delete"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.Button' })
@@ -170,20 +170,20 @@ Invoke $del                                                       # (UIA returns
 $box = $null; $sw = [Diagnostics.Stopwatch]::StartNew()
 while (-not $box -and $sw.Elapsed.TotalSeconds -lt 8) {
     Start-Sleep -Milliseconds 300
-    $box = @($A::RootElement.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Delete plugin"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.Window' })[0]
+    $box = @($A::RootElement.FindAll($TS::Descendants, (New-Object $P($A::NameProperty, "Delete module"))) | Where-Object { $_.Current.ControlType.ProgrammaticName -eq 'ControlType.Window' })[0]
 }
 [W]::SetForegroundWindow([IntPtr]$box.Current.NativeWindowHandle) | Out-Null; Start-Sleep -Milliseconds 400
 [W]::keybd_event(13, 0, 0, [IntPtr]::Zero); [W]::keybd_event(13, 0, 2, [IntPtr]::Zero)   # Enter = Yes (the default button)
 Start-Sleep 1
 Start-Sleep 1
-Check (-not (Test-Path "$Plug\bitrate-presets")) "plugins\bitrate-presets deleted"
+Check (-not (Test-Path "$Plug\bitrate-presets")) "modules\bitrate-presets deleted"
 Check (-not (HasButton $win "Bitrate presets")) "Bitrate presets button hidden"
 Check (Has $pw "Restore") "greyed row with Restore"
 Shot $pw "4_deleted"
 Invoke (Find $pw $A::NameProperty "Restore")
-$sw = [Diagnostics.Stopwatch]::StartNew(); while (-not (Test-Path "$Plug\bitrate-presets\plugin.json") -and $sw.Elapsed.TotalSeconds -lt 25) { Start-Sleep -Milliseconds 300 }
+$sw = [Diagnostics.Stopwatch]::StartNew(); while (-not (Test-Path "$Plug\bitrate-presets\module.json") -and $sw.Elapsed.TotalSeconds -lt 25) { Start-Sleep -Milliseconds 300 }
 Start-Sleep 1
-Check (Test-Path "$Plug\bitrate-presets\plugin.json") "restored plugin.json"
+Check (Test-Path "$Plug\bitrate-presets\module.json") "restored module.json"
 Check (HasButton $win "Bitrate presets") "Bitrate presets button back"
 Shot $pw "5_restored"
 
@@ -196,7 +196,7 @@ while (-not $closeBox -and $sw.Elapsed.TotalSeconds -lt 6) { Start-Sleep -Millis
 if ($closeBox) { Invoke (Find $closeBox $A::NameProperty "Close without saving") }
 $proc.WaitForExit(10000) | Out-Null
 $s = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json
-Check ($s.plugins.'timeline-effects' -eq $false -and $s.plugins.'picture-adjust' -eq $true -and $s.plugins.'bitrate-presets' -eq $true) "plugin switches saved"
+Check ($s.modules.'timeline-effects' -eq $false -and $s.modules.'picture-adjust' -eq $true -and $s.modules.'bitrate-presets' -eq $true) "module switches saved"
 
 
 "6. Transition drop-down (2.5: app feature, shown with 2 or more clips; Timeline effects is still off)"
@@ -207,7 +207,7 @@ do { Start-Sleep -Milliseconds 300; $proc.Refresh() } until ($proc.MainWindowHan
 Start-Sleep 4
 $win = $A::FromHandle($proc.MainWindowHandle)
 Check (Has $win "Clear all clips") "Clear all clips button"
-Check (-not (HasButton $win "Effects")) "Effects button still hidden (plugin off)"
+Check (-not (HasButton $win "Effects")) "Effects button still hidden (module off)"
 $tb = Find $win $A::NameProperty "Transition"
 Check (-not $tb.Current.IsOffscreen) "Transition button with 2+ clips"
 Toggle $tb

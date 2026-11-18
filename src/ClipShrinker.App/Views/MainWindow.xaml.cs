@@ -45,13 +45,13 @@ public partial class MainWindow : Window, IDialogs
         vm.RevealRequested += Reveal;
         vm.BracketChanged += DrawBracket;
         vm.KeysChanged += RefreshHints;
-        vm.PluginsChanged += OnPluginsChanged;
+        vm.ModulesChanged += OnModulesChanged;
         PreviewImg.SizeChanged += (_, _) => DrawBracket();
         previewTimer.Tick += (_, _) => { previewTimer.Stop(); vm.PreviewResized(); };
         BuildBracket();
         BuildTokenButtons();
         RightPill.Children.Insert(0, PicturePanel.ToggleButton());
-        RightPill.Children.Insert(0, EqualizerPanel.ToggleButton());   // (2.6 Sound equalizer plugin)
+        RightPill.Children.Insert(0, EqualizerPanel.ToggleButton());   // (2.6 Sound equalizer module)
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
     }
 
@@ -261,10 +261,10 @@ public partial class MainWindow : Window, IDialogs
         {
             case "shortcuts": Shortcuts_Click(this, e); break;
             case "effects":
-                if (!vm.EffectsPluginOn) return false;
+                if (!vm.EffectsModuleOn) return false;
                 ToggleEffects();
                 break;
-            case "delete_section" when !vm.EffectsPluginOn: return false;
+            case "delete_section" when !vm.EffectsModuleOn && !vm.SoundModuleOn: return false;
             case "export": vm.GoOrAbortCommand.Execute(null); break;
             case "open": vm.OpenProjectDialogCommand.Execute(null); break;
             case "save": vm.SaveProject(false); break;
@@ -448,6 +448,9 @@ public partial class MainWindow : Window, IDialogs
         FullscreenButton.ToolTip = $"Full-screen preview ({Text.ChordLabel(vm.Keys["fullscreen"])}). Esc leaves it.";
     }
 
+    /// <summary>The Sounds drop-down opens: read the sound folder again (files may have been added in Explorer).</summary>
+    void SoundsButton_Checked(object sender, RoutedEventArgs e) => vm.RefreshSoundLibrary();
+
     async void OnDrop(object sender, DragEventArgs e)
     {
         if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) await vm.AddFiles(files);
@@ -504,10 +507,10 @@ public partial class MainWindow : Window, IDialogs
     }
 
     /// <summary>The Effects window is kept and only hidden, so it opens where it was (reference show_settings / hide_settings).
-    /// It belongs to the Timeline effects plugin.</summary>
+    /// It belongs to the Timeline effects module.</summary>
     void ToggleEffects()
     {
-        if (!vm.EffectsPluginOn) { effects?.Hide(); return; }
+        if (!vm.EffectsModuleOn) { effects?.Hide(); return; }
         effects ??= new EffectsWindow(vm) { Owner = this };
         if (effects.IsVisible) { effects.Hide(); return; }
         if (!effects.Placed)
@@ -521,27 +524,27 @@ public partial class MainWindow : Window, IDialogs
         effects.Activate();
     }
 
-    PluginsWindow? pluginsWin;
+    ModulesWindow? modulesWin;
 
-    void Plugins_Click(object sender, RoutedEventArgs e)
+    void Modules_Click(object sender, RoutedEventArgs e)
     {
-        if (pluginsWin is { IsLoaded: true }) { pluginsWin.Activate(); return; }
-        pluginsWin = new PluginsWindow(vm) { Owner = this };
-        pluginsWin.Show();
+        if (modulesWin is { IsLoaded: true }) { modulesWin.Activate(); return; }
+        modulesWin = new ModulesWindow(vm) { Owner = this };
+        modulesWin.Show();
     }
 
-    /// <summary>A plugin was switched off or deleted: its windows close.</summary>
-    void OnPluginsChanged()
+    /// <summary>A module was switched off or deleted: its windows close.</summary>
+    void OnModulesChanged()
     {
-        if (!vm.EffectsPluginOn) effects?.Hide();
-        if (!vm.PresetsPluginOn && presetsWin is { IsLoaded: true }) presetsWin.Close();
-        if (shortcuts is { IsLoaded: true } open)                // rebuilt with / without the plugin sections
+        if (!vm.EffectsModuleOn) effects?.Hide();
+        if (!vm.PresetsModuleOn && presetsWin is { IsLoaded: true }) presetsWin.Close();
+        if (shortcuts is { IsLoaded: true } open)                // rebuilt with / without the module sections
         {
             var (l, t) = (open.Left, open.Top);
             open.Close();
             shortcuts = new ShortcutsWindow(vm) { Owner = this, Left = l, Top = t };
             shortcuts.Show();
-            pluginsWin?.Activate();
+            modulesWin?.Activate();
         }
     }
 

@@ -65,8 +65,8 @@
                 <Button Style="{StaticResource TopButton}" Content="&#xE7A6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}" ToolTip="Redo (Ctrl+Shift+Z)" />
                 <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0" Content="About" Click="About_Click"
                         ToolTip="Version, changelog and licenses" />
-                <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Content="Plugins" Click="Plugins_Click"
-                        ToolTip="Switch plugins on or off (timeline effects, bitrate presets, picture adjustments, sound equalizer), see their versions and changelogs" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Content="Modules" Click="Modules_Click"
+                        ToolTip="Switch modules on or off (timeline effects, bitrate presets, picture adjustments, sound equalizer), see their versions and changelogs" />
                 <!-- 2.6: does this PC encode on the graphics card? green = yes, orange = no (hover for the details) -->
                 <Border x:Name="GpuBadge" DockPanel.Dock="Right" Margin="0,0,12,0" Padding="11,2,11,3" CornerRadius="12" BorderThickness="1"
                         VerticalAlignment="Center" Background="Transparent" ToolTip="{Binding GpuTip}" AutomationProperties.Name="{Binding GpuText}">
@@ -142,7 +142,7 @@
                                             IsMoveToPointEnabled="True" ToolTip="Preview volume (only the preview - the export is not changed)" />
                                 </StackPanel>
                             </Border>
-                            <!-- (Picture adjustments plugin: its button joins this pill, its card opens above it) -->
+                            <!-- (Picture adjustments module: its button joins this pill, its card opens above it) -->
                             <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#99000000" CornerRadius="19" Padding="2">
                                 <StackPanel x:Name="RightPill" Orientation="Horizontal">
                                     <Button x:Name="FullscreenButton" Style="{StaticResource OverlayButton}" Content="&#xE740;" Click="Fullscreen_Click"
@@ -160,9 +160,9 @@
                 </Border>
                 <DockPanel Grid.Row="1" Margin="0,4,0,0" LastChildFill="False">
                     <!-- effect buttons: click = add at the playhead of the active clip, drag onto a timeline = add there -->
-                    <!-- (Timeline effects plugin) -->
+                    <!-- (Timeline effects module) -->
                     <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center"
-                                Visibility="{Binding EffectsPluginOn, Converter={StaticResource BoolToVis}}" />
+                                Visibility="{Binding EffectsModuleOn, Converter={StaticResource BoolToVis}}" />
                     <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all clips"
                             Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
                     <!-- 2.5: clip transitions as a drop-down (shown with 2 or more clips) -->
@@ -181,12 +181,29 @@
                             <local:TransitionPanel x:Name="TransitionPanel" />
                         </Popup>
                     </Grid>
+                    <!-- 2.7 Sound track module: the sound library and the selected sound's settings -->
+                    <Grid DockPanel.Dock="Right" Margin="0,0,10,0" Visibility="{Binding SoundModuleOn, Converter={StaticResource BoolToVis}}">
+                        <ToggleButton x:Name="SoundsButton" Focusable="False" AutomationProperties.Name="Sounds"
+                                      IsChecked="{Binding IsOpen, ElementName=SoundsPopup, Mode=TwoWay}"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=SoundsPopup, Converter={StaticResource Not}}"
+                                      Checked="SoundsButton_Checked"
+                                      ToolTip="Your sound library: pick, listen, add sounds to the clips (Sound track module)">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Sounds" VerticalAlignment="Center" />
+                                <TextBlock Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Margin="8,1,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </ToggleButton>
+                        <Popup x:Name="SoundsPopup" PlacementTarget="{Binding ElementName=SoundsButton}" Placement="Bottom"
+                               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4">
+                            <local:SoundsPanel />
+                        </Popup>
+                    </Grid>
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Effects" Click="Effects_Click"
-                            Visibility="{Binding EffectsPluginOn, Converter={StaticResource BoolToVis}}"
+                            Visibility="{Binding EffectsModuleOn, Converter={StaticResource BoolToVis}}"
                             ToolTip="Speed up / slow motion / zoom effects (F2). Changes are kept automatically." />
-                    <!-- (Bitrate presets plugin) -->
+                    <!-- (Bitrate presets module) -->
                     <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Bitrate presets" Click="Presets_Click"
-                            Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}"
+                            Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}"
                             ToolTip="Bitrate presets: name, Mbps and a hotkey. Pick one for each clip when exporting separate files" />
                 </DockPanel>
             </Grid>
@@ -215,7 +232,7 @@
                                                 <Button DockPanel.Dock="Right" Style="{StaticResource HeadButton}" Content="Reset zoom" Click="Fit_Click"
                                                         ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)" />
                                                 <ComboBox DockPanel.Dock="Right" Width="240" Height="24" Margin="0,0,10,0" FontSize="12" Padding="9,2" MinHeight="0" Focusable="False" VerticalContentAlignment="Center"
-                                                          Visibility="{Binding DataContext.PresetsPluginOn, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
+                                                          Visibility="{Binding DataContext.PresetsModuleOn, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
                                                           Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
                                                           ItemsSource="{Binding PresetLabels}" SelectedItem="{Binding PresetLabel}" PreviewMouseWheel="Combo_NoWheel"
                                                           ToolTip="Bitrate of this clip when the clips are exported as separate files: Auto bitrate = the size / bitrate from the Export panel. Presets are made in the Bitrate presets window.">
@@ -238,6 +255,7 @@
                                                 <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             </DockPanel>
                                         </Border>
+                                        <local:SoundLaneView DockPanel.Dock="Bottom" />   <!-- 2.7 Sound track module -->
                                         <local:TimelineView />
                                     </DockPanel>
                                 </Border>
@@ -342,12 +360,12 @@
                         <TextBlock Text="ignored if empty" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
                     </StackPanel>
 
-                    <!-- (Bitrate presets plugin) -->
+                    <!-- (Bitrate presets module) -->
                     <TextBlock Grid.Row="2" Text="Preset (all clips):" Style="{StaticResource FieldLabel}"
-                               Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}" />
+                               Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}" />
                     <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Bitrate preset for all clips"
                               ItemsSource="{Binding AllPresetOptions}" SelectedItem="{Binding AllPreset}"
-                              Visibility="{Binding PresetsPluginOn, Converter={StaticResource BoolToVis}}"
+                              Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}"
                               ToolTip="Sets the bitrate preset of every clip at once (used when the clips are exported as separate files). Auto = the size / bitrate above." />
 
                     <TextBlock Grid.Row="3" Text="Resolution:" Style="{StaticResource FieldLabel}" />

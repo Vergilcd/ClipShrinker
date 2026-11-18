@@ -2,12 +2,12 @@ using System.Text.Json.Nodes;
 using ClipShrinker.Core;
 using ClipShrinker.Core.Ffmpeg;
 using ClipShrinker.Core.Media;
-using ClipShrinker.Core.Plugins;
+using ClipShrinker.Core.Modules;
 using ClipShrinker.Core.Project;
 
 namespace ClipShrinker.Tests;
 
-/// <summary>2.6: encoders for every PC, and the Sound equalizer plugin.</summary>
+/// <summary>2.6: encoders for every PC, and the Sound equalizer module.</summary>
 public class EncoderEqTests
 {
     static TimelineClip Clip(string path = "C:/v/a.mp4", double dur = 30) =>
@@ -130,7 +130,7 @@ public class EncoderEqTests
     {
         var s = AppState.FromSettings(null);
         s.EqBands[1] = 4; s.EqVolume = -3;
-        Assert.Null(s.EqFilter());                                                            // plugin off
+        Assert.Null(s.EqFilter());                                                            // module off
         s.EqOn = true;
         Assert.Equal(s.EqFilter(), s.ToExportSettings(false, out _)!.AudioAf);
         var d = new JsonObject();
@@ -167,10 +167,10 @@ public class EncoderEqTests
     }
 
     [Fact]
-    public void EqualizerIsABuiltinPluginOnByDefault()
+    public void EqualizerIsABuiltinModuleOnByDefault()
     {
-        Assert.Contains(PluginIds.Equalizer, PluginIds.Builtin);
-        Assert.True(PluginIds.DefaultOn(PluginIds.Equalizer));    // (2.6: every plugin on for new users)
-        Assert.True(PluginIds.DefaultOn(PluginIds.TimelineEffects));
+        Assert.Contains(ModuleIds.Equalizer, ModuleIds.Builtin);
+        Assert.True(ModuleIds.DefaultOn(ModuleIds.Equalizer));    // (2.6: every module on for new users)
+        Assert.True(ModuleIds.DefaultOn(ModuleIds.TimelineEffects));
     }
 }

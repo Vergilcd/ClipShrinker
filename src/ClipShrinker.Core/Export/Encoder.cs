@@ -113,7 +113,7 @@ public sealed class Encoder(IFfmpegRunner runner, IExportFileSystem fs, Action<d
                                 string audioK, bool hwdec, bool tonemap = false)
     {
         var cmd = new List<string> { Ffmpeg, "-y", "-hide_banner", "-nostats", "-progress", "pipe:1" };
-        cmd.AddRange(Plugins.PictureAdjust.HwArgs(clips.SelectMany(c => c.PluginVf ?? [])));   // (GPU denoise)
+        cmd.AddRange(Modules.PictureAdjust.HwArgs(clips.SelectMany(c => c.ModuleVf ?? [])));   // (GPU denoise)
         foreach (var c in clips)
         {
             if (hwdec) cmd.AddRange(["-hwaccel", "cuda"]);
@@ -121,6 +121,8 @@ public sealed class Encoder(IFfmpegRunner runner, IExportFileSystem fs, Action<d
         }
         foreach (var x in extras)
             cmd.AddRange(["-framerate", F(x.Frames / x.Duration, 6), "-start_number", "1", "-i", Path.Combine(x.Dir, "%08d.jpg")]);
+        foreach (var s in clips.SelectMany(c => c.Sounds ?? []))   // 2.7: Sound track files, in the order the graph expects
+            cmd.AddRange(["-i", s.Path]);
         cmd.AddRange(["-filter_complex", graph.Graph, "-map", $"[{graph.VideoLabel}]"]);
         foreach (var lbl in graph.AudioLabels ?? []) cmd.AddRange(["-map", $"[{lbl}]"]);
         cmd.AddRange(Filters.VideoCodecArgs(codec, vBps));
@@ -191,7 +193,7 @@ public sealed class Encoder(IFfmpegRunner runner, IExportFileSystem fs, Action<d
             Directory.CreateDirectory(dIn);
             Directory.CreateDirectory(dOut);
             string vf = string.Join(",", Filters.ClipVfilters(c, W, H, ratio, tonemap).Append($"fps={Py.PyFraction.Ratio(c.Fps)}"));
-            tools.Run([Ffmpeg, "-y", "-v", "error", "-nostdin", .. Plugins.PictureAdjust.HwArgs([vf]), "-ss", F(a, 4), "-t", F(b - a, 4), "-i", c.Path,
+            tools.Run([Ffmpeg, "-y", "-v", "error", "-nostdin", .. Modules.PictureAdjust.HwArgs([vf]), "-ss", F(a, 4), "-t", F(b - a, 4), "-i", c.Path,
                        "-an", "-vf", vf, "-q:v", "2", "-start_number", "1", Path.Combine(dIn, "%08d.jpg")]);
             if (cancelled) throw new ExportCancelledException();
             int cnt = Directory.GetFileSystemEntries(dIn).Length;

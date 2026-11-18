@@ -1,19 +1,19 @@
 using System.Text.Json.Nodes;
 using ClipShrinker.Core;
 using ClipShrinker.Core.Ffmpeg;
-using ClipShrinker.Core.Plugins;
+using ClipShrinker.Core.Modules;
 using ClipShrinker.Core.Project;
 using ClipShrinker.Core.Settings;
 
 namespace ClipShrinker.Tests;
 
-/// <summary>Tests that switch the global plugin flags run alone, so the fixture tests never see a plugin off.</summary>
-[CollectionDefinition("PluginFlags", DisableParallelization = true)]
-public class PluginFlagsCollection;
+/// <summary>Tests that switch the global module flags run alone, so the fixture tests never see a module off.</summary>
+[CollectionDefinition("ModuleFlags", DisableParallelization = true)]
+public class ModuleFlagsCollection;
 
-/// <summary>2.4: plugin manifests, the Picture adjustments filter, and what switching a plugin off changes.</summary>
-[Collection("PluginFlags")]
-public class PluginTests
+/// <summary>2.4: module manifests, the Picture adjustments filter, and what switching a module off changes.</summary>
+[Collection("ModuleFlags")]
+public class ModuleTests
 {
     static TimelineClip Clip(string path = "C:/v/a.mp4", double dur = 30) =>
         new(path, new MediaInfo(1920, 1080, 60, dur, 1, 8e6, 0, null, null, null));
@@ -21,35 +21,35 @@ public class PluginTests
     [Fact]
     public void ManifestReadsAllFields()
     {
-        var m = PluginManifest.Parse("""{"id":"x","name":"X plug","author":"Me","version":"1.2.3","builtin":true,"description":"d"}""", "folder")!;
+        var m = ModuleManifest.Parse("""{"id":"x","name":"X plug","author":"Me","version":"1.2.3","builtin":true,"description":"d"}""", "folder")!;
         Assert.Equal(("x", "X plug", "Me", "1.2.3", "d", true), (m.Id, m.Name, m.Author, m.Version, m.Description, m.Builtin));
     }
 
     [Fact]
     public void ManifestFallsBackToFolderName()
     {
-        var m = PluginManifest.Parse("{}", "my-plugin")!;
-        Assert.Equal(("my-plugin", "my-plugin", "unknown", "?", false), (m.Id, m.Name, m.Author, m.Version, m.Builtin));
-        Assert.Null(PluginManifest.Parse("not json", "x"));
-        Assert.Null(PluginManifest.Parse("[1]", "x"));
+        var m = ModuleManifest.Parse("{}", "my-module")!;
+        Assert.Equal(("my-module", "my-module", "unknown", "?", false), (m.Id, m.Name, m.Author, m.Version, m.Builtin));
+        Assert.Null(ModuleManifest.Parse("not json", "x"));
+        Assert.Null(ModuleManifest.Parse("[1]", "x"));
     }
 
     [Fact]
     public void ScanFindsFoldersWithManifests()
     {
-        string root = Directory.CreateTempSubdirectory("cs_plugins_").FullName;
+        string root = Directory.CreateTempSubdirectory("cs_modules_").FullName;
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "b"));
-            File.WriteAllText(Path.Combine(root, "b", "plugin.json"), """{"name":"Beta","version":"2"}""");
+            File.WriteAllText(Path.Combine(root, "b", "module.json"), """{"name":"Beta","version":"2"}""");
             File.WriteAllText(Path.Combine(root, "b", "CHANGELOG.txt"), "  2: fixed  \n");
             Directory.CreateDirectory(Path.Combine(root, "a"));
-            File.WriteAllText(Path.Combine(root, "a", "plugin.json"), """{"name":"Alpha"}""");
-            Directory.CreateDirectory(Path.Combine(root, "empty"));      // no manifest: not a plugin
-            var list = PluginManifest.Scan(root);
+            File.WriteAllText(Path.Combine(root, "a", "module.json"), """{"name":"Alpha"}""");
+            Directory.CreateDirectory(Path.Combine(root, "empty"));      // no manifest: not a module
+            var list = ModuleManifest.Scan(root);
             Assert.Equal(["Alpha", "Beta"], list.Select(x => x.Manifest.Name));
-            Assert.Equal("2: fixed", PluginManifest.ReadChangelog(list[1].Dir));
-            Assert.Null(PluginManifest.ReadChangelog(list[0].Dir));
+            Assert.Equal("2: fixed", ModuleManifest.ReadChangelog(list[1].Dir));
+            Assert.Null(ModuleManifest.ReadChangelog(list[0].Dir));
         }
         finally { Directory.Delete(root, true); }
     }
@@ -59,26 +59,26 @@ public class PluginTests
     [InlineData("1.2.10", "1.2.9", 1)]
     [InlineData("1.0", "1.0.1", -1)]
     [InlineData("2.0.0", "10.0.0", -1)]
-    public void VersionsCompareByNumber(string a, string b, int want) => Assert.Equal(want, PluginManifest.CompareVersions(a, b));
+    public void VersionsCompareByNumber(string a, string b, int want) => Assert.Equal(want, ModuleManifest.CompareVersions(a, b));
 
     [Fact]
     public void ShippedManifestsAreValid()
     {
-        string root = Path.Combine(FindRepo(), "plugins");
-        foreach (var id in PluginIds.Builtin)
+        string root = Path.Combine(FindRepo(), "modules");
+        foreach (var id in ModuleIds.Builtin)
         {
-            var m = PluginManifest.Read(Path.Combine(root, id));
+            var m = ModuleManifest.Read(Path.Combine(root, id));
             Assert.NotNull(m);
             Assert.Equal(id, m!.Id);
             Assert.True(m.Builtin);
-            Assert.NotNull(PluginManifest.ReadChangelog(Path.Combine(root, id)));
+            Assert.NotNull(ModuleManifest.ReadChangelog(Path.Combine(root, id)));
         }
     }
 
     static string FindRepo()
     {
         for (var d = new DirectoryInfo(AppContext.BaseDirectory); d is not null; d = d.Parent)
-            if (Directory.Exists(Path.Combine(d.FullName, "plugins")) && File.Exists(Path.Combine(d.FullName, "ClipShrinker.sln"))) return d.FullName;
+            if (Directory.Exists(Path.Combine(d.FullName, "modules")) && File.Exists(Path.Combine(d.FullName, "ClipShrinker.sln"))) return d.FullName;
         throw new DirectoryNotFoundException("repository root");
     }
 
@@ -124,7 +124,7 @@ public class PluginTests
     }
 
     [Fact]
-    public void PictureOnlyWhenPluginOn()
+    public void PictureOnlyWhenModuleOn()
     {
         var s = AppState.FromSettings(null);
         s.PicBright = 10;
@@ -132,11 +132,11 @@ public class PluginTests
         s.PictureOn = true;
         Assert.NotNull(s.PictureFilter());
         var clips = ExportPlanner.PrepareClips(s, [Clip()]);
-        Assert.Equal([s.PictureFilter()!], clips[0].PluginVf!);
+        Assert.Equal([s.PictureFilter()!], clips[0].ModuleVf!);
         var vf = Filters.ClipVfilters(clips[0], 1920, 1080, null, false);
         Assert.Equal(s.PictureFilter(), vf[^1]);                        // after scale / pad / setsar
         s.PictureOn = false;
-        Assert.Null(ExportPlanner.PrepareClips(s, [Clip()])[0].PluginVf);
+        Assert.Null(ExportPlanner.PrepareClips(s, [Clip()])[0].ModuleVf);
     }
 
     [Fact]
@@ -220,12 +220,12 @@ public class PluginTests
         var hdr = new TimelineClip("C:/v/h.mp4", new MediaInfo(3840, 2160, 60, 30, 1, 8e6, 0, "smpte2084", "bt2020", "bt2020nc"));
         s.Hdr = false;                                                  // HDR kept: no denoise on that clip
         var clips = ExportPlanner.PrepareClips(s, [Clip(), hdr]);
-        Assert.Equal([PictureAdjust.DenoiseFilter(40, gpu: false)!], clips[0].PluginVf!);
-        Assert.Null(clips[1].PluginVf);
+        Assert.Equal([PictureAdjust.DenoiseFilter(40, gpu: false)!], clips[0].ModuleVf!);
+        Assert.Null(clips[1].ModuleVf);
         s.Hdr = true;                                                   // converted to SDR: denoised too
-        Assert.NotNull(ExportPlanner.PrepareClips(s, [hdr])[0].PluginVf);
+        Assert.NotNull(ExportPlanner.PrepareClips(s, [hdr])[0].ModuleVf);
         s.OpenCl = true;
-        Assert.Contains("nlmeans_opencl", ExportPlanner.PrepareClips(s, [Clip()])[0].PluginVf![0]);
+        Assert.Contains("nlmeans_opencl", ExportPlanner.PrepareClips(s, [Clip()])[0].ModuleVf![0]);
 
         var d = new JsonObject();
         s.WriteTo(d);
@@ -240,7 +240,7 @@ public class PluginTests
         Assert.Equal(0, other.PicDenoise);                              // a project without picture values: neutral
     }
 
-    // ------------------------------------------------------------------ plugins switched off
+    // ------------------------------------------------------------------ modules switched off
     [Fact]
     public void TimelineEffectsOffDropsSectionsButKeepsTransitions()
     {
@@ -254,7 +254,7 @@ public class PluginTests
             var c = row.ToExport();
             Assert.Null(c.Pieces);
             Assert.Empty(c.Zooms);
-            Assert.Single(row.Sections);                               // kept for when the plugin comes back
+            Assert.Single(row.Sections);                               // kept for when the module comes back
             Assert.Equal(C.TransitionMode(s.Trans), s.ToExportSettings(true, out _)!.Xfade);   // 2.5: transitions are an app feature
             var ed = new TimelineEditor(row);
             Assert.Empty(ed.Vis());
@@ -289,5 +289,32 @@ public class PluginTests
         finally { Features.BitratePresets = true; }
         var on = ExportPlanner.OneFile(s, st, [row], clips, "C:/out/a.mp4", false, _ => preset);
         Assert.Equal(6, on.Settings.BitrateMbps);
+    }
+
+    [Fact]
+    public void OldPluginsFolderMovesToModules()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "cs_mod_mig_" + Guid.NewGuid().ToString("N"));
+        string old = Path.Combine(root, "plugins"), dst = Path.Combine(root, "modules");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(old, "sound-track", "sounds"));
+            Directory.CreateDirectory(Path.Combine(old, "timeline-effects", "rife"));
+            File.WriteAllText(Path.Combine(old, "sound-track", "plugin.json"), "old");
+            File.WriteAllText(Path.Combine(old, "sound-track", "sounds", "horn.wav"), "x");
+            File.WriteAllText(Path.Combine(old, "timeline-effects", "plugin.json"), "old");
+            File.WriteAllText(Path.Combine(old, "timeline-effects", "rife", "rife.exe"), "x");
+            Directory.CreateDirectory(Path.Combine(dst, "timeline-effects"));        // a newer version unzipped over it
+            File.WriteAllText(Path.Combine(dst, "timeline-effects", "module.json"), "new");
+
+            Assert.True(ModuleManifest.MoveOldFolder(old, dst));
+            Assert.False(Directory.Exists(old));
+            Assert.Equal("new", File.ReadAllText(Path.Combine(dst, "timeline-effects", "module.json")));
+            Assert.Equal("old", File.ReadAllText(Path.Combine(dst, "sound-track", "module.json")));
+            Assert.True(File.Exists(Path.Combine(dst, "sound-track", "sounds", "horn.wav")));
+            Assert.True(File.Exists(Path.Combine(dst, "timeline-effects", "rife", "rife.exe")));
+            Assert.False(ModuleManifest.MoveOldFolder(old, dst));
+        }
+        finally { Directory.Delete(root, true); }
     }
 }

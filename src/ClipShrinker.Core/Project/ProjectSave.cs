@@ -24,6 +24,17 @@ public static class ProjectSave
                     { ["a"] = RoundTo(z.A, 3), ["b"] = RoundTo(z.B, 3), ["x"] = RoundTo(z.X, 4), ["y"] = RoundTo(z.Y, 4), ["w"] = RoundTo(z.W, 4) }).ToArray()),
             };
             if (!string.IsNullOrEmpty(baseDir) && RelPath(r.Path, baseDir) is { } rel) c["rel"] = rel;
+            if (r.Sounds.Count > 0)                          // 2.7 Sound track module (older versions ignore it)
+                c["sounds"] = new JsonArray(r.Sounds.OrderBy(b => b.At).Select(b =>
+                {
+                    var o = new JsonObject
+                    {
+                        ["path"] = b.Path, ["at"] = RoundTo(b.At, 3), ["in"] = RoundTo(b.In, 3), ["len"] = RoundTo(b.Len, 3),
+                        ["dur"] = RoundTo(b.FileDur, 3), ["vol"] = b.VolumeDb, ["fade"] = RoundTo(b.Fade, 2),
+                    };
+                    if (!string.IsNullOrEmpty(baseDir) && RelPath(b.Path, baseDir) is { } srel) o["rel"] = srel;
+                    return (JsonNode)o;
+                }).ToArray());
             clips.Add(c);
         }
         var data = new JsonObject
@@ -39,12 +50,12 @@ public static class ProjectSave
                 ["slow_interp"] = s.SlowInterp, ["hdr"] = s.Hdr, ["mode"] = s.Mode, ["trans"] = s.Trans, ["tlen"] = s.Tlen,
             },
         };
-        if (s.PictureChanged)                                // (Picture adjustments plugin; older versions ignore them)
+        if (s.PictureChanged)                                // (Picture adjustments module; older versions ignore them)
         {
             var st = (JsonObject)data["settings"]!;
             st["pic_bright"] = s.PicBright; st["pic_contrast"] = s.PicContrast; st["pic_sat"] = s.PicSat; st["pic_denoise"] = s.PicDenoise;
         }
-        if (s.EqChanged)                                     // (Sound equalizer plugin, 2.6)
+        if (s.EqChanged)                                     // (Sound equalizer module, 2.6)
         {
             var st = (JsonObject)data["settings"]!;
             st["eq_bands"] = new JsonArray(s.EqBands.Select(b => (JsonNode?)JsonValue.Create(b)).ToArray()); st["eq_vol"] = s.EqVolume;

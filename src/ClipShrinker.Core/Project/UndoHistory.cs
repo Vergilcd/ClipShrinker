@@ -6,9 +6,13 @@ namespace ClipShrinker.Core.Project;
 public sealed record ClipState(double Start, double End, IReadOnlyList<(double A, double B, double Speed)> Sections, string? Preset,
                                IReadOnlyList<(double A, double B, double X, double Y, double W)> Zooms)
 {
+    /// <summary>2.7: copies of the Sound track sounds (empty for clips without any).</summary>
+    public IReadOnlyList<SoundBlock> Sounds { get; init; } = [];
+
     public static ClipState Capture(TimelineClip c) => new(c.Start, c.End,
         c.Sections.OrderBy(x => x.A).Select(x => (x.A, x.B, x.Speed)).ToList(), c.Preset,
-        c.Zooms.OrderBy(z => z.A).Select(z => (z.A, z.B, z.X, z.Y, z.W)).ToList());
+        c.Zooms.OrderBy(z => z.A).Select(z => (z.A, z.B, z.X, z.Y, z.W)).ToList())
+        { Sounds = c.Sounds.OrderBy(b => b.At).Select(b => b.Clone()).ToList() };
 
     /// <summary>Puts the state back (new section objects, like the reference set_state).</summary>
     public void Apply(TimelineClip c)
@@ -18,13 +22,16 @@ public sealed record ClipState(double Start, double End, IReadOnlyList<(double A
         c.Sections.AddRange(Sections.Select(s => new SpeedSection(s.A, s.B, s.Speed)));
         c.Zooms.Clear();
         c.Zooms.AddRange(Zooms.Select(z => new ZoomSection(z.A, z.B, z.X, z.Y, z.W)));
+        c.Sounds.Clear();
+        c.Sounds.AddRange(Sounds.Select(b => b.Clone()));
     }
 
     /// <summary>Rounded to milliseconds: tiny differences do not count as a change.</summary>
     public string Signature => string.Join("|",
         F(RoundTo(Start, 3), 3), F(RoundTo(End, 3), 3),
         string.Join(";", Sections.Select(s => $"{F(RoundTo(s.A, 3), 3)},{F(RoundTo(s.B, 3), 3)},{s.Speed:R}")), Preset ?? "\0",
-        string.Join(";", Zooms.Select(z => $"{F(RoundTo(z.A, 3), 3)},{F(RoundTo(z.B, 3), 3)},{F(RoundTo(z.X, 3), 3)},{F(RoundTo(z.Y, 3), 3)},{F(RoundTo(z.W, 3), 3)}")));
+        string.Join(";", Zooms.Select(z => $"{F(RoundTo(z.A, 3), 3)},{F(RoundTo(z.B, 3), 3)},{F(RoundTo(z.X, 3), 3)},{F(RoundTo(z.Y, 3), 3)},{F(RoundTo(z.W, 3), 3)}")),
+        string.Join(";", Sounds.Select(b => $"{b.Path},{F(RoundTo(b.At, 3), 3)},{F(RoundTo(b.In, 3), 3)},{F(RoundTo(b.Len, 3), 3)},{b.VolumeDb},{F(RoundTo(b.Fade, 2), 2)}")));
 }
 
 /// <summary>The clip list at one moment: the clips in order (by identity), the active one and each clip's state.</summary>

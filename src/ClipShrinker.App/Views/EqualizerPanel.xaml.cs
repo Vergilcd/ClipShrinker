@@ -8,7 +8,7 @@ using ClipShrinker.App.ViewModels;
 
 namespace ClipShrinker.App.Views;
 
-/// <summary>2.6: the Sound equalizer plugin's card over the preview (main window and full screen). The value boxes
+/// <summary>2.6: the Sound equalizer module's card over the preview (main window and full screen). The value boxes
 /// take typed dB values: Enter confirms, Esc puts the shown value back.</summary>
 public partial class EqualizerPanel : UserControl
 {
@@ -50,17 +50,17 @@ public partial class EqualizerPanel : UserControl
     }
 
     /// <summary>The round "sound" button of the overlay pill that opens / closes the card (lit while it is open,
-    /// its icon yellow while something is adjusted). Shown only with the plugin on.</summary>
+    /// its icon yellow while something is adjusted). Shown only with the module on.</summary>
     public static Button ToggleButton()
     {
         var b = new Button
         {
             Style = (Style)Application.Current.FindResource("OverlayButton"), Content = "",
-            ToolTip = "Equalizer and volume (Sound equalizer plugin)",
+            ToolTip = "Equalizer and volume (Sound equalizer module)",
         };
         System.Windows.Automation.AutomationProperties.SetName(b, "Equalizer");
         b.SetBinding(ButtonBase.CommandProperty, new Binding(nameof(MainViewModel.ToggleEqPanelCommand)));
-        b.SetBinding(VisibilityProperty, new Binding(nameof(MainViewModel.EqPluginOn)) { Converter = new BooleanToVisibilityConverter() });
+        b.SetBinding(VisibilityProperty, new Binding(nameof(MainViewModel.EqModuleOn)) { Converter = new BooleanToVisibilityConverter() });
         b.SetBinding(BackgroundProperty, new Binding(nameof(MainViewModel.EqPanelOpen))
         {
             Converter = new BoolToBrush(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)), Brushes.Transparent),

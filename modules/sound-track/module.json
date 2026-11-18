@@ -1,0 +1,8 @@
+{
+  "id": "sound-track",
+  "name": "Sound track",
+  "author": "Vergil",
+  "version": "1.0.0",
+  "builtin": true,
+  "description": "Put your own sound files on a lane under each clip's timeline (drag them there, or add them from the Sounds list), mixed over the clip's sound in the preview and the export."
+}
