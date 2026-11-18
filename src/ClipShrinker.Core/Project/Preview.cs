@@ -76,7 +76,7 @@ public static class PreviewPlan
 
     /// <summary>The effect settings the preview uses: the current choices of the Effects window. An unreadable zoom
     /// length keeps 0.4; it is limited to 0.1 - 2 s like the reference's live ZOOM["len"].</summary>
-    public static EffectSettings Effects(AppState s, IEnumerable<Zoom> zoomPlay)
+    public static EffectSettings Effects(AppState s, IEnumerable<Zoom> zoomPlay, IEnumerable<SoundBlock>? soundPlay = null)
     {
         string mode = Text.InterpKey(s.SlowInterp);
         double len = ParseFloat(s.ZoomLen.Replace(",", ".")) is { } v && !double.IsNaN(v) ? Max(0.1, Min(2.0, v)) : 0.4;
@@ -88,6 +88,7 @@ public static class PreviewPlan
             SlowBlend = mode != "repeat", SlowRife = mode == "rife",
             ZoomMotion = s.ZoomFx == C.ZoomFx[0], ZoomLen = len, ZoomSound = s.ZoomSnd == C.ZoomAudio[0], ZoomVol = s.ZoomVol,
             ZoomPlay = zoomPlay.ToList(),
+            SoundPlay = Modules.Features.SoundTrack && soundPlay is not null ? soundPlay.Select(b => b.Clone()).ToList() : [],
             PictureVf = s.PictureFilter(),
             AudioAf = s.EqFilter(),
         };

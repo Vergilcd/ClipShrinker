@@ -52,7 +52,7 @@ public sealed class AboutWindow : Window
                  {
                      (C.AppName, Path.Combine(docs, "LICENSE.txt")),
                      ("ffmpeg / ffprobe", Path.Combine(docs, "ffmpeg-LICENSE.txt")),
-                     ("RIFE ncnn Vulkan (Timeline effects plugin)", AppPaths.RifeLicense),
+                     ("RIFE ncnn Vulkan (Timeline effects module)", AppPaths.RifeLicense),
                      ("Third-party notices", Path.Combine(docs, "THIRD-PARTY-NOTICES.txt")),
                  })
             if (Read(path) is { } t) parts.Add($"{new string('=', 70)}\n{title}\n{new string('=', 70)}\n\n{t}");

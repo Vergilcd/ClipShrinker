@@ -22,6 +22,16 @@ $extra = @(Get-ChildItem $Pub -File | Where-Object { $_.Name -ne "ClipShrinker.e
 if ($extra) { throw "publish made more than the exe: $($extra.Name -join ', ')" }
 
 "2. assemble $Out"
+# the owner's own files in the release folder (example sounds, settings from testing) are kept there but never zipped
+$Keep = Join-Path $RelDir "ClipShrinker-kept-files"
+if (Test-Path $Keep) { throw "$Keep is left from an interrupted run: move its files back into $Out, then delete it" }
+$KeepPaths = @("modules\sound-track\sounds") + @(Get-ChildItem "$Out\library" -Filter *.json -ErrorAction SilentlyContinue | ForEach-Object { "library\$($_.Name)" })
+if ((Test-Path "$Out\plugins\sound-track\sounds") -and -not (Test-Path "$Out\modules\sound-track\sounds")) {   # (made before 2.7's rename)
+    New-Item -ItemType Directory -Force "$Out\modules\sound-track" | Out-Null; Move-Item "$Out\plugins\sound-track\sounds" "$Out\modules\sound-track\sounds"
+}
+foreach ($k in $KeepPaths) {
+    if (Test-Path "$Out\$k") { New-Item -ItemType Directory -Force (Split-Path "$Keep\$k" -Parent) | Out-Null; Move-Item "$Out\$k" "$Keep\$k" }
+}
 Remove-Item $Out -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory "$Out\library" | Out-Null
 Copy-Item "$Pub\ClipShrinker.exe" $Out
@@ -30,9 +40,9 @@ foreach ($f in "README.txt", "CHANGELOG.txt", "LICENSE.txt", "THIRD-PARTY-NOTICE
     Copy-Item "$Root\dist\$f" $Out
 }
 Copy-Item "$Dev\library\ffmpeg.exe", "$Dev\library\ffprobe.exe" "$Out\library"
-# 2.4: the built-in plugins (plugin.json + CHANGELOG.txt each); RIFE belongs to the Timeline effects plugin
-Copy-Item "$Root\plugins" $Out -Recurse
-$Rife = "$Out\plugins\timeline-effects\rife"
+# 2.4: the built-in modules (module.json + CHANGELOG.txt each); RIFE belongs to the Timeline effects module
+Copy-Item "$Root\modules" $Out -Recurse
+$Rife = "$Out\modules\timeline-effects\rife"
 New-Item -ItemType Directory $Rife | Out-Null
 # RIFE: only the parts the program uses (like the in-app download)
 foreach ($f in "rife-ncnn-vulkan.exe", "vcomp140.dll", "LICENSE.txt") { Copy-Item "$Dev\library\rife\$f" $Rife }
@@ -41,6 +51,10 @@ Copy-Item "$Dev\library\rife\rife-v4.6" $Rife -Recurse
 "3. zip $Zip"
 Remove-Item $Zip -Force -ErrorAction SilentlyContinue
 Compress-Archive -Path $Out -DestinationPath $Zip -CompressionLevel Optimal
+foreach ($k in $KeepPaths) {
+    if (Test-Path "$Keep\$k") { New-Item -ItemType Directory -Force (Split-Path "$Out\$k" -Parent) | Out-Null; Move-Item "$Keep\$k" "$Out\$k" -Force; "   kept (not zipped): $k" }
+}
+Remove-Item $Keep -Recurse -Force -ErrorAction SilentlyContinue
 
 $exe = Get-Item "$Out\ClipShrinker.exe"
 $size = (Get-ChildItem $Out -Recurse -File | Measure-Object Length -Sum).Sum

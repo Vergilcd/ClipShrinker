@@ -1,0 +1,8 @@
+{
+  "id": "sound-equalizer",
+  "name": "Sound equalizer",
+  "author": "Vergil",
+  "version": "1.0.0",
+  "builtin": true,
+  "description": "Five-band equalizer and an overall volume in dB for the export, set on the preview (equalizer button next to full screen) and heard in the preview."
+}

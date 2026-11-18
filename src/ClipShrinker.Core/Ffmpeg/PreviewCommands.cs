@@ -15,7 +15,7 @@ public static class PreviewCommands
         string vf = (crop is { } c ? $"crop={I(c.W)}:{I(c.H)}," : "") +
                     $"scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease" + (trc is not null ? "," + Geometry.TonemapChain(trc) : "")
                     + (picture is not null ? "," + picture : "");
-        return [Ffmpeg, "-v", "error", .. Plugins.PictureAdjust.HwArgs([picture]), "-ss", F(t, 3), "-i", path, "-frames:v", "1",
+        return [Ffmpeg, "-v", "error", .. Modules.PictureAdjust.HwArgs([picture]), "-ss", F(t, 3), "-i", path, "-frames:v", "1",
                 "-vf", vf, "-f", "image2pipe", "-vcodec", "png", "-"];
     }
 
@@ -49,7 +49,7 @@ public static class PreviewCommands
             ? Timing.ZoomSpans(fx.ZoomPlay, pcs, crop?.W ?? w, crop?.H ?? h, w, h) : [];
         bool plain = Timing.IsPlain(pieces);
         bool gpu = hwdec == 2 && plain && crop is null && trc is null && zs.Count == 0 && fx.PictureVf is null;
-        cmd.AddRange(Plugins.PictureAdjust.HwArgs([fx.PictureVf]));
+        cmd.AddRange(Modules.PictureAdjust.HwArgs([fx.PictureVf]));
         if (gpu) cmd.AddRange(["-hwaccel", "cuda", "-hwaccel_output_format", "cuda"]);
         else if (hwdec != 0) cmd.AddRange(["-hwaccel", "cuda"]);
         cmd.AddRange(["-probesize", "5000000", "-analyzeduration", "1000000",
@@ -86,11 +86,14 @@ public static class PreviewCommands
     {
         var cmd = new List<string> { Ffmpeg, "-y", "-v", "error", "-nostdin", "-probesize", "5000000", "-analyzeduration", "1000000",
                                      "-ss", F(start, 3), "-t", F(dur, 3), "-i", path, "-vn" };
-        naudio = Math.Max(1, naudio);
         IReadOnlyList<Piece> pcs = pieces is { Count: > 0 } ? pieces : [new Piece(start, start + dur, 1.0)];
         var zt = fx.ZoomPlay.Count > 0 && fx.ZoomSound ? Timing.ZoomTimes(fx.ZoomPlay, pcs) : [];
+        var uses = fx.SoundPlay.Count > 0 ? Sounds.ToUses(fx.SoundPlay, start, start + dur, pcs) : [];
+        bool silent = naudio <= 0 && uses.Count > 0;         // (2.7: a clip without sound can still have Sound track sounds)
+        naudio = Math.Max(1, naudio);
+        if (uses.Count > 0) cmd.InsertRange(cmd.IndexOf("-vn"), uses.SelectMany(u => new[] { "-i", u.Path }));
         bool plain = Timing.IsPlain(pieces);
-        if (plain && naudio == 1 && zt.Count == 0)
+        if (plain && naudio == 1 && zt.Count == 0 && uses.Count == 0 && !silent)
         {
             cmd.AddRange(["-map", "0:a:0"]);
             if (fx.AudioAf is { } af0) cmd.AddRange(["-af", af0]);           // (2.6: Sound equalizer)
@@ -101,7 +104,7 @@ public static class PreviewCommands
             var labs = new List<string>();
             for (int k = 0; k < naudio; k++)
             {
-                parts.Add($"[0:a:{I(k)}]aresample=44100,aformat=channel_layouts=stereo,apad=whole_dur={F(dur, 3)}," +
+                parts.Add((silent ? "anullsrc=r=44100:cl=stereo," : $"[0:a:{I(k)}]aresample=44100,aformat=channel_layouts=stereo,") + $"apad=whole_dur={F(dur, 3)}," +
                           $"atrim=duration={F(dur, 3)},asetpts=PTS-STARTPTS[p{I(k)}]");
                 labs.Add($"[p{I(k)}]");
             }
@@ -112,8 +115,10 @@ public static class PreviewCommands
             else parts.AddRange(Filters.SegAudio("ab", pieces!, start, "w", fin, muteFast, fx, 44100));
             if (zt.Count > 0)
                 parts.AddRange(Filters.ZoomWhooshParts("aoz", "aout", zt.Select(z => (z.OutStart, z.OutEnd)).ToList(), 44100, "zp", fx));
-            if (fx.AudioAf is { } af) parts.Add($"[aout]{af}[aeq]");
-            cmd.AddRange(["-filter_complex", string.Join(";", parts), "-map", fx.AudioAf is null ? "[aout]" : "[aeq]"]);
+            string last = "aout";
+            if (uses.Count > 0) { parts.AddRange(Sounds.MixParts(last, "asn", uses, 1, 44100, "ps")); last = "asn"; }   // (2.7)
+            if (fx.AudioAf is { } af) { parts.Add($"[{last}]{af}[aeq]"); last = "aeq"; }
+            cmd.AddRange(["-filter_complex", string.Join(";", parts), "-map", $"[{last}]"]);
         }
         cmd.AddRange(["-ac", "2", "-ar", "44100", "-c:a", "pcm_s16le"]);
         if (output is not null) cmd.Add(output);

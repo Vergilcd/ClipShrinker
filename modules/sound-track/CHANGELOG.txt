@@ -1,0 +1,9 @@
+SOUND TRACK - CHANGELOG
+=======================
+
+1.0.0 (Clip Shrinker 2.7.0)
+- New: a Sounds lane under each clip's timeline. Drop sound files (mp3, wav, ogg, m4a, aac, flac, opus) on it,
+  or drag them from the Sounds list (each with its + to add it at the playhead, A for the highlighted one). Drag a sound to move it, drag its ends to trim it,
+  right-click or Delete removes it. Each sound has its own volume (-20 to +20 dB) and fade in / out. Sounds
+  play in the preview, are mixed into the clip's first audio track in the export, and are saved with
+  projects. Your sounds live in plugins\sound-track\sounds (created at start-up).

@@ -25,8 +25,8 @@ public sealed class ShortcutsWindow : Window
         SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
         static (string, string) K(string act) => (Text.KeyText[act], "@" + act);   // a rebindable shortcut
         (string Desc, string Key)[] clips = [K("select_all"), K("delete"), ("Change the order by dragging a clip above or below another one.", "")];
-        if (vm.PresetsPluginOn)
-            clips = [.. clips, ("Bitrate presets plugin: apply a preset with its hotkey or by choosing it in the clip's title bar.", "")];
+        if (vm.PresetsModuleOn)
+            clips = [.. clips, ("Bitrate presets module: apply a preset with its hotkey or by choosing it in the clip's title bar.", "")];
         var sections = new List<(string, (string Desc, string Key)[])>
         {
             ("GENERAL", [K("shortcuts"), K("export"), K("open"), K("save"), K("save_as"),
@@ -39,11 +39,15 @@ public sealed class ShortcutsWindow : Window
                           ("Zoom the timeline with Ctrl + mouse wheel; the wheel alone scrolls it.", "")]),
             ("CLIPS", clips),
         };
-        // plugin sections go last, and only while their plugin is on
-        if (vm.EffectsPluginOn)
-            sections.Add(("EFFECTS (plugin)", [K("effects"), K("speed"), K("slow"), K("zoom"), K("delete_section"),
+        // module sections go last, and only while their module is on
+        if (vm.EffectsModuleOn)
+            sections.Add(("EFFECTS (module)", [K("effects"), K("speed"), K("slow"), K("zoom"), K("delete_section"),
                           ("Resize or move an effect section by dragging its handle bar or the whole section.", ""),
                           ("Remove a section by right-clicking it.", "")]));
+        if (vm.SoundModuleOn)                                  // 2.7
+            sections.Add(("SOUNDS (module)", [K("sound"),
+                          ("Drop sound files on a clip's Sounds lane, or pick one in Sounds.", ""),
+                          ("Drag a sound to move it, drag its ends to trim; right-click or Delete removes it.", "")]));
         var box = new Grid { Margin = new Thickness(26, 20, 26, 20) };
         box.ColumnDefinitions.Add(new ColumnDefinition());
         box.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });

@@ -84,6 +84,46 @@ public sealed class Tools
 
     readonly Dictionary<string, bool> filterCache = [];
 
+    /// <summary>2.7: length in seconds of a sound file (Sound track module); throws MediaException when it has no sound.</summary>
+    public double ProbeSoundDuration(string path)
+    {
+        if (Ffprobe is null) throw new MediaException("ffprobe.exe was not found.");
+        var (code, output, err) = Capture([Ffprobe, "-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_type:format=duration",
+                                           "-of", "json", path]);
+        if (code != 0) throw new MediaException(err.Trim() is { Length: > 0 } e ? e : "ffprobe failed");
+        var root = JsonDocument.Parse(output).RootElement;
+        if (!root.TryGetProperty("streams", out var st) || st.GetArrayLength() == 0) throw new MediaException("No sound found in this file.");
+        string? d = root.TryGetProperty("format", out var f) && f.TryGetProperty("duration", out var dv) ? dv.GetString() : null;
+        return d is not null && Py.Py.ParseFloat(d) is { } x && x > 0 && double.IsFinite(x) ? x : throw new MediaException("Unknown length.");
+    }
+
+    /// <summary>2.7: the loudness outline of a sound file for its waveform: the peak (0..1) of every 1/perSecond s,
+    /// from a decode to 2 kHz mono (fast, and plenty for a small drawing).</summary>
+    public float[] SoundPeaks(string path, int perSecond = 50)
+    {
+        if (Ffmpeg is null) return [];
+        var psi = new ProcessStartInfo(Ffmpeg)
+        {
+            RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true,
+        };
+        foreach (var a in new[] { "-v", "error", "-nostdin", "-i", path, "-vn", "-ac", "1", "-ar", "2000", "-c:a", "pcm_s16le", "-f", "s16le", "-" })
+            psi.ArgumentList.Add(a);
+        using var p = Process.Start(psi)!;
+        _ = p.StandardError.ReadToEndAsync();
+        using var ms = new MemoryStream();
+        p.StandardOutput.BaseStream.CopyTo(ms);
+        p.WaitForExit();
+        var bytes = ms.GetBuffer();
+        int n = (int)ms.Length / 2, step = Math.Max(1, 2000 / perSecond);
+        var peaks = new float[(n + step - 1) / step];
+        for (int i = 0; i < n; i++)
+        {
+            float v = Math.Abs(BitConverter.ToInt16(bytes, i * 2) / 32768f);
+            if (v > peaks[i / step]) peaks[i / step] = v;
+        }
+        return peaks;
+    }
+
     /// <summary>2.6: the encoder keys (Encoders.All) that really encode on this PC: each one gets a tiny test encode,
     /// all at once (~1 s). An encoder missing from this ffmpeg build fails its test like one without the hardware.</summary>
     public IReadOnlyList<string> WorkingEncoders()
@@ -116,8 +156,8 @@ public sealed class Tools
         if (Ffmpeg is null || Encoders.HiddenForTest("opencl") || !HasFilter("nlmeans_opencl")) return false;
         try
         {
-            return Capture([Ffmpeg, "-hide_banner", "-v", "error", .. Plugins.PictureAdjust.OpenClArgs,
-                            "-filter_complex", "color=s=64x64:d=0.04," + Plugins.PictureAdjust.DenoiseFilter(50, gpu: true),
+            return Capture([Ffmpeg, "-hide_banner", "-v", "error", .. Modules.PictureAdjust.OpenClArgs,
+                            "-filter_complex", "color=s=64x64:d=0.04," + Modules.PictureAdjust.DenoiseFilter(50, gpu: true),
                             "-c:v", "rawvideo", "-f", "null", "-"]).Code == 0;
         }
         catch (System.ComponentModel.Win32Exception) { return false; }

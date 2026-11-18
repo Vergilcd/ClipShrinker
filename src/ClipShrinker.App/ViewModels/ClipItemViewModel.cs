@@ -72,6 +72,9 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
     /// <summary>Active or selected: accent title bar and ring.</summary>
     public bool Highlighted => IsActive || IsSelected;
     public double TimelineHeight => Editor.Height;
+    /// <summary>2.7: height of the Sounds lane under the thumbnails (Sound track module): full on the active clip, a thin
+    /// strip on others that have sounds, none otherwise.</summary>
+    public double SoundLaneHeight => !Core.Modules.Features.SoundTrack ? 0 : Editor.Active ? 40 : Row.Sounds.Count > 0 ? 8 : 0;
     public string Title => Editor.Title(Index);
     public string ZoomLabel => Editor.ZoomLabel;
 

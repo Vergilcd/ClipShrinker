@@ -8,7 +8,7 @@ using ClipShrinker.App.ViewModels;
 
 namespace ClipShrinker.App.Views;
 
-/// <summary>The Picture adjustments plugin's card over the preview (main window and full screen). The value boxes
+/// <summary>The Picture adjustments module's card over the preview (main window and full screen). The value boxes
 /// take typed percentages: Enter confirms, Esc puts the shown value back.</summary>
 public partial class PicturePanel : UserControl
 {
@@ -50,17 +50,17 @@ public partial class PicturePanel : UserControl
     }
 
     /// <summary>The round "picture" button of the overlay pill that opens / closes the card (lit while it is open,
-    /// its icon yellow while something is adjusted). Shown only with the plugin on.</summary>
+    /// its icon yellow while something is adjusted). Shown only with the module on.</summary>
     public static Button ToggleButton()
     {
         var b = new Button
         {
             Style = (Style)Application.Current.FindResource("OverlayButton"), Content = "",
-            ToolTip = "Picture: brightness, contrast, saturation, denoise (Picture adjustments plugin)",
+            ToolTip = "Picture: brightness, contrast, saturation, denoise (Picture adjustments module)",
         };
         System.Windows.Automation.AutomationProperties.SetName(b, "Picture");
         b.SetBinding(ButtonBase.CommandProperty, new Binding(nameof(MainViewModel.TogglePicturePanelCommand)));
-        b.SetBinding(VisibilityProperty, new Binding(nameof(MainViewModel.PicturePluginOn)) { Converter = new BooleanToVisibilityConverter() });
+        b.SetBinding(VisibilityProperty, new Binding(nameof(MainViewModel.PictureModuleOn)) { Converter = new BooleanToVisibilityConverter() });
         b.SetBinding(BackgroundProperty, new Binding(nameof(MainViewModel.PicturePanelOpen))
         {
             Converter = new BoolToBrush(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)), Brushes.Transparent),

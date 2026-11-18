@@ -28,8 +28,8 @@ public static class Program
           --tools <dir>           folder with ffmpeg.exe / ffprobe.exe (default: next to this exe, then PATH)
           --rife <dir>            folder with rife-ncnn-vulkan.exe and a rife-v4 model (default: <tools>\rife)
           --no-rife               treat RIFE as not installed
-          --picture               Picture adjustments plugin on (pic_* values from the project or --settings)
-          --eq                    Sound equalizer plugin on (eq_bands / eq_vol from the project or --settings)
+          --picture               Picture adjustments module on (pic_* values from the project or --settings)
+          --eq                    Sound equalizer module on (eq_bands / eq_vol from the project or --settings)
           --log-commands <file>   write every command that ran to a JSON file
         """;
 

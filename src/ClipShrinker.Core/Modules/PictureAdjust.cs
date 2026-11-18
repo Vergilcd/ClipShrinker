@@ -1,8 +1,8 @@
 using static ClipShrinker.Core.Py.Py;
 
-namespace ClipShrinker.Core.Plugins;
+namespace ClipShrinker.Core.Modules;
 
-/// <summary>The "Picture adjustments" plugin: denoise, brightness, contrast and saturation as one per-clip video filter
+/// <summary>The "Picture adjustments" module: denoise, brightness, contrast and saturation as one per-clip video filter
 /// (after crop / scale / tone-mapping). Neutral values give no filter at all, so exports stay identical.
 /// Denoise (2.5.0) uses nlmeans: hqdn3d is GPL-only and cannot go in the LGPL build; atadenoise smeared moving footage.</summary>
 public static class PictureAdjust

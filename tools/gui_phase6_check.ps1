@@ -48,8 +48,8 @@ $dir = Join-Path $env:TEMP "cs_phase6"; Remove-Item $dir -Recurse -Force -ErrorA
 $proj = Join-Path $dir "p.clipproj"
 Copy-Item "$Root\tests\media\projects\single_effects.clipproj" $proj
 Remove-Item "$Lib\last_session.json", "$Lib\presets.json" -ErrorAction SilentlyContinue
-if (Test-Path "$Lib\settings.json") {                            # (2.4+: plugins at their defaults, so the presets button is there)
-    $js = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json; $js.PSObject.Properties.Remove("plugins")
+if (Test-Path "$Lib\settings.json") {                            # (2.4+: modules at their defaults, so the presets button is there)
+    $js = Get-Content "$Lib\settings.json" -Raw | ConvertFrom-Json; $js.PSObject.Properties.Remove("modules")
     $js | ConvertTo-Json -Depth 10 | Set-Content "$Lib\settings.json" -Encoding UTF8
 }
 

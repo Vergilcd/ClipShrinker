@@ -25,13 +25,13 @@ The Release tag `binaries` on GitHub holds these in `binaries.zip`.
     powershell -ExecutionPolicy Bypass -File tools\make_release.ps1
 
 It publishes one self-contained `ClipShrinker.exe` (win-x64), copies the `dist\` texts, ffmpeg / ffprobe into
-`library\`, the repo's `plugins\` folder with RIFE in `plugins\timeline-effects\rife\` into
+`library\`, the repo's `modules\` folder with RIFE in `modules\timeline-effects\rife\` into
 `..\Release\ClipShrinker\` and zips them as `..\Release\ClipShrinker-<version>.zip`.
 
-## Plugins
-Each folder in `plugins\` is one plugin: `plugin.json` (id, name, author, version, builtin, description) and
-`CHANGELOG.txt`. Bump a plugin's version and changelog when its part of the app changes. The Plugins window's
-Restore downloads these two files from `main` on GitHub, so a changed plugin.json must be merged to reach users.
+## Modules
+Each folder in `modules\` is one module: `module.json` (id, name, author, version, builtin, description) and
+`CHANGELOG.txt`. Bump a module's version and changelog when its part of the app changes. The Modules window's
+Restore downloads these two files from `main` on GitHub, so a changed module.json must be merged to reach users.
 
 The slim ffmpeg build recipe is in `tools/ffmpeg-build/`.
 
@@ -40,4 +40,4 @@ The slim ffmpeg build recipe is in `tools/ffmpeg-build/`.
 its ffmpeg options. At start-up `Tools.WorkingEncoders()` test-encodes a grey picture with each one and the Codec
 list shows only those that worked. To try the AMD / Intel / Windows path on an NVIDIA PC, start the app or the CLI
 with `CLIPSHRINKER_HIDE_ENCODERS=nvenc,cuda,opencl` (any parts of encoder keys; `cuda` and `opencl` hide GPU
-decoding and GPU denoise). `tools/gui_plugins_check.ps1` does this in its last step.
+decoding and GPU denoise). `tools/gui_modules_check.ps1` does this in its last step.

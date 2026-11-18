@@ -10,12 +10,12 @@ public sealed record ExportJob(string Out, IReadOnlyList<ExportClip> Clips, Expo
 public static class ExportPlanner
 {
     /// <summary>The clips as the encoder gets them; "Mute microphone" keeps only the first audio track, and the
-    /// Picture adjustments plugin adds its filter to every clip (no denoise on clips that stay HDR).</summary>
+    /// Picture adjustments module adds its filter to every clip (no denoise on clips that stay HDR).</summary>
     public static List<ExportClip> PrepareClips(AppState state, IEnumerable<TimelineClip> rows)
     {
         return rows.Select(r => r.ToExport())
                    .Select(c => state.MuteMic ? c with { NAudio = Math.Min(c.NAudio ?? 1, 1) } : c)
-                   .Select(c => state.PictureFilter(hdrKept: !state.Hdr && !string.IsNullOrEmpty(c.Trc)) is { } pic ? c with { PluginVf = [pic] } : c)
+                   .Select(c => state.PictureFilter(hdrKept: !state.Hdr && !string.IsNullOrEmpty(c.Trc)) is { } pic ? c with { ModuleVf = [pic] } : c)
                    .ToList();
     }
 

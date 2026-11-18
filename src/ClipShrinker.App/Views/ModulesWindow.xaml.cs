@@ -4,10 +4,10 @@ using ClipShrinker.App.ViewModels;
 
 namespace ClipShrinker.App.Views;
 
-/// <summary>The plugin list: on / off switch, version, author, changelog, delete and restore (MainViewModel.Plugins.cs).</summary>
-public partial class PluginsWindow : Window
+/// <summary>The module list: on / off switch, version, author, changelog, delete and restore (MainViewModel.Modules.cs).</summary>
+public partial class ModulesWindow : Window
 {
-    public PluginsWindow(MainViewModel vm)
+    public ModulesWindow(MainViewModel vm)
     {
         DataContext = vm;
         InitializeComponent();

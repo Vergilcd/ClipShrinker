@@ -10,7 +10,7 @@ ClipShrinker itself is MIT licensed (see LICENSE.txt). It uses these components,
   Inc., see AMF-LICENSE.txt (https://github.com/GPUOpen-LibrariesAndSDKs/AMF)
 - Intel oneVPL dispatcher (built into ffmpeg.exe, for Intel Quick Sync encoding) - MIT, Copyright (c) Intel
   Corporation, see oneVPL-LICENSE.txt (https://github.com/intel/libvpl)
-- RIFE ncnn Vulkan (smooth slow motion, in plugins\timeline-effects\rife) - MIT, see its LICENSE.txt
+- RIFE ncnn Vulkan (smooth slow motion, in modules\timeline-effects\rife) - MIT, see its LICENSE.txt
 - .NET runtime and WPF (built into ClipShrinker.exe) - MIT, Copyright (c) .NET Foundation and Contributors
   (https://github.com/dotnet/runtime, https://github.com/dotnet/wpf)
 - CommunityToolkit.Mvvm - MIT, Copyright (c) .NET Foundation and Contributors
