@@ -2,7 +2,7 @@
 
 **Trim, join and shrink game clips to an exact file size on your GPU.**
 
-<img width="1386" height="1147" alt="image" src="https://github.com/user-attachments/assets/83e1f71a-a30c-44c9-8fb6-46e5bb575be8" />
+<img width="1386" height="1164" alt="image" src="https://github.com/user-attachments/assets/5cbddbb9-2724-479a-ae7b-02c64e619265" />
 
 ClipShrinker is a simple modular Windows tool for turning big gameplay recordings into clips that fit Discord or other services.
 
@@ -27,14 +27,15 @@ Set a size limit (eg. 50 MB), trim on a thumbnail timeline, join multiple clips,
 - **Speed Up effect** adjustable length on timeline (fast-forward with custom multipliers)
 - **Slow motion effect** adjustable length on timeline (with RIFE frame interpolation available)
 - **Zoom effect** adjustable level and placement on preview and length on timeline
+- Add **sounds** to the timeline from explorer or by dragging from your collection (kept in the /sound folder)
 
 ## Modular build
-<img width="646" height="779" alt="image" src="https://github.com/user-attachments/assets/0fe992fc-8611-417d-8a06-f00c35f3b3c0" />
+<img width="646" height="813" alt="image" src="https://github.com/user-attachments/assets/c9da9ffa-8df6-49dd-bf1f-3ded4073f052" />
 
 Switch off or even delete modules that you do not need (all plugins are on by default)
 
 ## Customizable shortcuts
-<img width="1131" height="745" alt="image" src="https://github.com/user-attachments/assets/e492440b-0bbb-45db-b6b4-7890617f3131" />
+<img width="1196" height="940" alt="image" src="https://github.com/user-attachments/assets/2e2b37cc-0fb7-489f-bf9b-29c99fa7477c" />
 
 ## Requirements
 
