@@ -1,7 +1,7 @@
 AI EDITING - CHANGELOG
 ======================
 
-0.4.0 (Clip Shrinker 2.8.0-dev3)
+0.4.0 (Clip Shrinker 2.8.0-dev3, 2.8.0-beta1)
 - Downloaded on demand: not part of the Clip Shrinker download any more. Install, Update and Uninstall on this
   card; the parts (helper, speech ffmpeg, speech model) come from the GitHub release "ai-editing" and are
   checked with SHA-256. "Connect to Claude Code" registers the helper.
