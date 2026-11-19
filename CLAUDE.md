@@ -56,6 +56,19 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
 - make_release.ps1 keeps the owner's files in Release\ClipShrinker (modules\sound-track\sounds = the owner's example
   sounds, library\*.json) across rebuilds but leaves them out of the zip.
 
+- 2.8.0-dev AI editing (MCP), branch feature/mcp-dev, not released: `clipshrinker mcp` (Cli/Mcp.cs) is a stdio MCP
+  server Claude Code starts. Tools live in Core/Agent/AgentTools.cs and run on an IAgentHost: the open app
+  (App/ViewModels/MainViewModel.Agent.cs, AppAgentHost: UI thread, one undo step per edit) when the helper is
+  connected over the named pipe "ClipShrinker.Agent" (Core/Agent/AgentPipe.cs, CurrentUserOnly), otherwise a
+  .clipproj (FileHost in Mcp.cs). Module ai-agent shows the header pill (blue connected / orange not).
+  Core/Analysis/ClipAnalysis.cs: contact sheets (own PNG writer + digit font), moments (PCM loudness + motion
+  frames, decoded with -hwaccel cuda in 4 parts; PS5 VP9 ignores -skip_frame/-discard nokey), picture stats. The
+  bundled ffmpeg has no scdet/ebur128/signalstats/tile/drawtext. Design + plan: docs/mcp-agent-research.md.
+  Builds: Release\ClipShrinker-2.8.0-dev (app), Release\ClipShrinker-mcp-dev (helper registered in the owner's
+  Claude Code as "clipshrinker"), Release\ClipShrinker-2.8.0-dev-ai.zip (both + Connect/Disconnect .bat + guide,
+  for testers). Owner's workflow: give paths / a project, or edit clips already on the timeline live; export
+  only when asked.
+
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.
 - GUI checks: `tools/gui_export_check.ps1` (`-Exe` for the packaged exe) and `tools/gui_phase6_check.ps1` (backs up

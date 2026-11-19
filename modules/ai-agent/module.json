@@ -1,0 +1,8 @@
+{
+  "id": "ai-agent",
+  "name": "AI editing",
+  "author": "Vergil",
+  "version": "0.2.0",
+  "builtin": true,
+  "description": "Let Claude (Claude Code / the Claude desktop app) trim and edit the clips on the timeline from plain requests, through the clipshrinker MCP helper. Development version."
+}

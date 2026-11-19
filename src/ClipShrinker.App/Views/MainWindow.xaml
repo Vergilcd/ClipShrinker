@@ -84,7 +84,24 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <TextBlock Text="{Binding GpuText}" FontSize="12" />
+                    <TextBlock Text="{Binding GpuText}" FontSize="12" />
+                </Border>
+                <!-- dev (AI editing module): is a Claude session connected? blue = yes, orange = no -->
+                <Border x:Name="AgentBadge" DockPanel.Dock="Right" Margin="0,0,8,0" Padding="11,2,11,3" CornerRadius="12" BorderThickness="1"
+                        VerticalAlignment="Center" Background="Transparent" ToolTip="{Binding AgentTip}" AutomationProperties.Name="{Binding AgentText}"
+                        Visibility="{Binding AgentModuleOn, Converter={StaticResource BoolToVis}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush" Value="#F0900A" />
+                            <Setter Property="TextElement.Foreground" Value="#F0900A" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding AgentConnected}" Value="True">
+                                    <Setter Property="BorderBrush" Value="#3B82F6" /><Setter Property="TextElement.Foreground" Value="#3B82F6" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding AgentText}" FontSize="12" />
                 </Border>
             </DockPanel>
 

@@ -4,6 +4,14 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.8.0-dev (development build, not released)
+- New module "AI editing": Claude (Claude Code / the Claude desktop app) can edit the clips through the
+  clipshrinker MCP helper. With Clip Shrinker open, the header shows "AI agent connected" (blue) or "AI agent
+  not connected" (orange); Claude works on the clips on the timeline, every change shows at once and Ctrl+Z
+  undoes it. It can look at frames, find loud moments and scene changes, trim, add speed / zoom sections, set
+  the picture, add videos, open projects and export when asked (the progress shows in the window).
+
+
 2.7.5
 - HDR clips whose height does not shrink evenly (like PS5 recordings, 1920x1088 .webm) showed no thumbnails
   on the timeline. They do now. Exports of such clips were not affected.

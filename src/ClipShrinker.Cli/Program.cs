@@ -20,6 +20,7 @@ public static class Program
         Usage:
           clipshrinker export <project.clipproj> --out <file.mp4 | folder> [options]
           clipshrinker probe <video> [--tools <dir>]
+          clipshrinker mcp [--tools <dir>]      (dev) MCP server on stdin / stdout for Claude
 
         Options for export:
           --join | --separate     how to export several clips (default: the project's "mode")
@@ -39,6 +40,7 @@ public static class Program
         {
             if (args.Length >= 2 && args[0] == "export") return Export(args[1], Options(args[2..]));
             if (args.Length >= 2 && args[0] == "probe") return ProbeCmd(args[1], Options(args[2..]));
+            if (args.Length >= 1 && args[0] == "mcp") return Mcp.Run(Options(args[1..]));          // (dev: MCP server)
         }
         catch (UsageException e)
         {
@@ -79,7 +81,7 @@ public static class Program
         return 0;
     }
 
-    static int Export(string projectPath, Dictionary<string, string?> o)
+    internal static int Export(string projectPath, Dictionary<string, string?> o)
     {
         if (!o.TryGetValue("--out", out var outArg) || string.IsNullOrEmpty(outArg)) throw new UsageException("--out is required.");
         var tools = LocateTools(o);

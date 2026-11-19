@@ -1,0 +1,8 @@
+AI EDITING - CHANGELOG
+======================
+
+0.2.0 (Clip Shrinker 2.8.0-dev)
+- Development version. With the clipshrinker MCP helper set up in Claude Code, Claude connects to the open
+  Clip Shrinker window (the header shows "AI agent connected") and works on the clips on the timeline: it looks
+  at frames, finds moments, trims, adds speed / zoom sections, sets the picture and exports when asked. Every
+  change shows on the timeline at once and Ctrl+Z undoes it. Without the window open it edits .clipproj files.

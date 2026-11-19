@@ -24,8 +24,10 @@ public static class ModuleIds
     public const string PictureAdjust = "picture-adjust";
     public const string Equalizer = "sound-equalizer";
     public const string SoundTrack = "sound-track";
+    /// <summary>Dev: Claude edits the clips through the MCP helper (docs/mcp-agent-research.md).</summary>
+    public const string AiAgent = "ai-agent";
 
-    public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust, Equalizer, SoundTrack];
+    public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust, Equalizer, SoundTrack, AiAgent];
 
     /// <summary>On after the first start (2.6: every built-in module, so a new user sees all features; a switch someone
     /// set before is kept in settings.json).</summary>

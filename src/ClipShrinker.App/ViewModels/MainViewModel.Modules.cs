@@ -190,6 +190,7 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(SoundModuleOn));
         OnPropertyChanged(nameof(ShowEqPanel));
         if (SoundModuleOn) EnsureSoundFolder();
+        ApplyAgent();                                            // (dev: AI editing module)
         if (startup) return;
         StopPlayback();
         foreach (var c in Clips) c.NotifyChanged();            // the timelines show / hide their effect sections
