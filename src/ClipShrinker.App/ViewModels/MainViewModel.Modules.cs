@@ -16,6 +16,8 @@ public sealed partial class ModuleItem : ObservableObject
     public required string Id { get; init; }
     public required string Dir { get; init; }
     public bool Builtin { get; init; }
+    /// <summary>2.8: the module's parts are downloaded from GitHub (AI editing): Install / Update / Uninstall.</summary>
+    public bool Downloadable { get; init; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Byline))]
@@ -30,19 +32,34 @@ public sealed partial class ModuleItem : ObservableObject
     [ObservableProperty] private string changelog = "";
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanRestore), nameof(Byline))]
+    [NotifyPropertyChangedFor(nameof(CanRestore), nameof(Byline), nameof(CanInstall), nameof(CanUpdate), nameof(CanConnect))]
     private bool installed;
+
+    /// <summary>2.8 (Downloadable): "" or what an update brings ("v0.4.0, 21 MB").</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanUpdate), nameof(Byline))]
+    private string update = "";
+
+    /// <summary>2.8 (Downloadable): download size of a first install, for the Byline.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Byline))]
+    private string installSize = "";
 
     [ObservableProperty] private bool enabled;
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanRestore))]
+    [NotifyPropertyChangedFor(nameof(CanRestore), nameof(CanInstall), nameof(CanUpdate), nameof(CanConnect))]
     private string busy = "";
 
     /// <summary>Deleted, but it came with the app: it can be downloaded again.</summary>
-    public bool CanRestore => !Installed && Builtin && Busy.Length == 0;
+    public bool CanRestore => !Installed && Builtin && !Downloadable && Busy.Length == 0;
+    public bool CanInstall => !Installed && Downloadable && Busy.Length == 0;
+    public bool CanUpdate => Installed && Downloadable && Update.Length > 0 && Busy.Length == 0;
+    public bool CanConnect => Installed && Downloadable && Busy.Length == 0;
 
-    public string Byline => Installed ? $"v{Version}  ·  by {Author}" + (Builtin ? "  ·  included with Clip Shrinker" : "")
-                                      : "Deleted  ·  click Restore to download it again from GitHub";
+    public string Byline => Installed ? $"v{Version}  ·  by {Author}" + (Downloadable ? "  ·  downloaded from GitHub" : Builtin ? "  ·  included with Clip Shrinker" : "")
+                                        + (Update.Length > 0 ? $"  ·  update available ({Update})" : "")
+                          : Downloadable ? "Not installed  ·  click Install to download it from GitHub" + (InstallSize.Length > 0 ? $" ({InstallSize})" : "")
+                          : "Deleted  ·  click Restore to download it again from GitHub";
 
     /// <summary>Raised when the switch is flipped (not when the app sets it).</summary>
     public event Action<ModuleItem>? Toggled;
@@ -135,6 +152,7 @@ public sealed partial class MainViewModel
         AppPaths.MoveOldRife();
         LoadModuleList();
         ApplyModules(startup: true);
+        InitAiModule();                                          // 2.8: AI editing is downloaded on demand
     }
 
     void LoadModuleList()
@@ -145,8 +163,15 @@ public sealed partial class MainViewModel
         foreach (var id in ModuleIds.Builtin)
         {
             string dir = AppPaths.ModuleDir(id);
-            var item = new ModuleItem { Id = id, Dir = dir, Builtin = true };
-            if (found.Remove(id, out var f)) { item.Fill(f.Manifest, ModuleManifest.ReadChangelog(f.Dir)); item.Installed = true; }
+            bool ai = id == ModuleIds.AiAgent;
+            var item = new ModuleItem { Id = id, Dir = dir, Builtin = true, Downloadable = ai };
+            if (found.Remove(id, out var f))
+            {
+                item.Fill(f.Manifest, ModuleManifest.ReadChangelog(f.Dir));
+                // 2.8: AI editing is listed by its module.json but works only once its parts are downloaded
+                item.Installed = !ai || AiModule.IsInstalled(AppPaths.ExeDir);
+                if (ai && item.Installed) item.Version = AiModule.InstalledVersion(AppPaths.ExeDir);
+            }
             else if (EmbeddedManifest(id) is { } m) item.Fill(m, null);
             Add(item);
         }
@@ -169,6 +194,13 @@ public sealed partial class MainViewModel
     void OnModuleToggled(ModuleItem p)
     {
         if (!p.Installed) { p.SetEnabled(false); return; }
+        // 2.8: AI editing sends frames, speech and file names to a third party - only on after the notice is accepted
+        if (p.Id == ModuleIds.AiAgent && p.Enabled &&
+            Dialogs.Choice(ModuleIds.AiAgentNoticeTitle, ModuleIds.AiAgentNotice, ["I understand, switch on", "Cancel"], 1, 1) != 0)
+        {
+            p.SetEnabled(false);
+            return;
+        }
         moduleFlags[p.Id] = p.Enabled;
         ApplyModules();
         Dialogs.Toast($"{p.Name} " + (p.Enabled ? "switched on" : "switched off"));
@@ -190,6 +222,7 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(SoundModuleOn));
         OnPropertyChanged(nameof(ShowEqPanel));
         if (SoundModuleOn) EnsureSoundFolder();
+        ApplyAgent();                                            // (dev: AI editing module)
         if (startup) return;
         StopPlayback();
         foreach (var c in Clips) c.NotifyChanged();            // the timelines show / hide their effect sections
@@ -217,6 +250,8 @@ public sealed partial class MainViewModel
     public int PicContrast { get => S.PicContrast; set => SetPic(ref S.PicContrast, value); }
     public int PicSat { get => S.PicSat; set => SetPic(ref S.PicSat, value); }
     public int PicDenoise { get => S.PicDenoise; set => SetPic(ref S.PicDenoise, value); }
+    public int PicTemp { get => S.PicTemp; set => SetPic(ref S.PicTemp, value); }
+    public int PicTint { get => S.PicTint; set => SetPic(ref S.PicTint, value); }
 
     /// <summary>The value boxes next to the sliders: "+25%"; "25", "25%" or "-40 %" can be typed (Enter confirms).
     /// Text that is not a number puts the old value back.</summary>
@@ -224,6 +259,8 @@ public sealed partial class MainViewModel
     public string PicContrastText { get => PictureAdjust.FormatPercent(PicContrast); set => PicContrast = PictureAdjust.ParsePercent(value) ?? PicContrast; }
     public string PicSatText { get => PictureAdjust.FormatPercent(PicSat); set => PicSat = PictureAdjust.ParsePercent(value) ?? PicSat; }
     public string PicDenoiseText { get => PictureAdjust.FormatDenoise(PicDenoise); set => PicDenoise = PictureAdjust.ParseDenoise(value) ?? PicDenoise; }
+    public string PicTempText { get => PictureAdjust.FormatPercent(PicTemp); set => PicTemp = PictureAdjust.ParsePercent(value) ?? PicTemp; }
+    public string PicTintText { get => PictureAdjust.FormatPercent(PicTint); set => PicTint = PictureAdjust.ParsePercent(value) ?? PicTint; }
 
     /// <summary>The Picture card over the preview is open (shared by the main window and full screen).</summary>
     [ObservableProperty]
@@ -242,7 +279,7 @@ public sealed partial class MainViewModel
     public bool PictureChanged => S.PictureChanged;
 
     [RelayCommand]
-    void ResetPicture() => PicBright = PicContrast = PicSat = PicDenoise = 0;
+    void ResetPicture() => PicBright = PicContrast = PicSat = PicDenoise = PicTemp = PicTint = 0;
 
     // ------------------------------------------------------------------ Sound equalizer (preview overlay, 2.6)
     /// <summary>A band or the volume changed: the preview sound follows (playback restarts with the new filter).</summary>
@@ -320,6 +357,7 @@ public sealed partial class MainViewModel
     {
         if (!p.Installed) return;
         if (Exporting) { Dialogs.Toast("Wait for the export to finish before deleting a module."); return; }
+        if (p.Downloadable) { _ = UninstallAi(p); return; }
         string again = p.Builtin ? "It can be downloaded again later with Restore." : "This cannot be undone.";
         if (!Dialogs.YesNo("Delete module", $"Delete \"{p.Name}\" and everything in its folder?\n\n{p.Dir}\n\n{again}")) return;
         StopPlayback();

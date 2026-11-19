@@ -40,12 +40,27 @@ cmake -S vpl -B vpl/build -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$P" -DBUIL
 cmake --build vpl/build -j"$(nproc)"
 cmake --install vpl/build
 
+# 2.8: speech to text (ffmpeg's "whisper" filter, AI editing module). whisper.cpp + ggml are MIT and linked in
+# statically, CPU only (a Vulkan / CUDA backend would make ffmpeg.exe need vulkan-1.dll / CUDA DLLs to start).
+# GGML_NATIVE=OFF + AVX2/FMA/F16C: runs on any x86-64 PC from about 2013 on, not only on the build PC.
+# The model file (ggml-*.bin) is not built in: the app downloads it on first use.
+# CMake reads the CPU type from PROCESSOR_ARCHITECTURE; a shell started without it builds ggml's slow generic
+# (no AVX) code, about 10x slower.
+export PROCESSOR_ARCHITECTURE="${PROCESSOR_ARCHITECTURE:-AMD64}"
+[ -d whisper ] || git clone --depth 1 https://github.com/ggml-org/whisper.cpp.git whisper
+cmake -S whisper -B whisper/build -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$P" -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_SHARED_LIBS=OFF -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_EXAMPLES=OFF -DWHISPER_BUILD_SERVER=OFF \
+  -DGGML_NATIVE=OFF -DGGML_AVX=ON -DGGML_AVX2=ON -DGGML_FMA=ON -DGGML_F16C=ON -DGGML_OPENMP=OFF
+cmake --build whisper/build -j"$(nproc)"
+cmake --install whisper/build
+for l in ggml ggml-base ggml-cpu; do [ -f "$P/lib/$l.a" ] && cp "$P/lib/$l.a" "$P/lib/lib$l.a"; done   # (named without "lib")
+
 [ -d ff ]   || git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ff
 source "$HERE/features.sh"
 cd ff
 ./configure --prefix="$W/out" $CONF --enable-static --disable-shared --pkg-config-flags=--static \
   --extra-cflags="-I$P/include" --extra-ldflags="-static -L$P/lib" \
-  --extra-libs="-lstdc++ -lm -lcfgmgr32 -lole32 -lshlwapi -ladvapi32"
+  --extra-libs="-lwhisper -lggml -lggml-cpu -lggml-base -lstdc++ -lm -lcfgmgr32 -lole32 -lshlwapi -ladvapi32"
 make -j"$(nproc)"
 strip -o "$HERE/dist/ffmpeg.exe"  ffmpeg.exe
 strip -o "$HERE/dist/ffprobe.exe" ffprobe.exe

@@ -36,6 +36,8 @@ public sealed class AppState
 
     // Picture adjustments module: percentages (-100 .. 100, 0 = unchanged); denoise 0 .. 100 (2.5)
     public int PicBright, PicContrast, PicSat, PicDenoise;
+    /// <summary>2.8 white balance: temperature (+ warmer / - cooler) and tint (+ magenta / - green), -100 .. 100.</summary>
+    public int PicTemp, PicTint;
     /// <summary>Denoise may run on the graphics card (OpenCL works on this PC; set by the app, not saved).</summary>
     public bool OpenCl;
     /// <summary>The module is switched on (set by the app, not saved here).</summary>
@@ -57,10 +59,10 @@ public sealed class AppState
 
     /// <summary>The Picture adjustments filter for every clip, or null (module off, or nothing changed).</summary>
     public string? PictureFilter(bool hdrKept = false) =>
-        PictureOn ? Modules.PictureAdjust.Filter(PicBright, PicContrast, PicSat, DenoiseOk ? PicDenoise : 0, OpenCl, hdrKept) : null;
+        PictureOn ? Modules.PictureAdjust.Filter(PicBright, PicContrast, PicSat, PicTemp, PicTint, DenoiseOk ? PicDenoise : 0, OpenCl, hdrKept) : null;
 
     /// <summary>The picture values differ from the neutral ones (then they are saved in projects too).</summary>
-    public bool PictureChanged => PicBright != 0 || PicContrast != 0 || PicSat != 0 || PicDenoise != 0;
+    public bool PictureChanged => PicBright != 0 || PicContrast != 0 || PicSat != 0 || PicDenoise != 0 || PicTemp != 0 || PicTint != 0;
 
     static IEnumerable<string> ResModes => C.ResSizeMode.Concat(C.ResBitrateMode);
 
@@ -118,6 +120,8 @@ public sealed class AppState
         if (P("pic_contrast") is { } c) PicContrast = c;
         if (P("pic_sat") is { } sat) PicSat = sat;
         if (P("pic_denoise") is { } dn) PicDenoise = Modules.PictureAdjust.ClampDenoise(dn);
+        if (P("pic_temp") is { } tp) PicTemp = tp;
+        if (P("pic_tint") is { } tn) PicTint = tn;
     }
 
     /// <summary>eq_bands (5 x dB) and eq_vol (dB) from settings.json or a project.</summary>
@@ -182,7 +186,7 @@ public sealed class AppState
         if (Bool(st["vhs"]) is { } vh) Vhs = vh;
         if (Bool(st["hdr"]) is { } hd) Hdr = hd;
         // a project saved with picture adjustments brings them back; one without them opens with a neutral picture
-        (PicBright, PicContrast, PicSat, PicDenoise) = (0, 0, 0, 0);
+        (PicBright, PicContrast, PicSat, PicDenoise, PicTemp, PicTint) = (0, 0, 0, 0, 0, 0);
         ReadPicture(st);
         (EqBands, EqVolume) = (new int[Modules.Equalizer.Bands.Length], 0);
         ReadEq(st);
@@ -266,6 +270,7 @@ public sealed class AppState
         d["trans"] = Trans; d["tlen"] = Tlen; d["prefix"] = Prefix; d["suffix"] = Suffix;
         d["keep_name"] = KeepName;
         d["pic_bright"] = PicBright; d["pic_contrast"] = PicContrast; d["pic_sat"] = PicSat; d["pic_denoise"] = PicDenoise;
+        d["pic_temp"] = PicTemp; d["pic_tint"] = PicTint;
         d["eq_bands"] = new JsonArray(EqBands.Select(b => (JsonNode?)JsonValue.Create(b)).ToArray()); d["eq_vol"] = EqVolume;
     }
 

@@ -526,10 +526,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Opens a .clipproj (reference open_project / load_project). quiet = the last session at start-up:
     /// no questions, no project file name, missing clips only as a status message.</summary>
-    public async Task OpenProject(string path, bool quiet = false)
+    public async Task OpenProject(string path, bool quiet = false, bool ask = true)
     {
         if (Exporting) return;
-        if (!quiet && Clips.Count > 0 && !Dialogs.YesNo("Open project", "Replace the clips that are open now?")) return;
+        if (!quiet && ask && Clips.Count > 0 && !Dialogs.YesNo("Open project", "Replace the clips that are open now?")) return;
         ProjectLoad load;
         var progress = BeginLoading(quiet ? "Restoring the last session" : "Opening the project", ProjectClipCount(path));
         try

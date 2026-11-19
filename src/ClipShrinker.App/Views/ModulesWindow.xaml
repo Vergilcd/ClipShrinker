@@ -46,6 +46,12 @@
                                             Command="{Binding DataContext.DeleteModuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding}" AutomationProperties.Name="Delete"
                                             ToolTip="Delete this module and its folder (a module that came with Clip Shrinker can be restored later)" />
+                                    <!-- 2.8: AI editing is downloaded from GitHub -->
+                                    <Button Content="Install" Focusable="False" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}"
+                                            Visibility="{Binding CanInstall, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.InstallAiCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Download the AI editing helper, its ffmpeg and the speech model from GitHub" />
                                     <Button Content="Restore" Focusable="False" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}"
                                             Visibility="{Binding CanRestore, Converter={StaticResource BoolToVis}}"
                                             Command="{Binding DataContext.RestoreModuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -68,6 +74,18 @@
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
+                                    <!-- 2.8: AI editing: update and Claude Code -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                                                Visibility="{Binding CanConnect, Converter={StaticResource BoolToVis}}">
+                                        <Button Content="Connect to Claude Code" Focusable="False" Padding="10,4,10,5"
+                                                Command="{Binding DataContext.ConnectAiClaudeCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Register the AI editing helper in Claude Code as the clipshrinker MCP server (all projects)" />
+                                        <Button Content="Update" Focusable="False" Padding="10,4,10,5" Margin="8,0,0,0" Style="{StaticResource AccentButtonStyle}"
+                                                Visibility="{Binding CanUpdate, Converter={StaticResource BoolToVis}}"
+                                                Command="{Binding DataContext.UpdateAiCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}" ToolTip="Download the new version of AI editing from GitHub" />
+                                    </StackPanel>
                                     <!-- changelog: a small toggle (text and arrow centred on one line) and the text below it -->
                                     <ToggleButton x:Name="LogToggle" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="10,4,8,5" Focusable="False"
                                                   Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"

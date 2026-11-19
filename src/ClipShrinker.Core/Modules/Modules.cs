@@ -24,12 +24,27 @@ public static class ModuleIds
     public const string PictureAdjust = "picture-adjust";
     public const string Equalizer = "sound-equalizer";
     public const string SoundTrack = "sound-track";
+    /// <summary>Dev: Claude edits the clips through the MCP helper (docs/mcp-agent-research.md).</summary>
+    public const string AiAgent = "ai-agent";
 
-    public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust, Equalizer, SoundTrack];
+    public static readonly string[] Builtin = [TimelineEffects, BitratePresets, PictureAdjust, Equalizer, SoundTrack, AiAgent];
 
     /// <summary>On after the first start (2.6: every built-in module, so a new user sees all features; a switch someone
-    /// set before is kept in settings.json).</summary>
-    public static bool DefaultOn(string id) => true;
+    /// set before is kept in settings.json). 2.8: AI editing starts off: switching it on shows the privacy notice.</summary>
+    public static bool DefaultOn(string id) => id != AiAgent;
+
+    /// <summary>2.8: shown when AI editing is switched on; it only goes on after "I understand".</summary>
+    public const string AiAgentNoticeTitle = "AI editing: your clips leave this PC";
+    public const string AiAgentNotice =
+        "With AI editing on, a Claude session (Claude Code or the Claude desktop app, made by Anthropic, a third party) " +
+        "can connect to Clip Shrinker and work on your clips.\n\n" +
+        "Everything Claude looks at is sent to Anthropic's servers: still frames and contact sheets from your videos, " +
+        "picture measurements, what is said in them (speech to text, including voice chat and your microphone), " +
+        "file names and folder paths, and your export settings. Sounds it downloads come from websites it picks.\n\n" +
+        "This happens only while the module is on and you ask Claude to do something. From then on, the data is handled " +
+        "under Anthropic's terms and privacy policy, not by Clip Shrinker, and it cannot be taken back. " +
+        "Do not use AI editing on clips you would not share.\n\n" +
+        "Switch AI editing on?";
 }
 
 /// <summary>modules\&lt;id&gt;\module.json: who made it, which version, and what it does.</summary>

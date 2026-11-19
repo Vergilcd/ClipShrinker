@@ -26,17 +26,27 @@ public static class PictureAdjust
 
     /// <summary>The filter for these values, or null when nothing changes the picture.
     /// Brightness / contrast / saturation are percentages (-100 .. 100, 0 = unchanged).</summary>
-    public static string? Filter(int brightness, int contrast, int saturation)
+    public static string? Filter(int brightness, int contrast, int saturation) => Filter(brightness, contrast, saturation, 0, 0);
+
+    /// <summary>2.8: with white balance. temperature: + warmer (more orange), - cooler (more blue); tint: + magenta,
+    /// - green (-100 .. 100, 0 = unchanged). Both shift the colour planes (U = blue-yellow, V = red-cyan) in the same
+    /// lutyuv, so 10-bit clips stay 10-bit and the neutral picture still gives no filter.</summary>
+    public static string? Filter(int brightness, int contrast, int saturation, int temperature, int tint)
     {
-        int b = Clamp(brightness), c = Clamp(contrast), s = Clamp(saturation);
-        if (b == 0 && c == 0 && s == 0) return null;
+        int b = Clamp(brightness), c = Clamp(contrast), s = Clamp(saturation), t = Clamp(temperature), g = Clamp(tint);
+        if (b == 0 && c == 0 && s == 0 && t == 0 && g == 0) return null;
         // lutyuv works in the video's own value range (minval / maxval), so 8- and 10-bit clips get the same look.
         // Brightness: +-100 % moves the picture by 30 % of the range; contrast / saturation: 0 .. 2x around the middle.
+        // Temperature: +-100 % moves U and V by 6 % of the range in opposite directions; tint: both by 5 %, same way.
         const string mid = "(minval+maxval)/2";
         string Y = c == 0 && b == 0 ? "val"
             : $"clip((val-{mid})*{F(1 + c / 100.0, 3)}+{mid}+{F(0.3 * b / 100.0, 3)}*(maxval-minval),minval,maxval)";
-        string UV = s == 0 ? "val" : $"clip((val-{mid})*{F(1 + s / 100.0, 3)}+{mid},minval,maxval)";
-        return $"lutyuv=y='{Y}':u='{UV}':v='{UV}'";
+        string Chroma(double shift) => s == 0 && shift == 0 ? "val"
+            : shift == 0 ? $"clip((val-{mid})*{F(1 + s / 100.0, 3)}+{mid},minval,maxval)"
+            : s == 0 ? $"clip(val+{F(shift, 4)}*(maxval-minval),minval,maxval)"
+            : $"clip((val-{mid})*{F(1 + s / 100.0, 3)}+{mid}+{F(shift, 4)}*(maxval-minval),minval,maxval)";
+        double du = -0.06 * t / 100.0 + 0.05 * g / 100.0, dv = 0.06 * t / 100.0 + 0.05 * g / 100.0;
+        return $"lutyuv=y='{Y}':u='{Chroma(du)}':v='{Chroma(dv)}'";
     }
     public const int DenoiseMax = 100;
 
@@ -62,9 +72,12 @@ public static class PictureAdjust
 
     /// <summary>Denoise first (it works best on the untouched picture), then the colour. hdrKept: the clip stays HDR
     /// (10-bit, "Convert HDR" off); denoise is skipped there because both filters would make it 8-bit.</summary>
-    public static string? Filter(int brightness, int contrast, int saturation, int denoise, bool gpu, bool hdrKept = false)
+    public static string? Filter(int brightness, int contrast, int saturation, int denoise, bool gpu, bool hdrKept = false) =>
+        Filter(brightness, contrast, saturation, 0, 0, denoise, gpu, hdrKept);
+
+    public static string? Filter(int brightness, int contrast, int saturation, int temperature, int tint, int denoise, bool gpu, bool hdrKept = false)
     {
-        var parts = new[] { hdrKept ? null : DenoiseFilter(denoise, gpu), Filter(brightness, contrast, saturation) }
+        var parts = new[] { hdrKept ? null : DenoiseFilter(denoise, gpu), Filter(brightness, contrast, saturation, temperature, tint) }
             .Where(p => p is not null).ToList();
         return parts.Count == 0 ? null : string.Join(",", parts);
     }

@@ -1,5 +1,5 @@
-CLIP SHRINKER 2.7.5
-===================
+CLIP SHRINKER 2.8.0-beta1
+=========================
 
 GETTING STARTED
 Double-click ClipShrinker.exe. Keep the "library" and "modules" folders next to it: library holds ffmpeg,
@@ -43,10 +43,11 @@ Esc leaves it. Drag the grip between the preview and the clip list to resize the
 MODULES (button at the top right)
 Optional parts of the program are modules you can switch on and off, delete, and restore from GitHub. Each is a
 folder in "modules" with its version and changelog (2.6 and older called them plugins; an old "plugins"
-folder is moved into "modules" by itself). All of them are on after the first start:
+folder is moved into "modules" by itself). All of them are on after the first start, except AI editing:
 - Timeline effects: speed up / slow motion / zoom sections and RIFE.
 - Bitrate presets: per-clip bitrates with hotkeys.
-- Picture adjustments: brightness, contrast, saturation and denoise. Its sun button at the bottom right of
+- Picture adjustments: brightness, contrast, saturation, white balance (Temperature: warmer / cooler; Tint:
+  magenta / green) and denoise. Its sun button at the bottom right of
   the preview (also in full screen) opens the sliders; type a value like 25 or -40% in a box and
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
   saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
@@ -66,6 +67,16 @@ folder is moved into "modules" by itself). All of them are on after the first st
   Sounds. Sounds keep their normal speed inside speed sections, are heard in the preview, are mixed into the
   clip's first audio track in the export (the microphone track stays clean), and are saved with projects
   (with paths relative to the project, like the clips). A limiter keeps loud sounds from clipping.
+- AI editing (development version, not installed at first): Claude (Claude Code or the Claude desktop app)
+  edits the clips on the timeline from plain requests: trims, speed / zoom sections, picture and white
+  balance, export settings and file names, sounds it downloads from free sound sites, and finding moments by
+  what is said (speech to text). It is not in the download: Modules > AI editing > Install downloads it from
+  GitHub into modules\ai-agent (the helper Claude starts, about 20 MB; an ffmpeg with speech recognition, used
+  only for speech to text; and, if you want speech to text, the speech model, about 550 MB). Then "Connect to
+  Claude Code" registers the helper in Claude Code. Update appears there when a new version is out; the bin
+  button uninstalls it. Switching it on shows a notice: frames, speech, file names and settings of the clips
+  Claude works on are sent to Anthropic, a third party. The header shows "AI agent connected" (blue) while a
+  Claude session is connected.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
 at the bottom shows where you are. "Reset zoom" shows the whole clip again.

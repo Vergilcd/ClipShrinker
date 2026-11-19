@@ -1,6 +1,10 @@
 PICTURE ADJUSTMENTS - CHANGELOG
 ===============================
 
+1.2.0 (Clip Shrinker 2.8.0-dev2)
+- New: white balance. Temperature (+ warmer / more orange, - cooler / more blue) and Tint (+ magenta,
+  - green), -100 to +100 % on the Picture card. Used in the preview and the export, saved with projects.
+
 1.1.0 (Clip Shrinker 2.5.0)
 - New: Denoise (0 to 100 %) on the Picture card, for grain and noise in dark or low-light footage. Runs on the
   graphics card through OpenCL, or on the CPU (slower exports) when OpenCL is not available. Not used on clips
