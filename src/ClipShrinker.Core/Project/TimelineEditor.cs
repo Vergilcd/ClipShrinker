@@ -635,12 +635,20 @@ public sealed class TimelineEditor
     }
 
     /// <summary>The title line of the clip card.</summary>
-    public string Title(int index)
+    public string Title(int index) => TitleName(index) + "   -   " + TitleInfo;
+
+    /// <summary>2.7.5: the title bar's first line (bold): number and file name.</summary>
+    public string TitleName(int index) => $"{(Active ? "▶ " : "")}{index + 1}.  {Path.GetFileName(Clip.Path)}";
+
+    /// <summary>2.7.5: the title bar's second line: the video's data and its length after editing.</summary>
+    public string TitleInfo
     {
-        var i = Clip.Info;
-        return $"{(Active ? "▶ " : "")}{index + 1}.  {Path.GetFileName(Clip.Path)}   -   " +
-               $"{i.W}x{i.H}, {F(i.Fps, 0)} fps, {F(i.Size / 1048576.0, 1)} MB, {Text.FmtTime(i.Dur)}" +
-               (i.Trc is not null ? "   [HDR]" : "") + (i.NAudio > 1 ? $"   [{i.NAudio} audio tracks]" : "") +
-               $"   -   Length after edit: {Text.FmtTime(EditedLen)}";
+        get
+        {
+            var i = Clip.Info;
+            return $"{i.W}x{i.H}, {F(i.Fps, 0)} fps, {F(i.Size / 1048576.0, 1)} MB, {Text.FmtTime(i.Dur)}" +
+                   (i.Trc is not null ? "   [HDR]" : "") + (i.NAudio > 1 ? $"   [{i.NAudio} audio tracks]" : "") +
+                   $"   -   Length after edit: {Text.FmtTime(EditedLen)}";
+        }
     }
 }

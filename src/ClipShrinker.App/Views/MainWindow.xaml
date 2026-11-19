@@ -220,7 +220,7 @@
                                 <Border x:Name="Card" Margin="2,0,2,8" CornerRadius="9" BorderThickness="2"
                                         BorderBrush="{DynamicResource CsBorder}" Background="#202020">
                                     <DockPanel>
-                                        <Border x:Name="Head" DockPanel.Dock="Top" Padding="14,5,8,5" CornerRadius="7,7,0,0"
+                                        <Border x:Name="Head" DockPanel.Dock="Top" Padding="8,3,8,3" CornerRadius="7,7,0,0"
                                                 Background="{DynamicResource CsHead}"
                                                 MouseLeftButtonDown="Head_MouseDown" MouseMove="Head_MouseMove" MouseLeftButtonUp="Head_MouseUp"
                                                 ToolTip="Click to select - drag up or down to change the order of the clips">
@@ -252,7 +252,11 @@
                                                         </Style>
                                                     </ComboBox.Style>
                                                 </ComboBox>
-                                                <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <!-- 2.7.5: file name (bold) over the video's data (one size smaller), centred together -->
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock x:Name="TitleText" Text="{Binding TitleName}" FontSize="12" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock x:Name="InfoText" Text="{Binding TitleInfo}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
                                             </DockPanel>
                                         </Border>
                                         <local:SoundLaneView DockPanel.Dock="Bottom" />   <!-- 2.7 Sound track module -->
@@ -264,6 +268,7 @@
                                         <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource CsAccent}" />
                                         <Setter TargetName="Head" Property="Background" Value="{DynamicResource CsAccent}" />
                                         <Setter TargetName="TitleText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
+                                        <Setter TargetName="InfoText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
                                         <Setter TargetName="ZoomText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
                                     </DataTrigger>
                                 </DataTemplate.Triggers>

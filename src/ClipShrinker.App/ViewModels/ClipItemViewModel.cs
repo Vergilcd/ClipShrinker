@@ -50,11 +50,13 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Title))]
+    [NotifyPropertyChangedFor(nameof(TitleName))]
     private int index;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Highlighted))]
     [NotifyPropertyChangedFor(nameof(Title))]
+    [NotifyPropertyChangedFor(nameof(TitleName))]
     [NotifyPropertyChangedFor(nameof(TimelineHeight))]
     private bool isActive;
 
@@ -76,6 +78,8 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
     /// strip on others that have sounds, none otherwise.</summary>
     public double SoundLaneHeight => !Core.Modules.Features.SoundTrack ? 0 : Editor.Active ? 40 : Row.Sounds.Count > 0 ? 8 : 0;
     public string Title => Editor.Title(Index);
+    public string TitleName => Editor.TitleName(Index);
+    public string TitleInfo => Editor.TitleInfo;
     public string ZoomLabel => Editor.ZoomLabel;
 
     // thumbnails are served active clip first, then in list order
@@ -89,6 +93,8 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
     {
         isActiveForThumbs = IsActive;
         OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(TitleName));
+        OnPropertyChanged(nameof(TitleInfo));
         OnPropertyChanged(nameof(ZoomLabel));
         Changed?.Invoke();
     }
