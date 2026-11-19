@@ -2,7 +2,7 @@
   "id": "picture-adjust",
   "name": "Picture adjustments",
   "author": "Vergil",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "builtin": true,
-  "description": "Brightness, contrast, saturation and denoise for every clip, set on the preview (sun button next to full screen) and used in the export."
+  "description": "Brightness, contrast, saturation, white balance (temperature, tint) and denoise for every clip, set on the preview (sun button next to full screen) and used in the export."
 }

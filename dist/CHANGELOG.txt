@@ -4,6 +4,38 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.8.0-dev3 (development build, not released)
+- AI editing is no longer in the download, which is back to the size of 2.7.5. Modules > AI editing > Install
+  downloads it from GitHub (release "ai-editing"): the helper Claude starts, an ffmpeg with speech recognition
+  and, if you want speech to text, the speech model (about 550 MB). Every file is checked (size and SHA-256)
+  before it is used, and a broken download continues where it stopped.
+- The bundled ffmpeg is the one from 2.7.5 again (no whisper): exports and the preview never use the speech
+  ffmpeg, which lives in modules\ai-agent\ffmpeg.
+- AI editing: "Connect to Claude Code" registers the helper as the clipshrinker MCP server in Claude Code
+  (or shows the command to copy when Claude Code is not found). Update shows when a newer version is out
+  (checked at most once a day); the bin button uninstalls it and removes it from Claude Code.
+
+
+2.8.0-dev2 (development build, not released)
+- AI editing is off after the first start. Switching it on shows a notice first: what Claude looks at (still
+  frames, speech, file names, folder paths, export settings) is sent to Anthropic, a third party; it only goes
+  on after "I understand, switch on".
+- AI editing: Claude can read and change the export settings (size limit, bitrate, resolution, codec, crop,
+  audio, join / separate, transition, HDR) and the file names (prefix, suffix with labels such as {date} or
+  {res}, keep name, export folder), and says which name the next export gets.
+- AI editing: Claude can download sound effects or music from a direct link on a free sound site into the
+  Sounds library (where they came from is written to sources.txt there) and place them on a clip, with volume
+  and fades. Sounds it places are undo steps like the other edits.
+- AI editing: speech to text. Claude can read what is said in a clip (voice chat, the microphone), in any
+  language, with times, to find a moment by what someone says. It uses ffmpeg's whisper filter, now built into
+  the bundled ffmpeg (whisper.cpp, MIT; CPU). The speech model (about 550 MB) is downloaded into
+  modules\ai-agent\models the first time it is needed.
+- Picture adjustments: white balance. Temperature (warmer / cooler) and Tint (magenta / green) on the Picture
+  card, used in the preview and the export, saved with projects. Claude can set them too.
+- Changes Claude makes to settings (picture, export) are not undo steps: Ctrl+Z undoes the clip edits only.
+  Claude reports the old values so it can put them back.
+
+
 2.8.0-dev (development build, not released)
 - New module "AI editing": Claude (Claude Code / the Claude desktop app) can edit the clips through the
   clipshrinker MCP helper. With Clip Shrinker open, the header shows "AI agent connected" (blue) or "AI agent

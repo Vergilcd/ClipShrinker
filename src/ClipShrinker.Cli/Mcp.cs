@@ -14,7 +14,7 @@ namespace ClipShrinker.Cli;
 /// </summary>
 public static class Mcp
 {
-    const string Version = "0.2.0-dev";
+    const string Version = "0.3.0-dev";
 
     public static int Run(Dictionary<string, string?> opts)
     {
@@ -108,6 +108,18 @@ public static class Mcp
         }
 
         public void RemoveClip(TimelineClip clip) => Edit("remove clip", () => rows.Remove(clip));
+
+        public IReadOnlyList<string> Codecs => ClipShrinker.Core.C.Codecs;
+        public void Settings(string label, Action change) => Edit(label, change);
+        public string? ExportFolder { get => null; set => throw new AgentToolError("The export folder is an app setting: open Clip Shrinker."); }
+        /// <summary>--app = the Clip Shrinker folder (its modules\: Sounds library, speech model); default: the folder that
+        /// holds the --tools "library" folder, else the helper's own folder (the tester zip puts both side by side).</summary>
+        public string AppDir =>
+            opts.GetValueOrDefault("--app") is { Length: > 0 } d ? d
+            : opts.GetValueOrDefault("--tools") is { Length: > 0 } t && Path.GetFileName(t.TrimEnd('\\', '/')).Equals("library", StringComparison.OrdinalIgnoreCase)
+                && Path.GetDirectoryName(t.TrimEnd('\\', '/')) is { } parent ? parent
+            : AppContext.BaseDirectory.TrimEnd('\\', '/');
+        public bool? ModuleOn(string id) => null;
 
         void Save() => File.WriteAllText(ProjectPath!, ProjectSave.Data(rows, Math.Min(active, Math.Max(0, rows.Count - 1)), State, ProjectPath)
                                                        .ToJsonString(new JsonSerializerOptions { WriteIndented = true }));

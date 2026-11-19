@@ -24,6 +24,83 @@ public class AgentTests
         public string OpenProject(string path) => "";
         public string AddVideos(IReadOnlyList<string> paths) => "";
         public (string Text, bool Ok) Export(string? output, string? mode) => ("exported", true);
+        public IReadOnlyList<string> Codecs => ["HEVC (hevc_nvenc)", "H.264 (h264_nvenc)"];
+        public List<string> SettingChanges = [];
+        public void Settings(string label, Action change) { SettingChanges.Add(label); change(); }
+        public string? ExportFolder { get; set; } = "";
+        public string AppDir { get; set; } = Path.GetTempPath();
+        public bool? ModuleOn(string id) => true;
+    }
+
+    // ------------------------------------------------------------------ 2.8
+    [Fact]
+    public void ExportSettingsAreMatchedAndAppliedTogether()
+    {
+        var h = new FakeHost();
+        var r = AgentTools.Call(h, "set_export_settings", new JsonObject
+        {
+            ["codec"] = "h264", ["size"] = 25, ["crop"] = "4:3", ["prefix"] = "{date}", ["suffix"] = "ranked", ["resolution"] = "1080p",
+        });
+        Assert.False(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.Equal(("H.264 (h264_nvenc)", "25", "1080p"), (h.State.Codec, h.State.Size, h.State.Res));
+        Assert.StartsWith("4:3", h.State.Crop);
+        Assert.Contains($"{DateTime.Now:yyyy-MM-dd}_a_ranked.mp4", TextOf(r));
+        Assert.Equal(["export settings"], h.SettingChanges);                     // one change, not an undo step
+
+        // a wrong value refuses the whole call: the good ones next to it are not applied either
+        r = AgentTools.Call(h, "set_export_settings", new JsonObject { ["size"] = 99, ["codec"] = "AV1" });
+        Assert.True(r["isError"]!.GetValue<bool>());
+        Assert.Contains("is not one of", TextOf(r));
+        Assert.Equal("25", h.State.Size);
+
+        // with a fixed bitrate the resolution comes from the bitrate list
+        AgentTools.Call(h, "set_export_settings", new JsonObject { ["bitrate"] = "20", ["resolution"] = "original" });
+        Assert.Equal(("20", "Original"), (h.State.Bitrate, h.State.Res));
+        Assert.Contains("ignored: a fixed bitrate", TextOf(AgentTools.Call(h, "export_settings", [])));
+    }
+
+    [Fact]
+    public void PictureToolSetsWhiteBalanceAndSaysWhatItWas()
+    {
+        var h = new FakeHost();
+        var r = AgentTools.Call(h, "set_picture", new JsonObject { ["temperature"] = 20, ["tint"] = -10, ["denoise"] = 30 });
+        Assert.Equal((20, -10, 30, 0), (h.State.PicTemp, h.State.PicTint, h.State.PicDenoise, h.State.PicBright));
+        Assert.Contains("before: brightness 0, contrast 0, saturation 0, temperature 0, tint 0, denoise 0", TextOf(r));
+        Assert.Empty(h.Edits);                                                   // a setting, not a clip edit
+    }
+
+    [Fact]
+    public void SoundsArePlacedFromTheLibrary()
+    {
+        var h = new FakeHost { AppDir = Path.Combine(Path.GetTempPath(), "cs_agent_sounds_" + Guid.NewGuid().ToString("N")) };
+        try
+        {
+            var r = AgentTools.Call(h, "add_sound", new JsonObject { ["clip"] = 1, ["sound"] = "boom" });
+            Assert.True(r["isError"]!.GetValue<bool>());
+            Assert.Contains("No sound \"boom\"", TextOf(r));
+            r = AgentTools.Call(h, "sound_library", []);
+            Assert.Contains("is empty", TextOf(r));
+            r = AgentTools.Call(h, "remove_sounds", new JsonObject { ["clip"] = 1 });
+            Assert.Contains("has no sounds", TextOf(r));
+        }
+        finally { if (Directory.Exists(h.AppDir)) Directory.Delete(h.AppDir, true); }
+    }
+
+    [Fact]
+    public void DownloadRefusesPlainHttp()
+    {
+        var r = AgentTools.Call(new FakeHost(), "download_sound", new JsonObject { ["url"] = "http://example.com/a.mp3" });
+        Assert.True(r["isError"]!.GetValue<bool>());
+        Assert.Contains("https", TextOf(r));
+    }
+
+    [Fact]
+    public void NewToolsAreListed()
+    {
+        var names = AgentTools.List().Select(t => t!["name"]!.GetValue<string>()).ToList();
+        foreach (var n in new[] { "export_settings", "set_export_settings", "sound_library", "download_sound", "add_sound", "remove_sounds", "transcribe" })
+            Assert.Contains(n, names);
+        Assert.Equal(names.Count, names.Distinct().Count());
     }
 
     static string TextOf(JsonObject r) => string.Join("\n", r["content"]!.AsArray().Select(c => c!["text"]?.GetValue<string>()));

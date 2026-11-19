@@ -29,6 +29,19 @@ public interface IAgentHost
     (string Text, bool Ok) Export(string? output, string? mode);
     /// <summary>Takes a clip off the list (one undo step in the app).</summary>
     void RemoveClip(TimelineClip clip);
+
+    // 2.8
+    /// <summary>The codec names the Codec list offers on this PC.</summary>
+    IReadOnlyList<string> Codecs { get; }
+    /// <summary>Changes app-wide settings (export, file names, picture). Not an undo step: the app's undo covers the
+    /// clips only. Saved to the project file in file mode.</summary>
+    void Settings(string label, Action change);
+    /// <summary>The app's export folder ("" = asks at export); null in file mode (no app settings there).</summary>
+    string? ExportFolder { get; set; }
+    /// <summary>Folder that holds Clip Shrinker's modules folder (the app's own folder).</summary>
+    string AppDir { get; }
+    /// <summary>The module is switched on in the app; null when not known (file mode).</summary>
+    bool? ModuleOn(string id);
 }
 
 public sealed class AgentToolError(string m) : Exception(m);
@@ -38,7 +51,7 @@ public sealed class AgentToolError(string m) : Exception(m);
 /// helper (on a project file) and in the app (on its timeline, when the helper is connected to it).
 /// Every call returns MCP tool-result content: { content: [...], isError }.
 /// </summary>
-public static class AgentTools
+public static partial class AgentTools
 {
     public const string PipeName = "ClipShrinker.Agent";
 
@@ -53,6 +66,16 @@ public static class AgentTools
         exact time; 3) set_trim / add_section, with the padding the user asks for (a few seconds = about 3 s).
         Export only when the user asks for it (export uses the app's export settings); otherwise tell them to check the
         result on the timeline (or open the project in Clip Shrinker with Ctrl+O).
+        Settings: export_settings shows the export settings, the file name rules and the name the next export gets;
+        set_export_settings changes them (size limit, bitrate, resolution, codec, crop, audio, file name prefix / suffix
+        with labels such as {date} or {res}, export folder). Picture: picture_stats measures, set_picture sets
+        brightness, contrast, saturation, white balance (temperature, tint) and denoise for every clip; check with
+        frames(..., picture: true). Settings changes are not undo steps: tell the user the old values when it matters.
+        Speech: transcribe gives what is said with times (game voice chat, the player's mic); use it to find moments
+        by what someone says. The first call downloads the speech model (about 550 MB) in the background.
+        Sounds: sound_library lists the sounds the user has; download_sound saves a sound from a direct https link (find
+        one on a free sound site such as Pixabay, Mixkit or Freesound; tell the user the source and its licence);
+        add_sound places a sound on a clip (time in the clip's source seconds), remove_sounds takes them off.
         """;
 
     static JsonObject Schema(params (string Name, string Type, string Desc, bool Req)[] p)
@@ -72,7 +95,7 @@ public static class AgentTools
     static JsonObject Tool(string name, string desc, JsonObject schema) =>
         new() { ["name"] = name, ["description"] = desc, ["inputSchema"] = schema };
 
-    public static JsonArray List() =>
+    static JsonArray BaseList() =>
     [
         Tool("clip_list", "The clips that are being edited (the open Clip Shrinker window, or the open project file), with " +
              "their trims and sections.", Schema()),
@@ -113,9 +136,12 @@ public static class AgentTools
              "with the current picture settings. Typical good footage: mean 90-140, saturation 0.25-0.45.",
              Schema(("clip", "integer", "Clip number", true))),
         Tool("set_picture", "Picture adjustments for every clip (-100..100 %, 0 = unchanged; denoise 0..100). " +
-             "Check the look with frames(..., picture: true).",
+             "White balance: temperature + = warmer / more orange, - = cooler / more blue (a blue cast needs +); tint + = " +
+             "more magenta, - = more green (a green cast needs +). Usual corrections are small (10-30). Denoise helps grainy " +
+             "dark footage (20-40; more blurs). Check the look with frames(..., picture: true). Give only what changes.",
              Schema(("brightness", "integer", "-100..100", false), ("contrast", "integer", "-100..100", false),
-                    ("saturation", "integer", "-100..100", false), ("denoise", "integer", "0..100", false))),
+                    ("saturation", "integer", "-100..100", false), ("temperature", "integer", "-100..100", false),
+                    ("tint", "integer", "-100..100", false), ("denoise", "integer", "0..100", false))),
         Tool("export", "Export with the app's export settings (only when the user asks). In the open app the progress shows " +
              "there. Can take minutes.",
              Schema(("out", "string", "Output .mp4 file or folder (default: the export folder, or next to the first clip)", false),
@@ -147,12 +173,20 @@ public static class AgentTools
                 "picture_stats" => PictureTool(h, a),
                 "set_picture" => SetPicture(h, a),
                 "export" => ExportTool(h, a),
+                "export_settings" => Content([Text(ExportSettingsText(h))]),
+                "set_export_settings" => SetExportSettings(h, a),
+                "sound_library" => SoundLibrary(h),
+                "download_sound" => DownloadSound(h, a),
+                "add_sound" => AddSound(h, a),
+                "remove_sounds" => RemoveSounds(h, a),
+                "transcribe" => Transcribe(h, a),
                 _ => throw new AgentToolError("Unknown tool: " + name),
             };
         }
         catch (AgentToolError e) { return Content([Text(e.Message)], isError: true); }
         catch (Exception e) when (e is IOException or MediaException or ProjectException or InvalidOperationException
-                                      or FormatException or System.ComponentModel.Win32Exception or UnauthorizedAccessException)
+                                      or FormatException or System.ComponentModel.Win32Exception or UnauthorizedAccessException
+                                      or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
             return Content([Text($"{name} failed: {e.Message}")], isError: true);
         }
@@ -208,7 +242,10 @@ public static class AgentTools
         double outLen = Timing.Duration(r.ToExport().Pieces is { Count: > 0 } p ? p : [new Piece(r.Start, r.End, 1)]);
         sb.AppendLine($"  length after editing: {outLen:0.##} s");
         var st = h.State;
-        sb.Append($"  picture (all clips): brightness {st.PicBright}, contrast {st.PicContrast}, saturation {st.PicSat}, denoise {st.PicDenoise}");
+        foreach (var (b, i) in r.Sounds.OrderBy(b => b.At).Select((b, i) => (b, i)))
+            sb.AppendLine($"  sound {i + 1}: {b.Name} at {b.At:0.##}-{b.End:0.##} s" + (b.In > 0 ? $" (from {b.In:0.##} s of the file)" : "") +
+                          (b.VolumeDb != 0 ? $", {b.VolumeDb:+0;-0} dB" : "") + (b.Fade > 0 ? $", fade {b.Fade:0.##} s" : ""));
+        sb.Append($"  picture (all clips): {PicText(st)}");
         return sb.ToString();
     }
 
@@ -259,7 +296,7 @@ public static class AgentTools
         var (fw, fh) = ClipAnalysis.Fit(r.Info.W, r.Info.H, w);
         var st = h.State;
         string? pic = a["picture"] is JsonValue pv && pv.TryGetValue(out bool want) && want && st.PictureChanged
-            ? Modules.PictureAdjust.Filter(st.PicBright, st.PicContrast, st.PicSat) : null;
+            ? Modules.PictureAdjust.Filter(st.PicBright, st.PicContrast, st.PicSat, st.PicTemp, st.PicTint, st.DenoiseOk ? st.PicDenoise : 0, false) : null;
         var content = new List<JsonNode>();
         foreach (var t in times)
         {
@@ -290,7 +327,7 @@ public static class AgentTools
         var st = h.State;
         return Content([Text($"From {s.Frames} sample frames{(r.Info.Trc is not null ? " (HDR, measured after the conversion to SDR)" : "")}: " +
                              $"mean luma {s.MeanLuma}, darkest 5 % {s.DarkLuma}, brightest 5 % {s.BrightLuma}, saturation {s.MeanSat}. " +
-                             $"Current picture settings: brightness {st.PicBright}, contrast {st.PicContrast}, saturation {st.PicSat}, denoise {st.PicDenoise}.")]);
+                             $"Current picture settings: {PicText(st)}.")]);
     }
 
     // ------------------------------------------------------------------ editing
@@ -361,16 +398,26 @@ public static class AgentTools
     static JsonObject SetPicture(IAgentHost h, JsonObject a)
     {
         var st = h.State;
-        h.Edit("picture", () =>
+        string before = PicText(st);
+        h.Settings("picture", () =>
         {
             if (Int(a, "brightness") is { } b) st.PicBright = Modules.PictureAdjust.Clamp(b);
             if (Int(a, "contrast") is { } c) st.PicContrast = Modules.PictureAdjust.Clamp(c);
             if (Int(a, "saturation") is { } s) st.PicSat = Modules.PictureAdjust.Clamp(s);
+            if (Int(a, "temperature") is { } t) st.PicTemp = Modules.PictureAdjust.Clamp(t);
+            if (Int(a, "tint") is { } g) st.PicTint = Modules.PictureAdjust.Clamp(g);
             if (Int(a, "denoise") is { } d) st.PicDenoise = Modules.PictureAdjust.ClampDenoise(d);
         });
-        return Content([Text(Saved(h) + $"Picture: brightness {st.PicBright}, contrast {st.PicContrast}, saturation {st.PicSat}, denoise {st.PicDenoise}" +
-                             " (used when the Picture adjustments module is on).")]);
+        string note = h.ModuleOn(Modules.ModuleIds.PictureAdjust) == false
+            ? " The Picture adjustments module is switched OFF, so exports ignore these: ask the user to switch it on (Modules)."
+            : " (used by the preview and the export while the Picture adjustments module is on)";
+        if (st.PicDenoise > 0 && !st.DenoiseOk) note += " Denoise is not available with this ffmpeg.";
+        return Content([Text((h.Live ? "Done - the preview shows it. " : "Saved to the project file. ") +
+                             $"Picture: {PicText(st)} (before: {before}).{note}")]);
     }
+
+    static string PicText(AppState st) =>
+        $"brightness {st.PicBright}, contrast {st.PicContrast}, saturation {st.PicSat}, temperature {st.PicTemp}, tint {st.PicTint}, denoise {st.PicDenoise}";
 
     static JsonObject ExportTool(IAgentHost h, JsonObject a)
     {

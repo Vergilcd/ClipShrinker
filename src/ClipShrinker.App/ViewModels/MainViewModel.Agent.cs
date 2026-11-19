@@ -22,8 +22,8 @@ public sealed partial class MainViewModel
     public string AgentText => AgentConnected ? "AI agent connected" : "AI agent not connected";
     public string AgentTip => AgentConnected
         ? "Claude is connected (AI editing module): what it changes shows on the timeline, and Ctrl+Z undoes each change."
-        : "No Claude session is connected. Set up the clipshrinker MCP helper in Claude Code (see HOW-TO-TEST.txt) and " +
-          "start a session; it connects by itself while Clip Shrinker is open.";
+        : "No Claude session is connected. Click Modules > AI editing > Connect to Claude Code once, then start a new " +
+          "Claude Code session; it connects by itself while Clip Shrinker is open.";
 
     /// <summary>Starts or stops listening for the helper when the module is switched.</summary>
     void ApplyAgent()
@@ -64,7 +64,9 @@ public sealed partial class MainViewModel
             c.Editor.Playhead = Math.Min(Math.Max(c.Editor.Playhead, c.Row.Start), c.Row.End);
             c.NotifyChanged();
         }
-        foreach (var n in new[] { nameof(PicBright), nameof(PicContrast), nameof(PicSat), nameof(PicDenoise) }) OnPropertyChanged(n);
+        foreach (var n in new[] { nameof(PicBright), nameof(PicContrast), nameof(PicSat), nameof(PicDenoise), nameof(PicTemp), nameof(PicTint) })
+        { OnPropertyChanged(n); OnPropertyChanged(n + "Text"); }
+        OnPropertyChanged(nameof(PictureChanged));
         PreviewSettingsChanged();
         Refresh();
         if (ActiveClip is { } a) RequestPreview(a, a.Editor.Playhead);
@@ -122,6 +124,25 @@ public sealed partial class MainViewModel
         public string? ProjectPath => Ui(() => vm.ProjectPath);
         public IReadOnlyList<TimelineClip> Clips => Ui(() => vm.Clips.Select(c => c.Row).ToList());
         public AppState State => vm.S;
+        public IReadOnlyList<string> Codecs => Ui(() => vm.Codecs);
+        public string AppDir => AppPaths.ExeDir;
+        public bool? ModuleOn(string id) => Ui(() => vm.ModuleOn(id));
+
+        public string? ExportFolder
+        {
+            get => Ui(() => vm.SaveDir);
+            set => UiDo(() => vm.SaveDir = value ?? "");
+        }
+
+        /// <summary>App-wide settings: no undo step (undo covers the clips); every binding re-reads its value.</summary>
+        public void Settings(string label, Action change) => UiDo(() =>
+        {
+            if (vm.Exporting) throw new AgentToolError("Clip Shrinker is exporting: wait until it is done.");
+            vm.StopPlayback();
+            change();
+            vm.AgentChanged();
+            vm.OnPropertyChanged(string.Empty);
+        });
 
         public void Edit(string label, Action change) => UiDo(() =>
         {

@@ -68,6 +68,34 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
   Claude Code as "clipshrinker"), Release\ClipShrinker-2.8.0-dev-ai.zip (both + Connect/Disconnect .bat + guide,
   for testers). Owner's workflow: give paths / a project, or edit clips already on the timeline live; export
   only when asked.
+- 2.8.0-dev2 (owner's choices): ai-agent is OFF by default (ModuleIds.DefaultOn) and switching it on shows
+  ModuleIds.AiAgentNotice (third-party data notice, every time it is switched on). New tools in
+  Core/Agent/AgentTools.More.cs: export_settings / set_export_settings (IAgentHost.Settings = no undo step, the app
+  undo covers clips only; the reply carries the old values), sound_library / download_sound (any direct https link
+  Claude finds; Core/Agent/Downloads.cs, 40 MB cap, sources.txt in the Sounds folder) / add_sound / remove_sounds,
+  transcribe (Core/Analysis/Speech.cs: ffmpeg's whisper filter, model ggml-large-v3-turbo-q5_0 + Silero VAD
+  downloaded in the background into modules\ai-agent\models; ffmpeg runs in that folder so filter paths have no
+  "C:"; SRT output because the filter's JSON does not escape quotes). White balance = PicTemp / PicTint
+  (pic_temp / pic_tint) as U/V shifts in the same lutyuv; neutral still gives no filter.
+  ffmpeg + whisper.cpp: build-ffmpeg-min.sh, static, CPU only (a Vulkan / CUDA ggml backend would make ffmpeg.exe
+  need vulkan-1.dll / CUDA DLLs to start). PROCESSOR_ARCHITECTURE must be set or ggml builds its generic (no AVX)
+  code, ~10x slower. The helper finds the app folder with --app (FileHost.AppDir).
+  AgentTests.PipeCarriesCallsAndCountsConnections fails while a Claude session with the clipshrinker helper runs
+  (the helper connects to the test's pipe too).
+- 2.8.0-dev3 (owner's call): AI editing is NOT in the base package; it is installed on demand (Core/Modules/
+  AiModule.cs, App/ViewModels/MainViewModel.AiInstall.cs, buttons on its Modules card: Install / Update / bin =
+  Uninstall / Connect to Claude Code). Parts come from the rolling GitHub prerelease tag "ai-editing"
+  (ai-editing.json lists each part with size + SHA-256; helper zip, speech-ffmpeg zip, model + VAD as optional
+  files with Hugging Face fallbacks) into modules\ai-agent\{helper,ffmpeg,models} + installed.json. No ffmpeg
+  swap: library\ffmpeg stays the base build (Dev\library = the 2026-11-15 build, no whisper); the whisper build
+  lives in Dev\library-ai and is used only by transcribe (AiModule.SpeechFfmpeg). Installed = installed.json +
+  helper exe. A running helper is renamed to *.old on update/uninstall (CleanOld at start-up). Connect runs
+  `claude mcp add clipshrinker --scope user -- <helper> mcp --app <dir> --tools <dir>\library`.
+  CLIPSHRINKER_AI_SOURCE = folder/URL with ai-editing.json (tests). make_release.ps1 refuses a whisper ffmpeg and
+  puts pre-release versions in Release\ClipShrinker-<version> (-Out to override); tools/make_ai_module.ps1 makes
+  Release\ai-editing\ and prints the gh upload commands (the owner publishes). tools/gui_ai_install_check.ps1
+  installs from those files into a %TEMP% copy of the package, runs transcribe through the installed helper and
+  uninstalls (no focus needed; MessageBoxes are answered with WM_COMMAND).
 
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.

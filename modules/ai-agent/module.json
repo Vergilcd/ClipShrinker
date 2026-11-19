@@ -2,7 +2,7 @@
   "id": "ai-agent",
   "name": "AI editing",
   "author": "Vergil",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "builtin": true,
-  "description": "Let Claude (Claude Code / the Claude desktop app) trim and edit the clips on the timeline from plain requests, through the clipshrinker MCP helper. Development version."
+  "description": "Let Claude (Claude Code / the Claude desktop app) edit the clips on the timeline from plain requests through the clipshrinker MCP helper: trims, sections, picture and white balance, export settings and file names, downloaded sounds, and speech to text. Frames, speech, file names and settings are sent to Anthropic while it works. Development version."
 }

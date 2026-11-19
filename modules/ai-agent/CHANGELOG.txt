@@ -1,6 +1,19 @@
 AI EDITING - CHANGELOG
 ======================
 
+0.4.0 (Clip Shrinker 2.8.0-dev3)
+- Downloaded on demand: not part of the Clip Shrinker download any more. Install, Update and Uninstall on this
+  card; the parts (helper, speech ffmpeg, speech model) come from the GitHub release "ai-editing" and are
+  checked with SHA-256. "Connect to Claude Code" registers the helper.
+- Speech to text uses the module's own ffmpeg (modules\ai-agent\ffmpeg); the app's ffmpeg is the base build.
+
+0.3.0 (Clip Shrinker 2.8.0-dev2)
+- Off after the first start; switching it on shows a privacy notice (frames, speech, file names and settings
+  go to Anthropic) and only goes on after "I understand, switch on".
+- New tools: export settings and file names (export_settings, set_export_settings), sounds (sound_library,
+  download_sound, add_sound, remove_sounds), speech to text (transcribe, ffmpeg's whisper filter), white balance
+  in set_picture.
+
 0.2.0 (Clip Shrinker 2.8.0-dev)
 - Development version. With the clipshrinker MCP helper set up in Claude Code, Claude connects to the open
   Clip Shrinker window (the header shows "AI agent connected") and works on the clips on the timeline: it looks

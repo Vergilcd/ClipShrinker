@@ -54,6 +54,7 @@ public static class ProjectSave
         {
             var st = (JsonObject)data["settings"]!;
             st["pic_bright"] = s.PicBright; st["pic_contrast"] = s.PicContrast; st["pic_sat"] = s.PicSat; st["pic_denoise"] = s.PicDenoise;
+            if (s.PicTemp != 0 || s.PicTint != 0) { st["pic_temp"] = s.PicTemp; st["pic_tint"] = s.PicTint; }
         }
         if (s.EqChanged)                                     // (Sound equalizer module, 2.6)
         {
