@@ -14,6 +14,10 @@ $Pub = Join-Path $env:TEMP "clipshrinker_publish"
 $dotnet = if (Test-Path "C:\Program Files\dotnet\dotnet.exe") { "C:\Program Files\dotnet\dotnet.exe" } else { "dotnet" }
 
 "Clip Shrinker $Version"
+# the release folder cannot be rebuilt while its exe runs (the old build stopped halfway, with the kept files moved out)
+if (Get-Process ClipShrinker -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($Out, [StringComparison]::OrdinalIgnoreCase) }) {
+    throw "Close ClipShrinker first: it is running from $Out"
+}
 "1. publish (Release, win-x64, single file, self-contained)"
 Remove-Item $Pub -Recurse -Force -ErrorAction SilentlyContinue
 & $dotnet publish "$Root\src\ClipShrinker.App\ClipShrinker.App.csproj" -c Release -r win-x64 -o $Pub -p:DebugType=none --nologo -v q
