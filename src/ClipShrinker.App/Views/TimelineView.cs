@@ -422,6 +422,7 @@ public sealed class TimelineView : Canvas
         if (wasCompact || host.SelectionCount > 1) host.ClickRow(vm, false, false);
         Focus();
         ed.Down(p.X, p.Y, W, wasCompact);
+        Cursor = AppCursors.ForTimeline(ed.DragHover, true);
         CaptureMouse();
         Changed();
         e.Handled = true;
@@ -455,10 +456,11 @@ public sealed class TimelineView : Canvas
         var p = e.GetPosition(this);
         if (ed.Drag == DragKind.None || e.LeftButton != MouseButtonState.Pressed)
         {
-            // a hand over what can be dragged (trim handles, section edges and bars, zooms, overview bar)
-            Cursor = ed.Grabbable(p.X, p.Y, W) ? Cursors.Hand : null;
+            // 2.7.5: the left-right arrow over edges, the hand over section headers and the overview bar
+            Cursor = AppCursors.ForTimeline(ed.Hover(p.X, p.Y, W), false);
             return;
         }
+        Cursor = AppCursors.ForTimeline(ed.DragHover, true);            // (a closed hand while a header is dragged)
         ed.Move(p.X, W);
         Changed();
     }
@@ -474,6 +476,7 @@ public sealed class TimelineView : Canvas
         base.OnMouseLeftButtonUp(e);
         Ed?.Up();
         ReleaseMouseCapture();
+        if (Ed is { } ed) Cursor = AppCursors.ForTimeline(ed.Hover(e.GetPosition(this).X, e.GetPosition(this).Y, W), false);
     }
 
     protected override void OnLostMouseCapture(MouseEventArgs e)

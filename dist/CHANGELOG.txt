@@ -9,6 +9,9 @@ Newest version first.
   on the timeline. They do now. Exports of such clips were not affected.
 - A clip's title bar shows the file name (bold) on one line and the video's data and length after editing
   under it, with the same spacing from the edge on both sides.
+- Mouse pointers: the left-right arrow over the trim handles and the edges of effect sections and sounds,
+  a pointing hand over effect headers, sounds and the effect / sound buttons, and a closed hand while one of
+  them is dragged.
 
 
 2.7.0

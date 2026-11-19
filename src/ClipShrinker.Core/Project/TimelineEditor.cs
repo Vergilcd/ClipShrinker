@@ -5,6 +5,10 @@ namespace ClipShrinker.Core.Project;
 /// <summary>What the mouse is dragging on a timeline.</summary>
 public enum DragKind { None, Play, Start, End, SecA, SecB, SecMove, ZoomA, ZoomB, ZoomMove, Overview }
 
+/// <summary>2.7.5: what is under the mouse, for the pointer: an edge (left-right arrow) or something that moves as a
+/// whole (hand; closed hand while dragged).</summary>
+public enum HoverKind { None, Edge, Move }
+
 /// <summary>
 /// The editing logic of one clip's timeline, without any UI (reference ClipRow lines 2186-3221): trim handles,
 /// playhead, speed and zoom sections, hit-testing, dragging with snapping, timeline zoom / scroll, and the
@@ -483,19 +487,32 @@ public sealed class TimelineEditor
 
     /// <summary>True when a press at (x, y) would grab something rather than move the playhead: a trim handle, a
     /// section edge or bar, a zoom section or the overview bar (the same rules as Down). Used for the hand cursor.</summary>
-    public bool Grabbable(double x, double y, double W)
+    public bool Grabbable(double x, double y, double W) => Hover(x, y, W) != HoverKind.None;
+
+    /// <summary>What a press at x, y would drag (the same order as Down): edges first, then a section's header.</summary>
+    public HoverKind Hover(double x, double y, double W)
     {
-        if (!Active) return false;
-        if (InOverview(y)) return true;
+        if (!Active) return HoverKind.None;
+        if (InOverview(y)) return HoverKind.Move;
         double t = T(x, W);
         bool Near(double tt, double extra = 0) => Math.Abs(x - X(tt, W)) + extra <= HandleGrab;
         if (InZoomLane(y))
-            return VisZ().Any(v => Near(v.A) || Near(v.B) || (v.A <= t && t <= v.B));
+            return VisZ().Any(v => Near(v.A) || Near(v.B)) ? HoverKind.Edge
+                 : VisZ().Any(v => v.A <= t && t <= v.B) ? HoverKind.Move : HoverKind.None;
         bool inLane = InSpeedLane(y);
-        if (Near(Clip.Start, inLane ? 6 : 0) || Near(Clip.End, inLane ? 6 : 0)) return true;
-        if (Vis().Any(v => Near(v.A) || Near(v.B) || (inLane && v.A <= t && t <= v.B))) return true;
-        return VisZ().Any(v => Near(v.A, -0.5) || Near(v.B, -0.5));
+        if (Near(Clip.Start, inLane ? 6 : 0) || Near(Clip.End, inLane ? 6 : 0)) return HoverKind.Edge;
+        if (Vis().Any(v => Near(v.A) || Near(v.B))) return HoverKind.Edge;
+        if (inLane && Vis().Any(v => v.A <= t && t <= v.B)) return HoverKind.Move;
+        return VisZ().Any(v => Near(v.A, -0.5) || Near(v.B, -0.5)) ? HoverKind.Edge : HoverKind.None;
     }
+
+    /// <summary>The pointer kind of the drag in progress.</summary>
+    public HoverKind DragHover => Drag switch
+    {
+        DragKind.Start or DragKind.End or DragKind.SecA or DragKind.SecB or DragKind.ZoomA or DragKind.ZoomB => HoverKind.Edge,
+        DragKind.SecMove or DragKind.ZoomMove or DragKind.Overview => HoverKind.Move,
+        _ => HoverKind.None,
+    };
 
     /// <summary>The bars snap to the yellow line where playback was stopped (not to the bar's own position).</summary>
     void SnapSetup()
