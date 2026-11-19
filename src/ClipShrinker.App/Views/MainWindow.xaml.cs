@@ -425,6 +425,7 @@ public partial class MainWindow : Window, IDialogs
                 ToolTip = $"Click to add {what} at the playhead of the active clip ({key}), or drag it onto a clip's timeline to add it there.",
             };
             System.Windows.Automation.AutomationProperties.SetName(b, name);
+            b.GiveFeedback += AppCursors.OnGiveFeedback;                 // 2.7.5: a closed hand while dragged
             b.PreviewMouseLeftButtonDown += (_, e) => { chipDown = e.GetPosition(this); chipDragged = false; };
             b.PreviewMouseMove += (_, e) =>
             {

@@ -70,6 +70,8 @@ public partial class SoundsPanel : UserControl
         DragDrop.DoDragDrop(List, new DataObject(SoundLaneView.SoundFormat, item.Path), DragDropEffects.Copy);
     }
 
+    void List_GiveFeedback(object sender, GiveFeedbackEventArgs e) => AppCursors.OnGiveFeedback(sender, e);
+
     static Button? FindButton(DependencyObject d)
     {
         for (var p = d; p is not null and not ListBoxItem; p = p is System.Windows.Media.Visual ? System.Windows.Media.VisualTreeHelper.GetParent(p) : LogicalTreeHelper.GetParent(p))

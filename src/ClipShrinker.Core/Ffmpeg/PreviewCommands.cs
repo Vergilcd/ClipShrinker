@@ -8,12 +8,16 @@ public static class PreviewCommands
     /// <summary>Executable name or path used as argv[0]. The app sets this to library\ffmpeg.exe.</summary>
     public static string Ffmpeg { get; set; } = "ffmpeg";
 
+    /// <summary>2.7.5: the tone map (zscale) needs an even width and height. A clip like the PS5's 1920x1088 shrinks to
+    /// an odd thumbnail height (127x71), and every HDR thumbnail failed.</summary>
+    const string Even = ":force_divisible_by=2";
+
     /// <summary>One frame as PNG on stdout, optionally center-cropped and tone-mapped.</summary>
     public static List<string> GrabFrame(string path, double t, int w, int h, (int W, int H)? crop = null, string? trc = null,
                                          string? picture = null)
     {
         string vf = (crop is { } c ? $"crop={I(c.W)}:{I(c.H)}," : "") +
-                    $"scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease" + (trc is not null ? "," + Geometry.TonemapChain(trc) : "")
+                    $"scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease" + (trc is not null ? Even + "," + Geometry.TonemapChain(trc) : "")
                     + (picture is not null ? "," + picture : "");
         return [Ffmpeg, "-v", "error", .. Modules.PictureAdjust.HwArgs([picture]), "-ss", F(t, 3), "-i", path, "-frames:v", "1",
                 "-vf", vf, "-f", "image2pipe", "-vcodec", "png", "-"];
@@ -29,7 +33,7 @@ public static class PreviewCommands
         {
             cmd.AddRange(["-noaccurate_seek", "-ss", F(batch[i], 3), "-t", "2", "-i", path]);
             string vf = $"trim=end_frame=1,setpts=PTS-STARTPTS,scale={I(w)}:{I(h)}:force_original_aspect_ratio=decrease";
-            if (trc is not null) vf += "," + Geometry.TonemapChain(trc);
+            if (trc is not null) vf += Even + "," + Geometry.TonemapChain(trc);
             parts.Add($"[{I(i)}:v:0]{vf},format=rgb24[v{I(i)}]");
             labs.Add($"[v{I(i)}]");
         }

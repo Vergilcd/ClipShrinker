@@ -4,6 +4,16 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.7.5
+- HDR clips whose height does not shrink evenly (like PS5 recordings, 1920x1088 .webm) showed no thumbnails
+  on the timeline. They do now. Exports of such clips were not affected.
+- A clip's title bar shows the file name (bold) on one line and the video's data and length after editing
+  under it, with the same spacing from the edge on both sides.
+- Mouse pointers: the left-right arrow over the trim handles and the edges of effect sections and sounds,
+  a pointing hand over effect headers, sounds and the effect / sound buttons, and a closed hand while one of
+  them is dragged.
+
+
 2.7.0
 - New module "Sound track": put your own sound files on a Sounds lane under each clip's timeline. Drop sound
   files on the lane, or open the new "Sounds" list (next to Transition): its green sounds, each with its

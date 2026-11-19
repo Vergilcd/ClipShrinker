@@ -204,9 +204,21 @@ public class PreviewTests
     public void EffectSampleCommand() => Each("effect_sample_cmd", (a, fx) =>
         [PreviewCommands.EffectSample(a[0].GetString()!, a[1].Str(), a[2].Num(), a[3].GetString()!, fx, a[4].Int())]);
 
+    /// <summary>2.7.5 deviates from 1.0.8 on purpose: HDR thumbnails get an even size before the tone map (1.0.8 failed
+    /// on clips like 1920x1088). The fixtures are compared without that suffix; HdrThumbsAreEven checks it.</summary>
+    static List<string> WithoutEvenSize(List<string> cmd) => cmd.Select(x => x.Replace(":force_divisible_by=2", "")).ToList();
+
     [Fact]
     public void GrabFrameCommand() => Each("grab_frame", (a, _) =>
-        [PreviewCommands.GrabFrame(a[0].GetString()!, a[1].Num(), a[2].Int(), a[3].Int(), a[4].Size(), a[5].Str())], "commands");
+        [WithoutEvenSize(PreviewCommands.GrabFrame(a[0].GetString()!, a[1].Num(), a[2].Int(), a[3].Int(), a[4].Size(), a[5].Str()))], "commands");
+
+    [Fact]
+    public void HdrThumbsAreEven()
+    {
+        Assert.Contains("decrease:force_divisible_by=2,zscale", string.Join(" ", PreviewCommands.GrabFrame("a.webm", 1, 127, 72, null, "smpte2084")));
+        Assert.Contains("decrease:force_divisible_by=2,zscale", string.Join(" ", PreviewCommands.GrabFramesBatch("a.webm", [1, 2], 127, 72, "smpte2084")));
+        Assert.DoesNotContain("force_divisible_by", string.Join(" ", PreviewCommands.GrabFramesBatch("a.mp4", [1, 2], 127, 72)));
+    }
 
     [Fact]
     public void GrabFramesCommands() => Each("grab_frames", (a, _) =>
@@ -217,8 +229,8 @@ public class PreviewTests
         for (int b0 = 0; b0 < times.Count; b0 += C.ThumbBatch)
         {
             var batch = times.Skip(b0).Take(C.ThumbBatch).ToList();
-            cmds.Add(PreviewCommands.GrabFramesBatch(a[0].GetString()!, batch, a[2].Int(), a[3].Int(), a[4].Str()));
-            cmds.AddRange(batch.Select(t => PreviewCommands.GrabFrame(a[0].GetString()!, t, a[2].Int(), a[3].Int(), null, a[4].Str())));
+            cmds.Add(WithoutEvenSize(PreviewCommands.GrabFramesBatch(a[0].GetString()!, batch, a[2].Int(), a[3].Int(), a[4].Str())));
+            cmds.AddRange(batch.Select(t => WithoutEvenSize(PreviewCommands.GrabFrame(a[0].GetString()!, t, a[2].Int(), a[3].Int(), null, a[4].Str()))));
         }
         return cmds;
     }, "commands");

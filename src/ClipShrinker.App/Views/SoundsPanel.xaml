@@ -50,7 +50,7 @@
             <ListBox x:Name="List" ItemsSource="{Binding SoundLibrary}" SelectedItem="{Binding CurrentLibrarySound}" MaxHeight="{Binding SoundListHeight}"
                      AutomationProperties.Name="Sound library" MouseDoubleClick="List_DoubleClick" Background="Transparent" BorderThickness="0"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" Padding="0"
-                     PreviewMouseLeftButtonDown="List_MouseDown" PreviewMouseMove="List_MouseMove">
+                     PreviewMouseLeftButtonDown="List_MouseDown" PreviewMouseMove="List_MouseMove" GiveFeedback="List_GiveFeedback">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="Margin" Value="0,0,0,6" />

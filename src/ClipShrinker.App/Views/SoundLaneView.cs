@@ -158,6 +158,7 @@ public sealed class SoundLaneView : FrameworkElement
         if (b is not null)
         {
             (grab, dragBlock, downX, origAt, origIn, origLen, pushed) = (gr, b, e.GetPosition(this).X, b.At, b.In, b.Len, false);
+            if (gr == Grab.Move) Cursor = AppCursors.Grabbing;           // 2.7.5: a closed hand while a sound moves
             CaptureMouse();
         }
         vm.NotifyChanged();
@@ -201,6 +202,7 @@ public sealed class SoundLaneView : FrameworkElement
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
     {
         base.OnMouseLeftButtonUp(e);
+        if (grab == Grab.Move) Cursor = Cursors.Hand;
         dragBlock = null;
         ReleaseMouseCapture();
     }
