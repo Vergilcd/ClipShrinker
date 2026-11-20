@@ -1,6 +1,10 @@
 AI EDITING - CHANGELOG
 ======================
 
+0.7.0 (Clip Shrinker 2.9.0)
+- add_section can add a pause (kind "pause", from = the frame that stays, length = seconds); clear_sections
+  can remove only pauses. Clip info lists pauses, and a sound's end time now follows speed sections and pauses.
+
 0.6.0 (Clip Shrinker 2.8.0-beta3)
 - New tool "guide": step-by-step guides Claude reads before a bigger job. The first one, "subtitles", is how to
   make an .srt file: short transcribe windows, dropping made-up lines, checking words against the game's

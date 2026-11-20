@@ -32,6 +32,12 @@ public sealed class TimelineClip(string path, MediaInfo info)
             ? c with { Sounds = u } : c;
     }
 
+    /// <summary>2.9: the trimmed part in speed / pause pieces as the export plays it (1x outside the trim).</summary>
+    public IReadOnlyList<Piece> TimePieces() => ToExport().GetPieces();
+
+    /// <summary>2.9: where a sound ends in clip (source) time, following the speed sections and pauses under it.</summary>
+    public double SoundEnd(SoundBlock b) => Core.Sounds.SrcEnd(b, TimePieces());
+
     /// <summary>The bitrate preset the export uses (none while the Bitrate presets module is off).</summary>
     public string? ActivePreset => Modules.Features.BitratePresets ? Preset : null;
 }
@@ -127,7 +133,7 @@ public static class ProjectFile
             foreach (var sd in Iter(c, "sections"))
             {
                 double sa = Float(Item(sd, "a")), sb = Float(Item(sd, "b"));
-                double sp = Text.ClampSpeed(Float(Item(sd, "speed")));
+                double sp0 = Float(Item(sd, "speed")), sp = sp0 == 0 ? 0 : Text.ClampSpeed(sp0);   // (2.9: speed 0 = a pause)
                 if (0 <= sa && sa < sb && sb <= dur + 0.01) row.Sections.Add(new SpeedSection(sa, Py.Py.Min(sb, dur), sp));
             }
             foreach (var zd in Iter(c, "zooms"))

@@ -17,7 +17,7 @@ namespace ClipShrinker.App.Views;
 /// </summary>
 public sealed class TimelineView : Canvas
 {
-    /// <summary>Drag-and-drop data of an effect button under the preview: "speed", "slow" or "zoom".</summary>
+    /// <summary>Drag-and-drop data of an effect button under the preview: "speed", "slow", "pause" or "zoom".</summary>
     public const string EffectFormat = "ClipShrinker.Effect";
     double? dropX;                                             // an effect button is dragged over this timeline
     ClipItemViewModel? vm;
@@ -147,7 +147,8 @@ public sealed class TimelineView : Canvas
             double ca = Cl(xa), cb = Cl(xb);
             bool on = ReferenceEquals(sec, ed.Sel);
             bool slow = sec.Speed < 1;
-            string[] col = slow ? (on ? ["#FBCFE8", "#F472B6", "#FDF2F8", "#FCE7F3"] : ["#EC4899", "#EC4899", "#DB2777", "#F9A8D4"])
+            string[] col = sec.IsPause ? (on ? ["#FED7AA", "#FB923C", "#FFF7ED", "#FFEDD5"] : ["#F97316", "#F97316", "#EA580C", "#FDBA74"])
+                         : slow ? (on ? ["#FBCFE8", "#F472B6", "#FDF2F8", "#FCE7F3"] : ["#EC4899", "#EC4899", "#DB2777", "#F9A8D4"])
                                 : (on ? ["#5EEAD4", "#22D3EE", "#ECFEFF", "#CFFAFE"] : ["#3B82F6", "#3B82F6", "#2563EB", "#93C5FD"]);
             dc.DrawRectangle(Alpha(col[0], on ? 0.5 : 0.25), null, R(ca, y0, cb, y1));
             foreach (double xx in new[] { xa, xb })
@@ -322,8 +323,9 @@ public sealed class TimelineView : Canvas
         {
             Width = 54, Height = 20, MinHeight = 0, MinWidth = 0, Padding = new Thickness(0), FontSize = 12, FontWeight = FontWeights.Bold,
             TextAlignment = TextAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, BorderThickness = new Thickness(1),
-            Template = PlainBoxTemplate(), Text = TimelineEditor.SpeedText(sec.Speed),
-            ToolTip = "Speed of this section: 2 = twice as fast, 0.5 = half speed (0.1 - 100). Enter confirms.",
+            Template = PlainBoxTemplate(), Text = TimelineEditor.SectionText(sec),
+            ToolTip = sec.IsPause ? "Length of this pause in seconds (the picture stops on this frame, then the clip goes on). Enter confirms."
+                                  : "Speed of this section: 2 = twice as fast, 0.5 = half speed (0.1 - 100). Enter confirms.",
         };
         b.GotKeyboardFocus += (_, _) =>
         {
@@ -338,7 +340,7 @@ public sealed class TimelineView : Canvas
         {
             if (Ed is null) return;
             if (e.Key == Key.Enter) { b.Text = Ed.CommitSpeedText(sec, b.Text); Focus(); Changed(); e.Handled = true; }
-            else if (e.Key == Key.Escape) { b.Text = TimelineEditor.SpeedText(sec.Speed); Focus(); e.Handled = true; }
+            else if (e.Key == Key.Escape) { b.Text = TimelineEditor.SectionText(sec); Focus(); e.Handled = true; }
         };
         b.LostKeyboardFocus += (_, _) => { if (Ed is not null) { b.Text = Ed.CommitSpeedText(sec, b.Text); Changed(); } };
         speedBoxes[sec] = b;
@@ -367,10 +369,11 @@ public sealed class TimelineView : Canvas
             double ca = Math.Min(Math.Max(xa, Lx), Rx), cb = Math.Min(Math.Max(xb, Lx), Rx);
             var box = SpeedBox(sec);
             bool slow = sec.Speed < 1;
-            box.Background = Frozen(slow ? "#FFE0EF" : "#DFF0FF");
-            box.Foreground = box.CaretBrush = Frozen(slow ? "#4A0B2A" : "#0B2A4A");
-            box.BorderBrush = Frozen(slow ? "#4A0B2A" : "#0B2A4A");
-            if (!box.IsKeyboardFocusWithin) box.Text = TimelineEditor.SpeedText(sec.Speed);
+            string bg = sec.IsPause ? "#FFEDD5" : slow ? "#FFE0EF" : "#DFF0FF", fg = sec.IsPause ? "#4A1D0B" : slow ? "#4A0B2A" : "#0B2A4A";
+            box.Background = Frozen(bg);
+            box.Foreground = box.CaretBrush = Frozen(fg);
+            box.BorderBrush = Frozen(fg);
+            if (!box.IsKeyboardFocusWithin) box.Text = TimelineEditor.SectionText(sec);
             double cx = Math.Min(Math.Max((ca + cb) / 2, ed.Pad + 30), Math.Max(ed.Pad + 30, W0 - ed.Pad - 30));
             if (ed.Overlay)                                  // the short 2.0 header: a smaller box
             {

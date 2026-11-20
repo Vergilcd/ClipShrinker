@@ -88,6 +88,12 @@ public static class Filters
         List<string> One(Piece p, string i, string o, int j)
         {
             var (a, b, sp) = p;
+            if (p.IsHold)                                   // 2.9 pause: the frame at a, repeated for Hold seconds
+            {
+                string fr = PyFraction.Ratio(fps is { } f0 && f0 > 0 ? f0 : 30.0);
+                return [$"[{i}]trim=start={F(a - tBase, 4)}:end={F(a - tBase + 0.5, 4)},setpts=PTS-STARTPTS,fps={fr}," +
+                        $"trim=end_frame=1,loop=loop=-1:size=1,setpts=N/({fr}*TB),trim=duration={F(p.Hold, 4)}[{o}]"];
+            }
             if (rife is { Count: > 0 } && rife.TryGetValue(j, out var r))
             {
                 string sc = size is { } s && (r.W, r.H) != s ? $",scale={I(s.W)}:{I(s.H)}:flags=lanczos,setsar=1" : "";
@@ -165,6 +171,9 @@ public static class Filters
         List<string> One(Piece p, string i, string o)
         {
             var (a, b, sp) = p;
+            if (p.IsHold)                                   // 2.9 pause: silence as long as the pause
+                return [$"[{i}]atrim=start={F(a - tBase, 4)}:end={F(a - tBase + 0.1, 4)},asetpts=PTS-STARTPTS,volume=0," +
+                        $"apad=whole_dur={F(p.Hold, 4)},atrim=duration={F(p.Hold, 4)}[{o}]"];
             var f = new List<string> { $"atrim=start={F(a - tBase, 4)}:end={F(b - tBase, 4)}", "asetpts=PTS-STARTPTS" };
             bool changed = Math.Abs(sp - 1.0) > 1e-6;
             if (changed)

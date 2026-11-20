@@ -64,6 +64,7 @@ public static partial class AgentTools
         minute; at most 48 frames per sheet, so use larger steps or several sheets for long clips), and moments for loud
         peaks (gunshots, explosions) and scene changes; 2) frames around the candidate (every 0.25-0.5 s) to find the
         exact time; 3) set_trim / add_section, with the padding the user asks for (a few seconds = about 3 s).
+        A pause (add_section kind "pause") freezes the picture on one frame for a length while added sounds play on.
         Export only when the user asks for it (export uses the app's export settings); otherwise tell them to check the
         result on the timeline (or open the project in Clip Shrinker with Ctrl+O).
         Settings: export_settings shows the export settings, the file name rules and the name the next export gets;
@@ -125,15 +126,20 @@ public static partial class AgentTools
              Schema(("clip", "integer", "Clip number", true), ("max", "integer", "How many (default 12)", false))),
         Tool("set_trim", "Set the part of the clip that is kept (start and end in seconds). Sections outside it are removed.",
              Schema(("clip", "integer", "Clip number", true), ("start", "number", "Start in seconds", true), ("end", "number", "End in seconds", true))),
-        Tool("add_section", "Add a speed section (speed: 2 = twice as fast, 0.5 = half speed, 0.1 to 100) or a zoom section " +
-             "(x, y = top-left corner and w = width of the zoomed area, as fractions of the frame; default the middle half). " +
-             "It must lie inside the trim and not overlap another section of its kind.",
-             Schema(("clip", "integer", "Clip number", true), ("kind", "string", "\"speed\" or \"zoom\"", true),
-                    ("from", "number", "Start in seconds", true), ("to", "number", "End in seconds", true),
+        Tool("add_section", "Add a speed section (speed: 2 = twice as fast, 0.5 = half speed, 0.1 to 100), a pause (the " +
+             "picture stops on the frame at 'from' for 'length' seconds while added sounds play on, the clip's own sound is " +
+             "silent; then the clip goes on from there, nothing is cut) or a zoom section (x, y = top-left corner and w = " +
+             "width of the zoomed area, as fractions of the frame; default the middle half). It must lie inside the trim and " +
+             "not overlap another section of its kind (speed sections and pauses share one lane: a pause takes from .. " +
+             "from + length there).",
+             Schema(("clip", "integer", "Clip number", true), ("kind", "string", "\"speed\", \"pause\" or \"zoom\"", true),
+                    ("from", "number", "Start in seconds (pause: the frame that stays on screen)", true),
+                    ("to", "number", "End in seconds (speed and zoom)", false),
+                    ("length", "number", "For pause: seconds the picture stops (0.2 or more)", false),
                     ("speed", "number", "For kind speed", false), ("x", "number", "For zoom (0..1)", false),
                     ("y", "number", "For zoom (0..1)", false), ("w", "number", "For zoom (0.1..1)", false))),
-        Tool("clear_sections", "Remove a clip's speed and / or zoom sections.",
-             Schema(("clip", "integer", "Clip number", true), ("kind", "string", "\"speed\", \"zoom\" or \"all\" (default)", false))),
+        Tool("clear_sections", "Remove a clip's speed sections, pauses and / or zoom sections.",
+             Schema(("clip", "integer", "Clip number", true), ("kind", "string", "\"speed\", \"pause\", \"zoom\" or \"all\" (default)", false))),
         Tool("remove_clip", "Take a clip off the list (the video file is not touched).",
              Schema(("clip", "integer", "Clip number", true))),
         Tool("picture_stats", "Brightness and colour of a clip (luma 0-255: mean, darkest 5 %, brightest 5 %; saturation 0-1), " +
@@ -235,20 +241,23 @@ public static partial class AgentTools
         var r = clips[i];
         return $"Clip {i + 1}: {Path.GetFileName(r.Path)} - {r.Info.W}x{r.Info.H}, {r.Info.Fps:0.##} fps, {r.Info.Dur:0.##} s" +
                (r.Info.Trc is not null ? ", HDR" : "") + (r.Info.NAudio == 0 ? ", no sound" : "") +
-               $"; kept {r.Start:0.##}-{r.End:0.##} s, {r.Sections.Count} speed / {r.Zooms.Count} zoom section(s)";
+               $"; kept {r.Start:0.##}-{r.End:0.##} s, {r.Sections.Count(x => !x.IsPause)} speed / {r.Zooms.Count} zoom section(s)" +
+               (r.Sections.Any(x => x.IsPause) ? $", {r.Sections.Count(x => x.IsPause)} pause(s)" : "");
     }
 
     static string Info(IAgentHost h, TimelineClip r)
     {
         var clips = h.Clips;
         var sb = new StringBuilder(Summary(clips, clips.ToList().IndexOf(r)) + "\n");
-        foreach (var s in r.Sections.OrderBy(s => s.A)) sb.AppendLine($"  speed x{s.Speed:0.##}: {s.A:0.##}-{s.B:0.##} s");
+        foreach (var s in r.Sections.OrderBy(s => s.A))
+            sb.AppendLine(s.IsPause ? $"  pause {s.B - s.A:0.##} s at {s.A:0.##} s (the picture stops, then goes on from there)"
+                                    : $"  speed x{s.Speed:0.##}: {s.A:0.##}-{s.B:0.##} s");
         foreach (var z in r.Zooms.OrderBy(z => z.A)) sb.AppendLine($"  zoom: {z.A:0.##}-{z.B:0.##} s, area x {z.X:0.##} y {z.Y:0.##} w {z.W:0.##}");
         double outLen = Timing.Duration(r.ToExport().Pieces is { Count: > 0 } p ? p : [new Piece(r.Start, r.End, 1)]);
         sb.AppendLine($"  length after editing: {outLen:0.##} s");
         var st = h.State;
         foreach (var (b, i) in r.Sounds.OrderBy(b => b.At).Select((b, i) => (b, i)))
-            sb.AppendLine($"  sound {i + 1}: {b.Name} at {b.At:0.##}-{b.End:0.##} s" + (b.In > 0 ? $" (from {b.In:0.##} s of the file)" : "") +
+            sb.AppendLine($"  sound {i + 1}: {b.Name} at {b.At:0.##}-{r.SoundEnd(b):0.##} s" + (b.In > 0 ? $" (from {b.In:0.##} s of the file)" : "") +
                           (b.VolumeDb != 0 ? $", {b.VolumeDb:+0;-0} dB" : "") + (b.Fade > 0 ? $", fade {b.Fade:0.##} s" : ""));
         sb.Append($"  picture (all clips): {PicText(st)}");
         return sb.ToString();
@@ -360,14 +369,27 @@ public static partial class AgentTools
         var r = ClipArg(h, a);
         string kind = Str(a, "kind").ToLowerInvariant();
         double from = Math.Max(r.Start, Num(a, "from") ?? throw new AgentToolError("from is required"));
-        double to = Math.Min(r.End, Num(a, "to") ?? throw new AgentToolError("to is required"));
+        double to0 = kind == "pause"
+            ? from + (Num(a, "length") ?? throw new AgentToolError("length is required for a pause"))
+            : Num(a, "to") ?? throw new AgentToolError("to is required");
+        double to = Math.Min(r.End, to0);
+        if (kind == "pause" && to < to0 - 0.001)
+            throw new AgentToolError($"A pause of {to0 - from:0.##} s at {from:0.##} s does not fit before the trim end ({r.End:0.##} s): " +
+                                     "the pause takes from .. from + length on the timeline. Use a shorter pause or move the trim end.");
         if (to - from < C.MinSection) throw new AgentToolError($"The section must be at least {C.MinSection} s long and inside the trim ({r.Start:0.##}-{r.End:0.##} s).");
-        if (kind == "speed")
+        if (kind == "pause")
+        {
+            if (r.Sections.FirstOrDefault(x => x.A < to - 0.001 && from < x.B - 0.001) is { } o)
+                throw new AgentToolError($"It overlaps the {(o.IsPause ? "pause" : "speed section")} {o.A:0.##}-{o.B:0.##} s " +
+                                         "(pauses and speed sections share a lane). Remove or shorten that first (clear_sections).");
+            h.Edit("pause", () => r.Sections.Add(new SpeedSection(from, to, 0)));
+        }
+        else if (kind == "speed")
         {
             double sp = Num(a, "speed") ?? throw new AgentToolError("speed is required for a speed section");
             if (sp < C.SpeedMin || sp > C.SpeedMax || Math.Abs(sp - 1) < 1e-6) throw new AgentToolError("speed must be 0.1 to 100 and not 1.");
             if (r.Sections.FirstOrDefault(x => x.A < to - 0.001 && from < x.B - 0.001) is { } o)
-                throw new AgentToolError($"It overlaps the speed section {o.A:0.##}-{o.B:0.##} s. Remove or shorten that first (clear_sections).");
+                throw new AgentToolError($"It overlaps the {(o.IsPause ? "pause" : "speed section")} {o.A:0.##}-{o.B:0.##} s. Remove or shorten that first (clear_sections).");
             h.Edit("speed section", () => r.Sections.Add(new SpeedSection(from, to, sp)));
         }
         else if (kind == "zoom")
@@ -378,7 +400,7 @@ public static partial class AgentTools
                 throw new AgentToolError($"It overlaps the zoom section {o.A:0.##}-{o.B:0.##} s.");
             h.Edit("zoom section", () => r.Zooms.Add(new ZoomSection(from, to, x, y, w)));
         }
-        else throw new AgentToolError("kind must be \"speed\" or \"zoom\".");
+        else throw new AgentToolError("kind must be \"speed\", \"pause\" or \"zoom\".");
         return Content([Text(Saved(h) + Info(h, r))]);
     }
 
@@ -388,7 +410,9 @@ public static partial class AgentTools
         string kind = a["kind"] is JsonValue v && v.TryGetValue(out string? k) ? k.ToLowerInvariant() : "all";
         h.Edit("remove sections", () =>
         {
-            if (kind is "speed" or "all") r.Sections.Clear();
+            if (kind is "all") r.Sections.Clear();
+            else if (kind is "speed") r.Sections.RemoveAll(x => !x.IsPause);
+            else if (kind is "pause") r.Sections.RemoveAll(x => x.IsPause);
             if (kind is "zoom" or "all") r.Zooms.Clear();
         });
         return Content([Text(Saved(h) + Info(h, r))]);

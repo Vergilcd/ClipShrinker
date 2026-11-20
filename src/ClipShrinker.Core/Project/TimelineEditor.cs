@@ -286,25 +286,28 @@ public sealed class TimelineEditor
         return free.Count > 0 ? free[0] : null;
     }
 
-    /// <summary>Hotkey S / D: a new speed section (D: slow motion) at the playhead or in the next free gap.</summary>
+    /// <summary>Hotkey S / D / P: a new speed section (D: slow motion, P: a pause = speed 0) at the playhead or in the
+    /// next free gap.</summary>
     public SpeedSection? AddSection(double speed = 2.0)
     {
         if (!Modules.Features.TimelineEffects) return null;
+        bool pause = speed == 0;
         if (FreeGap(Vis().Select(v => (v.A, v.B))) is not { } gap)
         {
-            Status("No free space for a speed section - trim handles / other sections are in the way");
+            Status($"No free space for a {(pause ? "pause" : "speed section")} - trim handles / other sections are in the way");
             return null;
         }
         var (g0, g1) = gap;
-        double length = Min(Max(1.0, 0.1 * Min(Clip.End - Clip.Start, ViewLen)), g1 - g0);
+        double length = Min(pause ? 1.0 : Max(1.0, 0.1 * Min(Clip.End - Clip.Start, ViewLen)), g1 - g0);
         var sec = new SpeedSection(g0, g0 + length, speed);
-        PushUndo("add speed section");
+        PushUndo(pause ? "add pause" : "add speed section");
         Clip.Sections.Add(sec);
         Sel = sec;
         ZSel = null;
         Playhead = sec.A;
         PreviewRequested(Playhead);
-        Status(speed < 1 ? "Slow-motion section added - type a multiplier in the pink box (e.g. 0.25 = four times slower)"
+        Status(pause ? "Pause added - the picture stops here; type its length in seconds in the orange box (e.g. 1.5)"
+             : speed < 1 ? "Slow-motion section added - type a multiplier in the pink box (e.g. 0.25 = four times slower)"
                          : "Speed section added - type a multiplier in the blue box (e.g. 4 = four times faster)");
         return sec;
     }
@@ -351,9 +354,26 @@ public sealed class TimelineEditor
     /// <summary>"4x" etc. as the speed box shows it.</summary>
     public static string SpeedText(double speed) => G(speed) + "x";
 
-    /// <summary>A multiplier typed into a speed box; invalid text keeps the old value. Returns the new box text.</summary>
+    /// <summary>What a section's box shows: "4x" for speed, "1.5s" for a pause (2.9).</summary>
+    public static string SectionText(SpeedSection sec) => sec.IsPause ? G(Math.Round(sec.B - sec.A, 2)) + "s" : SpeedText(sec.Speed);
+
+    /// <summary>A multiplier typed into a speed box (a length in seconds for a pause); invalid text keeps the old value.
+    /// Returns the new box text.</summary>
     public string CommitSpeedText(SpeedSection sec, string text)
     {
+        if (sec.IsPause)
+        {
+            string lt = text.Trim().ToLowerInvariant().Replace(",", ".").TrimEnd('s', ' ');
+            if (ParseFloat(lt) is { } len && len > 0)
+            {
+                var (_, nextA) = Neighbors(sec);
+                double b = Min(sec.A + Max(len, C.MinSection), nextA);
+                if (b - sec.A < len - 1e-3) Status($"The pause can be at most {G(Math.Round(nextA - sec.A, 2))} s here - the next section or the trim end is in the way");
+                if (Math.Abs(b - sec.B) > 1e-9) PushUndo("pause length");
+                sec.B = b;
+            }
+            return SectionText(sec);
+        }
         string txt = text.Trim().ToLowerInvariant().Replace(",", ".").Replace("×", "").Replace("x", "").Trim();
         if (ParseFloat(txt) is { } v && v > 0)
         {

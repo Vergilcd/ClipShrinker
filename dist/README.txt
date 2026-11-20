@@ -1,5 +1,5 @@
-CLIP SHRINKER 2.8.0-beta3
-=========================
+CLIP SHRINKER 2.9.0
+===================
 
 GETTING STARTED
 Double-click ClipShrinker.exe. Keep the "library" and "modules" folders next to it: library holds ffmpeg,

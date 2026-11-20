@@ -18,6 +18,8 @@ public sealed class SoundBlock
     public double Fade { get; set; }
 
     public string Name => System.IO.Path.GetFileName(Path);
+    /// <summary>At + Len: where the sound ends only while no speed section or pause lies under it. The timeline and
+    /// the agent use TimelineClip.SoundEnd (2.9), which follows them.</summary>
     public double End => At + Len;
 
     public SoundBlock Clone() => new() { Path = Path, At = At, In = In, Len = Len, FileDur = FileDur, VolumeDb = VolumeDb, Fade = Fade };
@@ -36,6 +38,15 @@ public static class Sounds
 
     public static int ClampVolume(int v) => Math.Max(-VolumeMax, Math.Min(VolumeMax, v));
     public static double ClampFade(double f, double len) => Math.Max(0, Math.Min(f, Math.Min(5, len / 2)));
+
+    /// <summary>2.9: where a sound ends in clip (source) time. It plays Len real seconds from At, so a slow-motion
+    /// section under it makes it end sooner in source time, a speed-up later, a pause sooner.</summary>
+    public static double SrcEnd(SoundBlock b, IReadOnlyList<Piece> pieces) =>
+        Timing.OutToSrcX(pieces, Timing.SrcToOutX(pieces, b.At) + b.Len);
+
+    /// <summary>2.9: the real length a sound gets when its end is dragged to source time endSrc.</summary>
+    public static double LenTo(double at, double endSrc, IReadOnlyList<Piece> pieces) =>
+        Timing.SrcToOutX(pieces, endSrc) - Timing.SrcToOutX(pieces, at);
 
     /// <summary>The blocks of a clip trimmed to start..end and placed in its edited time (pieces = its speed sections).
     /// A sound that starts before the trim start plays from the matching point; one that runs past the end is cut.</summary>

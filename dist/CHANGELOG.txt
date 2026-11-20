@@ -4,6 +4,19 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.9.0
+- New: Pause (orange, P). The picture stops on one frame for as long as you like, then the clip goes on from
+  that frame, so nothing is cut and the clip gets longer by the pause. The clip's own sound is silent during
+  the pause; sounds you added on the Sounds lane keep playing over it, which is good for a freeze on an
+  impact. Add it with the Pause button under the preview (click or drag it onto a timeline) or P. The orange
+  bar is as wide as the pause: drag its edges or type the length in seconds in its box. It shares the lane
+  with speed sections, plays in the preview and is saved with projects.
+- Fix: a sound on the Sounds lane over a speed section was drawn at the wrong length. Sounds always play at
+  their own speed, so over slow motion the bar now ends sooner, over a speed-up later, and at a pause it
+  ends on the paused frame. Dragging its ends follows the same rule. What you hear was right already.
+- Also in this version: everything from the 2.8.0 test releases below (white balance, AI editing as an
+  optional module with speech to text and the subtitles guide).
+
 2.8.0-beta3 (test release)
 - AI editing: subtitles. Ask Claude for subtitles and it follows a step-by-step guide that comes with AI editing
   0.6.0: speech is turned into text in short parts, made-up lines are left out, doubtful words are checked

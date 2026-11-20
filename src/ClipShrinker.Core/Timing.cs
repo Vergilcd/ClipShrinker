@@ -5,7 +5,8 @@ namespace ClipShrinker.Core;
 /// <summary>Speed pieces and zoom timing (reference lines 631-718).</summary>
 public static class Timing
 {
-    /// <summary>Splits [start, end] into pieces that follow the speed sections (1x elsewhere).</summary>
+    /// <summary>Splits [start, end] into pieces that follow the speed sections (1x elsewhere). 2.9: a pause section
+    /// gives a hold piece at its start (as long as the section, cut at the trim end); the clip then goes on from there.</summary>
     public static IReadOnlyList<Piece> BuildPieces(double start, double end, IEnumerable<SpeedSection> sections)
     {
         var secs = sections.Where(x => x.B > start && x.A < end)
@@ -18,6 +19,12 @@ public static class Timing
             double a = Max(a0, pos);
             if (b - a < 0.02) continue;
             if (a - pos > 0.001) pieces.Add(new Piece(pos, a, 1.0));
+            if (sp == 0)
+            {
+                pieces.Add(new Piece(a, a, 1.0, b - a));
+                pos = a;
+                continue;
+            }
             pieces.Add(new Piece(a, b, sp));
             pos = b;
         }
@@ -25,19 +32,19 @@ public static class Timing
         return pieces.Count > 0 ? pieces : [new Piece(start, end, 1.0)];
     }
 
-    public static double Duration(IEnumerable<Piece> pieces) => Sum(pieces.Select(p => (p.B - p.A) / p.Speed));
+    public static double Duration(IEnumerable<Piece> pieces) => Sum(pieces.Select(p => p.OutLen));
 
     public static bool IsPlain(IReadOnlyList<Piece>? pieces) =>
-        pieces is null || pieces.Count == 0 || (pieces.Count == 1 && Math.Abs(pieces[0].Speed - 1.0) < 1e-6);
+        pieces is null || pieces.Count == 0 || (pieces.Count == 1 && Math.Abs(pieces[0].Speed - 1.0) < 1e-6 && !pieces[0].IsHold);
 
     /// <summary>Time in the edited output -> time in the source clip.</summary>
     public static double OutToSrc(IReadOnlyList<Piece> pieces, double tOut)
     {
         double acc = 0.0;
-        foreach (var (a, b, sp) in pieces)
+        foreach (var p in pieces)
         {
-            double d = (b - a) / sp;
-            if (tOut < acc + d) return a + (tOut - acc) * sp;
+            double d = p.OutLen;
+            if (tOut < acc + d) return p.IsHold ? p.A : p.A + (tOut - acc) * p.Speed;   // (a pause shows its one frame)
             acc += d;
         }
         return pieces[^1].B;
@@ -47,13 +54,25 @@ public static class Timing
     public static double SrcToOut(IReadOnlyList<Piece> pieces, double t)
     {
         double acc = 0.0;
-        foreach (var (a, b, sp) in pieces)
+        foreach (var p in pieces)
         {
-            if (t <= a) return acc;
-            if (t < b) return acc + (t - a) / sp;
-            acc += (b - a) / sp;
+            if (t <= p.A) return acc;                        // (a time at a pause = the start of the pause)
+            if (t < p.B) return acc + (t - p.A) / p.Speed;
+            acc += p.OutLen;
         }
         return acc;
+    }
+
+    /// <summary>2.9: SrcToOut that also works outside the pieces (1x before and after them, as the export treats the
+    /// trimmed-away parts): before the first piece the result is negative.</summary>
+    public static double SrcToOutX(IReadOnlyList<Piece> pieces, double t) =>
+        t < pieces[0].A ? t - pieces[0].A : t > pieces[^1].B ? Duration(pieces) + (t - pieces[^1].B) : SrcToOut(pieces, t);
+
+    /// <summary>2.9: OutToSrc that also works outside the pieces (see SrcToOutX).</summary>
+    public static double OutToSrcX(IReadOnlyList<Piece> pieces, double tOut)
+    {
+        double tot = Duration(pieces);
+        return tOut < 0 ? pieces[0].A + tOut : tOut >= tot ? pieces[^1].B + (tOut - tot) : OutToSrc(pieces, tOut);
     }
 
     /// <summary>[(out_start, out_end, zoom)] of the zoom sections.</summary>

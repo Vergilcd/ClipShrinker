@@ -1,7 +1,14 @@
 namespace ClipShrinker.Core;
 
-/// <summary>A stretch of source time [A, B] played at Speed.</summary>
-public readonly record struct Piece(double A, double B, double Speed);
+/// <summary>A stretch of source time [A, B] played at Speed. 2.9: Hold &gt; 0 = a pause piece (A == B): the frame at A
+/// stays on screen for Hold seconds and the clip's own sound is silent meanwhile.</summary>
+public readonly record struct Piece(double A, double B, double Speed, double Hold = 0)
+{
+    public void Deconstruct(out double a, out double b, out double speed) => (a, b, speed) = (A, B, Speed);
+    public bool IsHold => Hold > 0;
+    /// <summary>Seconds this piece lasts in the edited output.</summary>
+    public double OutLen => (B - A) / Speed + Hold;
+}
 
 /// <summary>A speed section as the timeline stores it (source seconds). Mutable and compared by identity:
 /// the timeline drags and selects a particular section, like the dicts of the reference.</summary>
@@ -10,6 +17,9 @@ public sealed class SpeedSection(double a, double b, double speed)
     public double A { get; set; } = a;
     public double B { get; set; } = b;
     public double Speed { get; set; } = speed;
+    /// <summary>2.9: Speed 0 = a pause section (orange): the frame at A stays on screen for B - A seconds, then the clip
+    /// goes on from A (nothing is cut; the clip gets longer by the pause).</summary>
+    public bool IsPause => Speed == 0;
     public override string ToString() => FormattableString.Invariant($"SpeedSection {{ A = {A:R}, B = {B:R}, Speed = {Speed:R} }}");
 }
 

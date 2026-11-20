@@ -4,7 +4,7 @@ namespace ClipShrinker.Core;
 public static class C
 {
     public const string AppName = "ClipShrinker";
-    public const string AppVersion = "2.8.0-beta3";
+    public const string AppVersion = "2.9.0";
     public const string AppId = "ClipShrinker.Desktop.App";
     public const string ProjectExt = ".clipproj";
     public const string RepoUrl = "https://github.com/Vergilcd/ClipShrinker";
@@ -74,10 +74,11 @@ public static class C
         ["undo"] = "ctrl+z", ["redo"] = "ctrl+shift+z", ["redo_alt"] = "ctrl+y", ["play"] = "space", ["mute"] = "m",
         ["select_all"] = "ctrl+a", ["delete"] = "delete", ["delete_section"] = "backspace", ["fullscreen"] = "f",
         ["sound"] = "a",                                       // (2.7 Sound track module)
+        ["pause"] = "p",                                       // (2.9)
     };
 
     /// <summary>Shortcuts added after 1.0.8, with a second key for a settings file whose shortcuts already use the default.</summary>
-    public static readonly IReadOnlyDictionary<string, string> KeyFallbacks = new Dictionary<string, string> { ["fullscreen"] = "f11", ["sound"] = "shift+a" };
+    public static readonly IReadOnlyDictionary<string, string> KeyFallbacks = new Dictionary<string, string> { ["fullscreen"] = "f11", ["sound"] = "shift+a", ["pause"] = "shift+p" };
 
     /// <summary>Keys that keep their own job and cannot be given to a shortcut: confirm, cancel, next field,
     /// close window.</summary>

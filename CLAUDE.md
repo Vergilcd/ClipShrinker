@@ -111,6 +111,14 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
   subtitles are the reference for words and start times. The filter's max_len (word timing) helped but is not
   used by transcribe yet (with vad_min_silence_duration 0.5 it took 536 s for 15 min on the GPU).
 
+- 2.9.0 Pause section (owner's design, "Insert"): a SpeedSection with Speed 0 (IsPause), orange, key P, shares the
+  speed lane. The frame at A stays for B - A seconds (bar width = pause length), then the clip goes on from A: nothing
+  is cut. Timing.BuildPieces gives a hold Piece(A, A, 1, Hold); Duration / SrcToOut / OutToSrc count Hold (a time at
+  the pause maps to its start). Export / preview: Filters.SegVideo holds the frame with trim+fps+loop (the slim ffmpeg
+  has no tpad), SegAudio puts silence (owner: game sound silent, Sound track sounds play on). Saved as speed 0; older
+  versions load it as 0.1x. Sounds: TimelineClip.SoundEnd / Sounds.SrcEnd give a sound's end in source time through
+  speed sections and pauses (SoundBlock.End = At + Len is only right at 1x); SoundLaneView draws and drags with it.
+
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.
 - GUI checks: `tools/gui_export_check.ps1` (`-Exe` for the packaged exe) and `tools/gui_phase6_check.ps1` (backs up

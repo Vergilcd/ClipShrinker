@@ -754,19 +754,20 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (Exporting || TargetClip is not { } row) return false;
         if (act == "sound") return SoundModuleOn && AddCurrentSound();   // (2.7 Sound track module)
-        if (act is "speed" or "slow" or "zoom" && !EffectsModuleOn) return false;   // (Timeline effects module)
+        if (act is "speed" or "slow" or "pause" or "zoom" && !EffectsModuleOn) return false;   // (Timeline effects module)
         var ed = row.Editor;
-        if (act is "speed" or "slow" or "zoom") StopPlayback();
+        if (act is "speed" or "slow" or "pause" or "zoom") StopPlayback();
         bool changed = act switch
         {
             "trim_start" => ed.SetTrim(true),
             "trim_end" => ed.SetTrim(false),
             "speed" => ed.AddSection(2.0) is not null,
             "slow" => ed.AddSection(0.5) is not null,
+            "pause" => ed.AddSection(0) is not null,
             "zoom" => ed.AddZoom() is not null,
             _ => false,
         };
-        if (changed && act is "speed" or "slow" or "zoom") SetActive(row);
+        if (changed && act is "speed" or "slow" or "pause" or "zoom") SetActive(row);
         row.NotifyChanged();
         return true;
     }

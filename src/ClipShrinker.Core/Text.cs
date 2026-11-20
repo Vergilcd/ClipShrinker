@@ -141,7 +141,7 @@ public static class Text
     public static readonly IReadOnlyDictionary<string, string> KeyText = new Dictionary<string, string>
     {
         ["trim_start"] = "Set the trim start at the playhead", ["trim_end"] = "Set the trim end at the playhead",
-        ["speed"] = "Add a speed-up section (blue) at the playhead", ["slow"] = "Add a slow-down section (pink) at the playhead",
+        ["speed"] = "Add a speed-up section (blue) at the playhead", ["slow"] = "Add a slow-down section (pink) at the playhead", ["pause"] = "Add a pause (orange) at the playhead",
         ["zoom"] = "Add a zoom section (white) at the playhead", ["effects"] = "Open effect settings",
         ["sound"] = "Add the picked sound at the playhead (Sound track module)",
         ["shortcuts"] = "Show this window", ["export"] = "Start the export", ["open"] = "Open a project",
