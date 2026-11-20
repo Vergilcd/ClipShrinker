@@ -2,7 +2,7 @@
 # make_release.ps1 has none of them; the app downloads them under Modules > AI editing > Install):
 #   ai-editing.json                       the list the app reads: each part's version, size and SHA-256
 #   ai-editing-helper-<version>.zip       clipshrinker-mcp.exe (the MCP helper Claude Code starts)
-#   ai-editing-ffmpeg-<date>.zip          ffmpeg.exe with whisper (from Dev\library-ai), only used for speech to text
+#   ai-editing-ffmpeg-<date>.zip          ffmpeg.exe with whisper + its DLLs (from Dev\library-ai), only used for speech to text
 #   ggml-large-v3-turbo-q5_0.bin, ggml-silero-v5.1.2.bin   the speech model and VAD (optional parts)
 #   powershell -ExecutionPolicy Bypass -File tools\make_ai_module.ps1 [-Models <folder with the two .bin files>]
 # Output: ..\Release\ai-editing\  (try it with CLIPSHRINKER_AI_SOURCE=<that folder> before uploading)
@@ -41,6 +41,8 @@ Copy-Item "$Pub\ClipShrinker.Cli.exe" "$Stage\helper\clipshrinker-mcp.exe"
 Copy-Item "$Root\dist\LICENSE.txt" "$Stage\helper"
 $FfDate = (Get-Item $AiFfmpeg).LastWriteTime.ToString("yyyy-MM-dd")
 Copy-Item $AiFfmpeg "$Stage\ffmpeg"
+# 2.8.0-beta2: whisper.dll, ggml*.dll and the run-time backends (ggml-vulkan.dll = graphics card, ggml-cpu-*.dll)
+Get-ChildItem "$Dev\library-ai" -Filter *.dll | Copy-Item -Destination "$Stage\ffmpeg"
 foreach ($f in "ffmpeg-LICENSE.txt", "ffmpeg-build-settings.txt", "whisper.cpp-LICENSE.txt") { Copy-Item "$Root\dist\$f" "$Stage\ffmpeg" }
 $HelperZip = "ai-editing-helper-$Version.zip"
 $FfmpegZip = "ai-editing-ffmpeg-$FfDate.zip"

@@ -4,6 +4,13 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.8.0-beta2 (test release)
+- AI editing: speech to text runs on the graphics card (Vulkan: NVIDIA, AMD and Intel) when the PC has one,
+  much faster than before. Without one it runs on the CPU as before; if a run on the graphics card fails, the
+  same part is run again on the CPU and the CPU is used until Clip Shrinker is restarted. This needs AI editing
+  0.5.0 (Modules > AI editing > Update).
+
+
 2.8.0-beta1 (test release)
 - First test release of 2.8: everything in 2.8.0-dev, -dev2 and -dev3 below. The new parts to try: white
   balance on the Picture card, and AI editing (Modules > AI editing > Install, then Connect to Claude Code;

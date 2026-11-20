@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.8.0-beta1
+CLIP SHRINKER 2.8.0-beta2
 =========================
 
 GETTING STARTED

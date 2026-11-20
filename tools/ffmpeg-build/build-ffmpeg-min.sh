@@ -40,28 +40,44 @@ cmake -S vpl -B vpl/build -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$P" -DBUIL
 cmake --build vpl/build -j"$(nproc)"
 cmake --install vpl/build
 
-# 2.8: speech to text (ffmpeg's "whisper" filter, AI editing module). whisper.cpp + ggml are MIT and linked in
-# statically, CPU only (a Vulkan / CUDA backend would make ffmpeg.exe need vulkan-1.dll / CUDA DLLs to start).
-# GGML_NATIVE=OFF + AVX2/FMA/F16C: runs on any x86-64 PC from about 2013 on, not only on the build PC.
-# The model file (ggml-*.bin) is not built in: the app downloads it on first use.
-# CMake reads the CPU type from PROCESSOR_ARCHITECTURE; a shell started without it builds ggml's slow generic
-# (no AVX) code, about 10x slower.
+# 2.8: speech to text (ffmpeg's "whisper" filter, AI editing module only; the app's own ffmpeg is built without it).
+# 2.8.0-beta2: whisper.cpp + ggml are DLLs next to ffmpeg.exe, and ggml's backends are loaded at run time
+# (GGML_BACKEND_DL, ffmpeg calls ggml_backend_load_all): ggml-vulkan.dll runs whisper on the graphics card (NVIDIA,
+# AMD, Intel); on a PC without vulkan-1.dll it does not load and the CPU backend does the work. GGML_CPU_ALL_VARIANTS
+# builds one ggml-cpu-*.dll per CPU generation and ggml picks the best one, so no AVX level is fixed at build time.
+# -static in the DLLs' link flags: libstdc++ / libgcc / winpthread are built in (no MinGW runtime DLLs to ship);
+# --exclude-libs keeps their symbols out of the DLLs' exports (else ggml-base.dll exports _Unwind_Resume and every
+# backend fails to link with "multiple definition"). Name the libraries: "ALL" would also hide each DLL's own
+# functions, which CMake links from an archive (objects.a). libparakeet.dll (also built) is not used by ffmpeg.
+# The model file (ggml-*.bin) is not built in: the app downloads it.
+# CMake reads the CPU type from PROCESSOR_ARCHITECTURE; a shell started without it builds ggml's slow generic code.
+# Needs the Vulkan headers, loader and shader compiler (glslc) at build time:
+pacman -S --needed --noconfirm mingw-w64-x86_64-vulkan-headers mingw-w64-x86_64-vulkan-loader mingw-w64-x86_64-shaderc \
+  mingw-w64-x86_64-spirv-headers
 export PROCESSOR_ARCHITECTURE="${PROCESSOR_ARCHITECTURE:-AMD64}"
+PA="$W/inst-ai"
 [ -d whisper ] || git clone --depth 1 https://github.com/ggml-org/whisper.cpp.git whisper
-cmake -S whisper -B whisper/build -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$P" -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_SHARED_LIBS=OFF -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_EXAMPLES=OFF -DWHISPER_BUILD_SERVER=OFF \
-  -DGGML_NATIVE=OFF -DGGML_AVX=ON -DGGML_AVX2=ON -DGGML_FMA=ON -DGGML_F16C=ON -DGGML_OPENMP=OFF
-cmake --build whisper/build -j"$(nproc)"
-cmake --install whisper/build
-for l in ggml ggml-base ggml-cpu; do [ -f "$P/lib/$l.a" ] && cp "$P/lib/$l.a" "$P/lib/lib$l.a"; done   # (named without "lib")
+cmake -S whisper -B whisper/build-dl -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$PA" -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_SHARED_LIBS=ON -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_EXAMPLES=OFF -DWHISPER_BUILD_SERVER=OFF \
+  -DGGML_NATIVE=OFF -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_VULKAN=ON -DGGML_OPENMP=OFF \
+  -DCMAKE_SHARED_LINKER_FLAGS="-static -Wl,--exclude-libs,libgcc.a:libgcc_eh.a:libstdc++.a:libwinpthread.a" -DCMAKE_MODULE_LINKER_FLAGS="-static -Wl,--exclude-libs,libgcc.a:libgcc_eh.a:libstdc++.a:libwinpthread.a"
+cmake --build whisper/build-dl -j"$(nproc)"
+cmake --install whisper/build-dl
+# ffmpeg links statically (-static), which only takes lib*.a: the DLLs' import libraries are copied under that name
+mkdir -p "$PA/implib"
+for l in whisper ggml ggml-base; do cp "$PA/lib/lib$l.dll.a" "$PA/implib/lib$l.a"; done
 
 [ -d ff ]   || git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ff
 source "$HERE/features.sh"
 cd ff
-./configure --prefix="$W/out" $CONF --enable-static --disable-shared --pkg-config-flags=--static \
-  --extra-cflags="-I$P/include" --extra-ldflags="-static -L$P/lib" \
-  --extra-libs="-lwhisper -lggml -lggml-cpu -lggml-base -lstdc++ -lm -lcfgmgr32 -lole32 -lshlwapi -ladvapi32"
+PKG_CONFIG_PATH="$PA/lib/pkgconfig:$PKG_CONFIG_PATH" ./configure --prefix="$W/out" $CONF --enable-static --disable-shared \
+  --pkg-config-flags=--static --extra-cflags="-I$PA/include -I$P/include" --extra-ldflags="-static -L$PA/implib -L$P/lib" \
+  --extra-libs="-lwhisper -lggml -lggml-base -lstdc++ -lm -lcfgmgr32 -lole32 -lshlwapi -ladvapi32"
 make -j"$(nproc)"
-strip -o "$HERE/dist/ffmpeg.exe"  ffmpeg.exe
-strip -o "$HERE/dist/ffprobe.exe" ffprobe.exe
-ls -la "$HERE/dist"
+mkdir -p "$HERE/dist/ai"
+strip -o "$HERE/dist/ai/ffmpeg.exe"  ffmpeg.exe
+strip -o "$HERE/dist/ai/ffprobe.exe" ffprobe.exe
+# the DLLs ffmpeg.exe loads: whisper, ggml, ggml-base (at start) and the backends (ggml-vulkan, ggml-cpu-*; at run time)
+for f in "$PA"/bin/*.dll; do [ "$(basename "$f")" = libparakeet.dll ] || strip -o "$HERE/dist/ai/$(basename "$f")" "$f"; done
+ls -la "$HERE/dist/ai"
+objdump -p "$HERE/dist/ai/ffmpeg.exe" | grep "DLL Name"

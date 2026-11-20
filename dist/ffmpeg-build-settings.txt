@@ -1,6 +1,6 @@
 # The settings of the bundled ffmpeg build (tools/ffmpeg-build/features.sh). Built in statically: the Khronos
 # OpenCL ICD loader (Apache 2.0, GPU denoise), AMD AMF headers and the Intel oneVPL dispatcher (MIT, 2.6.0),
-# whisper.cpp + ggml (MIT, 2.8.0: speech to text for AI editing, CPU, AVX2).
+# whisper.cpp + ggml (MIT, 2.8.0: speech to text, AI editing module only; 2.8.0-beta2: as DLLs with a Vulkan backend).
 # Parts of ffmpeg that Clip Shrinker uses (everything else is switched off).
 BSFS="h264_mp4toannexb hevc_mp4toannexb aac_adtstoasc extract_extradata null vp9_superframe vp9_superframe_split av1_frame_split av1_frame_merge h264_metadata hevc_metadata mpeg4_unpack_bframes noise setts"
 FILTERS="equalizer atadenoise nlmeans nlmeans_opencl hwupload acrossfade adelay aevalsrc afade aformat alimiter amix anoisesrc anull anullsrc apad aresample asetpts asetrate asplit atempo atrim blend color colorchannelmixer colorspace concat crop fade field format fps framerate highpass hue hwdownload lowpass lutyuv mix noise normalize null nullsink nullsrc overlay pad reverse rgbashift scale select sendcmd setpts setsar settb split thumbnail tonemap trim volume xfade zscale amerge pan channelmap channelsplit aloop areverse loop scale2ref whisper"

@@ -96,6 +96,14 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
   Release\ai-editing\ and prints the gh upload commands (the owner publishes). tools/gui_ai_install_check.ps1
   installs from those files into a %TEMP% copy of the package, runs transcribe through the installed helper and
   uninstalls (no focus needed; MessageBoxes are answered with WM_COMMAND).
+- 2.8.0-beta2 / AI editing 0.5.0: speech on the GPU. The module ffmpeg (Dev\library-ai; the CPU-only one is kept in
+  Dev\library-ai-cpu-2026-11-19) links libwhisper.dll + ggml.dll; ggml loads ggml-vulkan.dll and the best
+  ggml-cpu-*.dll at run time from ffmpeg.exe's folder (GGML_BACKEND_DL, GGML_CPU_ALL_VARIANTS; build script notes
+  the -static / --exclude-libs link flags). No vulkan-1.dll or no Vulkan device = CPU by itself. Speech.Transcribe
+  asks use_gpu=1; a failed GPU run is repeated on the CPU and Speech.GpuFailed keeps the CPU for the session
+  (CLIPSHRINKER_SPEECH_CPU=1 starts on the CPU). vad_min_silence_duration=2: ffmpeg's filter runs whisper once per
+  VAD piece (each a full 30 s window), so the default 0.5 s made ~50 runs per 160 s. 9:00-11:40 of the GTA VI test
+  clip: CPU 300 s -> 200 s (2 s silence), GPU (RTX 5070) 34 s.
 
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.

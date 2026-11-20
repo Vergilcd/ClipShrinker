@@ -49,35 +49,51 @@ public static partial class Speech
         string outPath = Path.Combine(modelDir, outName);
         // Relative file names (ffmpeg runs in the models folder): a Windows path's "C:" would need filter escaping.
         string lang = LangRx().IsMatch(language) ? language.ToLowerInvariant() : "auto";
-        string whisper = $"whisper=model={ModelFile}:language={lang}:queue=29:use_gpu=0:vad_model={VadFile}" +
-                         $":destination={outName}:format=srt";
         string mix = tracks == 1 ? "[0:a:0]" : string.Concat(Enumerable.Range(0, tracks).Select(i => $"[0:a:{i}]")) +
                                                $"amix=inputs={tracks}:normalize=0,";
-        var args = new List<string>
+        // vad_min_silence_duration=2: ffmpeg's filter runs whisper once per piece of speech the VAD cuts out, and every
+        // run costs a full 30 s window. The default 0.5 s pause made ~50 runs for 160 s of game chat (91 s on an RTX 5070,
+        // 300 s on the CPU); with 2 s it is 34 s on the GPU with the same text and line times.
+        (int Code, string Err) Run(bool gpu)
         {
-            "-hide_banner", "-nostdin", "-v", "error",
-            "-ss", F(from), "-to", F(to), "-i", path,
-            "-filter_complex", $"{mix}{whisper}[a]", "-map", "[a]", "-f", "null", "-",
-        };
-        var psi = new ProcessStartInfo(ffmpeg)
-        {
-            WorkingDirectory = modelDir, UseShellExecute = false, CreateNoWindow = true,
-            RedirectStandardError = true, RedirectStandardOutput = true,
-        };
-        foreach (var a in args) psi.ArgumentList.Add(a);
-        try
-        {
+            string whisper = $"whisper=model={ModelFile}:language={lang}:queue=29:use_gpu={(gpu ? 1 : 0)}:vad_model={VadFile}" +
+                             $":vad_min_silence_duration=2:destination={outName}:format=srt";
+            var psi = new ProcessStartInfo(ffmpeg)
+            {
+                WorkingDirectory = modelDir, UseShellExecute = false, CreateNoWindow = true,
+                RedirectStandardError = true, RedirectStandardOutput = true,
+            };
+            foreach (var a in new[] { "-hide_banner", "-nostdin", "-v", "error", "-ss", F(from), "-to", F(to), "-i", path,
+                                      "-filter_complex", $"{mix}{whisper}[a]", "-map", "[a]", "-f", "null", "-" })
+                psi.ArgumentList.Add(a);
             using var p = Process.Start(psi) ?? throw new IOException("ffmpeg did not start");
             var err = p.StandardError.ReadToEndAsync();
             p.StandardOutput.ReadToEnd();
             p.WaitForExit();
-            string e = err.Result.Trim();
-            if (p.ExitCode != 0)
+            return (p.ExitCode, err.Result.Trim());
+        }
+        try
+        {
+            // 2.8.0-beta2: the module's ffmpeg runs whisper on the graphics card (Vulkan) when there is one, else on the CPU by
+            // itself. A GPU run that fails (driver, too little video memory) is run again on the CPU, and the CPU is
+            // used from then on.
+            var (code, e) = Run(gpu: !GpuFailed);
+            if (code != 0 && !GpuFailed)
+            {
+                GpuFailed = true;
+                try { File.Delete(outPath); } catch (IOException) { }
+                (code, e) = Run(gpu: false);
+            }
+            if (code != 0)
                 throw new AgentToolError("Speech recognition failed: " + (e.Length > 400 ? e[^400..] : e));
             return File.Exists(outPath) ? ParseSrt(File.ReadAllText(outPath, Encoding.UTF8), from) : [];
         }
         finally { try { File.Delete(outPath); } catch (IOException) { } }
     }
+
+    /// <summary>A run on the graphics card failed in this session: speech runs on the CPU (set again by a restart).
+    /// CLIPSHRINKER_SPEECH_CPU=1 starts on the CPU.</summary>
+    public static volatile bool GpuFailed = Environment.GetEnvironmentVariable("CLIPSHRINKER_SPEECH_CPU") == "1";
 
     /// <summary>SRT -> lines, moved by offset (ffmpeg's times start at 0 at "from").</summary>
     public static List<Line> ParseSrt(string srt, double offset)
