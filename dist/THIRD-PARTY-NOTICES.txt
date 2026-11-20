@@ -10,8 +10,9 @@ ClipShrinker itself is MIT licensed (see LICENSE.txt). It uses these components,
   Inc., see AMF-LICENSE.txt (https://github.com/GPUOpen-LibrariesAndSDKs/AMF)
 - Intel oneVPL dispatcher (built into ffmpeg.exe, for Intel Quick Sync encoding) - MIT, Copyright (c) Intel
   Corporation, see oneVPL-LICENSE.txt (https://github.com/intel/libvpl)
-- whisper.cpp and ggml (built into the AI editing module's ffmpeg.exe in modules\ai-agent\ffmpeg, downloaded
-  with the module; speech to text) - MIT, Copyright (c) The ggml authors, see whisper.cpp-LICENSE.txt there
+- whisper.cpp and ggml (DLLs next to the AI editing module's ffmpeg.exe in modules\ai-agent\ffmpeg, downloaded
+  with the module; speech to text, on the graphics card through Vulkan or on the CPU; the Vulkan backend is
+  built with the Khronos Vulkan headers, Apache 2.0, and uses the graphics driver's vulkan-1.dll) - MIT, Copyright (c) The ggml authors, see whisper.cpp-LICENSE.txt there
   (https://github.com/ggml-org/whisper.cpp). The speech models it downloads
   when needed: OpenAI Whisper large-v3-turbo (MIT, https://github.com/openai/whisper) and Silero VAD (MIT,
   https://github.com/snakers4/silero-vad), in the ggml format from huggingface.co.
