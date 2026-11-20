@@ -6,7 +6,7 @@
 #   ggml-large-v3-turbo-q5_0.bin, ggml-silero-v5.1.2.bin   the speech model and VAD (optional parts)
 #   powershell -ExecutionPolicy Bypass -File tools\make_ai_module.ps1 [-Models <folder with the two .bin files>]
 # Output: ..\Release\ai-editing\  (try it with CLIPSHRINKER_AI_SOURCE=<that folder> before uploading)
-param([string]$Models = "", [string]$MinApp = "2.8.0")
+param([string]$Models = "", [string]$MinApp = "2.9.0")
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path "$PSScriptRoot\.."
 $Dev = Resolve-Path "$Root\..\Dev"
