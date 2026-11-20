@@ -1,6 +1,10 @@
 SOUND TRACK - CHANGELOG
 =======================
 
+1.0.1 (Clip Shrinker 2.9.0)
+- Fix: over a speed section or a pause, a sound's bar now shows where it really ends (sounds play at their
+  own speed), and dragging its ends follows that.
+
 1.0.0 (Clip Shrinker 2.7.0)
 - New: a Sounds lane under each clip's timeline. Drop sound files (mp3, wav, ogg, m4a, aac, flac, opus) on it,
   or drag them from the Sounds list (each has a + to add it at the playhead; A adds the highlighted one).

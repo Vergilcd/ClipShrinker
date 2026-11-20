@@ -71,9 +71,10 @@ public sealed class SoundLaneView : FrameworkElement
         dc.PushClip(g);
         dc.DrawRectangle(Bg, null, new Rect(0, 0, W, H));
         var sel = Host?.SelectedSound;
+        var pcs = vm.Row.TimePieces();                   // 2.9: a sound plays real seconds, so speed sections / pauses change its width
         foreach (var b in vm.Row.Sounds)
         {
-            double xa = ed.X(b.At, W), xb = ed.X(b.End, W);
+            double xa = ed.X(b.At, W), xb = ed.X(Sounds.SrcEnd(b, pcs), W);
             if (xb < -4 || xa > W + 4) continue;
             var r = new Rect(new Point(xa, act ? 3 : 1), new Point(Math.Max(xa + 2, xb), H - (act ? 4 : 1)));
             bool on = ReferenceEquals(b, sel);
@@ -83,10 +84,10 @@ public sealed class SoundLaneView : FrameworkElement
             if (SoundPeakCache.Get(b.Path) is { Length: > 0 } pk)                      // waveform of the part that plays
             {
                 double mid = (r.Top + r.Bottom) / 2, amp = (r.Bottom - r.Top - 4) / 2;   // the whole block height; the name sits on top
-                double secPerPx = b.Len / Math.Max(1, r.Width);
+                double out0 = Timing.SrcToOutX(pcs, b.At);
                 for (double x = Math.Max(r.Left, 0); x < Math.Min(r.Right, W); x += 2)
                 {
-                    double t = b.In + (x - r.Left) * secPerPx;
+                    double t = b.In + Timing.SrcToOutX(pcs, ed.T(x, W)) - out0;   // (the part of the file heard there)
                     int i = (int)(t * 50);
                     if (i < 0 || i >= pk.Length) continue;
                     double h = Math.Max(1, pk[i] * amp);
@@ -136,9 +137,10 @@ public sealed class SoundLaneView : FrameworkElement
         if (vm is null) return (null, Grab.None);
         var ed = vm.Editor;
         double W = ActualWidth;
+        var pcs = vm.Row.TimePieces();
         foreach (var b in vm.Row.Sounds.AsEnumerable().Reverse())        // the one drawn last is on top
         {
-            double xa = ed.X(b.At, W), xb = ed.X(b.End, W);
+            double xa = ed.X(b.At, W), xb = ed.X(Sounds.SrcEnd(b, pcs), W);
             if (x < xa - 4 || x > xb + 4) continue;
             if (Math.Abs(x - xa) <= 5) return (b, Grab.Left);
             if (Math.Abs(x - xb) <= 5) return (b, Grab.Right);
@@ -187,13 +189,21 @@ public sealed class SoundLaneView : FrameworkElement
                 b.At = Math.Max(0, Math.Min(ed.Dur - Sounds.MinLen, origAt + dt));
                 break;
             case Grab.Left:                                              // the start moves, the end stays
-                double d = Math.Max(-origIn, Math.Min(origLen - Sounds.MinLen, dt));
-                d = Math.Max(d, -origAt);
-                (b.At, b.In, b.Len) = (origAt + d, origIn + d, origLen - d);
+            {                                                            // (2.9: In / Len change by real seconds)
+                var pcs = vm.Row.TimePieces();
+                double o0 = Timing.SrcToOutX(pcs, origAt);
+                double at = Math.Max(0, origAt + dt);
+                double d = Math.Max(-origIn, Math.Min(origLen - Sounds.MinLen, Timing.SrcToOutX(pcs, at) - o0));
+                (b.At, b.In, b.Len) = (Math.Max(0, Timing.OutToSrcX(pcs, o0 + d)), origIn + d, origLen - d);
                 break;
+            }
             case Grab.Right:
-                b.Len = Math.Max(Sounds.MinLen, Math.Min(b.FileDur - b.In, origLen + dt));
+            {
+                var pcs = vm.Row.TimePieces();
+                double end0 = Timing.OutToSrcX(pcs, Timing.SrcToOutX(pcs, origAt) + origLen);
+                b.Len = Math.Max(Sounds.MinLen, Math.Min(b.FileDur - b.In, Sounds.LenTo(b.At, end0 + dt, pcs)));
                 break;
+            }
         }
         b.Fade = Sounds.ClampFade(b.Fade, b.Len);
         Host?.SoundMoved(vm);
@@ -259,7 +269,7 @@ public sealed class SoundLaneView : FrameworkElement
         foreach (var f in files)                                       // several files: one after the other
         {
             if (!host.AddSoundAt(vm, f, t)) break;
-            t = vm.Row.Sounds[^1].End;
+            t = vm.Row.SoundEnd(vm.Row.Sounds[^1]);
         }
         e.Handled = true;
     }

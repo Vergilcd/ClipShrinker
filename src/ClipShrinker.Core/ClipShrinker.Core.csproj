@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- 2.8.0-beta3: how-to guides the AI editing helper serves with its "guide" tool -->
+    <EmbeddedResource Include="Agent\Guides\*.md" LogicalName="guides/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

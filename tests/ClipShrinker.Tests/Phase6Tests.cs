@@ -282,7 +282,8 @@ public class KeyTests
         Assert.Null(Text.KeyConflict("s", "speed", keys, []));
         Assert.Null(Text.KeyConflict("shift+m", "speed", keys, []));
         Assert.Null(Text.KeyConflict("ctrl+s", "save", keys, []));
-        Assert.Null(Text.KeyConflict("p", "play", keys, []));
+        Assert.Null(Text.KeyConflict("o", "play", keys, []));
+        Assert.Equal("P is already used: add a pause (orange) at the playhead.", Text.KeyConflict("p", "speed", keys, []));   // (2.9)
         Assert.Null(Text.KeyConflict("shift+exclam", "speed", keys, []));
     }
 

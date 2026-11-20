@@ -1,7 +1,14 @@
 namespace ClipShrinker.Core;
 
-/// <summary>A stretch of source time [A, B] played at Speed.</summary>
-public readonly record struct Piece(double A, double B, double Speed);
+/// <summary>A stretch of source time [A, B] played at Speed. 2.9: Hold &gt; 0 = a pause piece (A == B): the frame at A
+/// stays on screen for Hold seconds and the clip's own sound is silent meanwhile.</summary>
+public readonly record struct Piece(double A, double B, double Speed, double Hold = 0)
+{
+    public void Deconstruct(out double a, out double b, out double speed) => (a, b, speed) = (A, B, Speed);
+    public bool IsHold => Hold > 0;
+    /// <summary>Seconds this piece lasts in the edited output.</summary>
+    public double OutLen => (B - A) / Speed + Hold;
+}
 
 /// <summary>A speed section as the timeline stores it (source seconds). Mutable and compared by identity:
 /// the timeline drags and selects a particular section, like the dicts of the reference.</summary>
@@ -10,6 +17,9 @@ public sealed class SpeedSection(double a, double b, double speed)
     public double A { get; set; } = a;
     public double B { get; set; } = b;
     public double Speed { get; set; } = speed;
+    /// <summary>2.9: Speed 0 = a pause (an orange line at A): the frame at A stays on screen for B - A seconds, then the
+    /// clip goes on from A (nothing is cut; the clip gets longer by the pause). B only carries the length.</summary>
+    public bool IsPause => Speed == 0;
     public override string ToString() => FormattableString.Invariant($"SpeedSection {{ A = {A:R}, B = {B:R}, Speed = {Speed:R} }}");
 }
 
@@ -76,7 +86,8 @@ public sealed record ExportClip
     public static ExportClip FromTimeline(string path, double start, double end, MediaInfo info,
                                           IEnumerable<SpeedSection> sections, IEnumerable<ZoomSection> zooms)
     {
-        var vis = sections.OrderBy(s => s.A).Where(s => Py.Py.Min(s.B, end) - Py.Py.Max(s.A, start) >= 0.05).ToList();
+        var vis = sections.OrderBy(s => s.A).Where(s => s.IsPause ? start - 1e-6 <= s.A && s.A < end
+                                                                  : Py.Py.Min(s.B, end) - Py.Py.Max(s.A, start) >= 0.05).ToList();
         var zs = new List<Zoom>();
         foreach (var z in zooms.OrderBy(z => z.A))
         {

@@ -41,7 +41,7 @@ public sealed class ShortcutsWindow : Window
         };
         // module sections go last, and only while their module is on
         if (vm.EffectsModuleOn)
-            sections.Add(("EFFECTS (module)", [K("effects"), K("speed"), K("slow"), K("zoom"), K("delete_section"),
+            sections.Add(("EFFECTS (module)", [K("effects"), K("speed"), K("slow"), K("pause"), K("zoom"), K("delete_section"),
                           ("Resize or move an effect section by dragging its handle bar or the whole section.", ""),
                           ("Remove a section by right-clicking it.", "")]));
         if (vm.SoundModuleOn)                                  // 2.7

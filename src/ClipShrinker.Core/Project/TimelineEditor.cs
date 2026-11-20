@@ -3,7 +3,7 @@ using static ClipShrinker.Core.Py.Py;
 namespace ClipShrinker.Core.Project;
 
 /// <summary>What the mouse is dragging on a timeline.</summary>
-public enum DragKind { None, Play, Start, End, SecA, SecB, SecMove, ZoomA, ZoomB, ZoomMove, Overview }
+public enum DragKind { None, Play, Start, End, SecA, SecB, SecMove, ZoomA, ZoomB, ZoomMove, Overview, PauseMove }
 
 /// <summary>2.7.5: what is under the mouse, for the pointer: an edge (left-right arrow) or something that moves as a
 /// whole (hand; closed hand while dragged).</summary>
@@ -173,18 +173,27 @@ public sealed class TimelineEditor
     }
 
     // ------------------------------------------------------------------ sections
-    /// <summary>Speed sections clipped to the trim (only those still visible), by start time.</summary>
+    /// <summary>Speed sections clipped to the trim (only those still visible), by start time. Pauses are not in it
+    /// (see VisP).</summary>
     public List<(SpeedSection Sec, double A, double B)> Vis()
     {
         var res = new List<(SpeedSection, double, double)>();
         if (!Modules.Features.TimelineEffects) return res;  // module off: the sections are kept but not shown
-        foreach (var s in Clip.Sections.OrderBy(x => x.A))
+        foreach (var s in Clip.Sections.Where(x => !x.IsPause).OrderBy(x => x.A))
         {
             double a = Max(s.A, Clip.Start), b = Min(s.B, Clip.End);
             if (b - a >= 0.05) res.Add((s, a, b));
         }
         return res;
     }
+
+    /// <summary>2.9: the pauses inside the trim (orange lines at A; B - A is the length), by time.</summary>
+    public List<SpeedSection> VisP() =>
+        !Modules.Features.TimelineEffects ? []
+        : Clip.Sections.Where(x => x.IsPause && Clip.Start - 1e-6 <= x.A && x.A < Clip.End).OrderBy(x => x.A).ToList();
+
+    /// <summary>2.9: the speed sections and pauses as the preview and the export use them.</summary>
+    public List<SpeedSection> VisAll() => [.. Vis().Select(v => v.Sec), .. VisP()];
 
     /// <summary>Zoom sections clipped to the trim.</summary>
     public List<(ZoomSection Z, double A, double B)> VisZ()
@@ -218,8 +227,8 @@ public sealed class TimelineEditor
     {
         get
         {
-            var v = Vis();
-            return v.Count > 0 ? Timing.Duration(Timing.BuildPieces(Clip.Start, Clip.End, v.Select(x => x.Sec))) : Clip.End - Clip.Start;
+            var v = VisAll();
+            return v.Count > 0 ? Timing.Duration(Timing.BuildPieces(Clip.Start, Clip.End, v)) : Clip.End - Clip.Start;
         }
     }
 
@@ -286,26 +295,49 @@ public sealed class TimelineEditor
         return free.Count > 0 ? free[0] : null;
     }
 
-    /// <summary>Hotkey S / D: a new speed section (D: slow motion) at the playhead or in the next free gap.</summary>
+    /// <summary>Hotkey S / D / P: a new speed section (D: slow motion, P: a pause = speed 0) at the playhead or in the
+    /// next free gap.</summary>
     public SpeedSection? AddSection(double speed = 2.0)
     {
         if (!Modules.Features.TimelineEffects) return null;
+        bool pause = speed == 0;
+        if (pause) return AddPause();
         if (FreeGap(Vis().Select(v => (v.A, v.B))) is not { } gap)
         {
-            Status("No free space for a speed section - trim handles / other sections are in the way");
+            Status($"No free space for a {(pause ? "pause" : "speed section")} - trim handles / other sections are in the way");
             return null;
         }
         var (g0, g1) = gap;
-        double length = Min(Max(1.0, 0.1 * Min(Clip.End - Clip.Start, ViewLen)), g1 - g0);
+        double length = Min(pause ? 1.0 : Max(1.0, 0.1 * Min(Clip.End - Clip.Start, ViewLen)), g1 - g0);
         var sec = new SpeedSection(g0, g0 + length, speed);
-        PushUndo("add speed section");
+        PushUndo(pause ? "add pause" : "add speed section");
         Clip.Sections.Add(sec);
         Sel = sec;
         ZSel = null;
         Playhead = sec.A;
         PreviewRequested(Playhead);
-        Status(speed < 1 ? "Slow-motion section added - type a multiplier in the pink box (e.g. 0.25 = four times slower)"
+        Status(pause ? "Pause added - the picture stops here; type its length in seconds in the orange box (e.g. 1.5)"
+             : speed < 1 ? "Slow-motion section added - type a multiplier in the pink box (e.g. 0.25 = four times slower)"
                          : "Speed section added - type a multiplier in the blue box (e.g. 4 = four times faster)");
+        return sec;
+    }
+
+    /// <summary>2.9 hotkey P: a pause (1 s) at the playhead, or at the trim start when the playhead is outside the trim.</summary>
+    SpeedSection? AddPause()
+    {
+        double t = Clip.Start <= Playhead && Playhead < Clip.End ? Playhead : Clip.Start;
+        if (VisP().Any(p => Math.Abs(p.A - t) < 0.01))
+        {
+            Status("There is already a pause here - type a longer length in its orange box instead");
+            return null;
+        }
+        var sec = new SpeedSection(t, t + 1.0, 0);
+        PushUndo("add pause");
+        Clip.Sections.Add(sec);
+        (Sel, ZSel) = (sec, null);
+        Playhead = t;
+        PreviewRequested(Playhead);
+        Status("Pause added - the picture stops here; type its length in seconds in the orange box (e.g. 1.5)");
         return sec;
     }
 
@@ -351,9 +383,24 @@ public sealed class TimelineEditor
     /// <summary>"4x" etc. as the speed box shows it.</summary>
     public static string SpeedText(double speed) => G(speed) + "x";
 
-    /// <summary>A multiplier typed into a speed box; invalid text keeps the old value. Returns the new box text.</summary>
+    /// <summary>What a section's box shows: "4x" for speed, "1.5s" for a pause (2.9).</summary>
+    public static string SectionText(SpeedSection sec) => sec.IsPause ? G(Math.Round(sec.B - sec.A, 2)) + "s" : SpeedText(sec.Speed);
+
+    /// <summary>A multiplier typed into a speed box (a length in seconds for a pause); invalid text keeps the old value.
+    /// Returns the new box text.</summary>
     public string CommitSpeedText(SpeedSection sec, string text)
     {
+        if (sec.IsPause)
+        {
+            string lt = text.Trim().ToLowerInvariant().Replace(",", ".").TrimEnd('s', ' ');
+            if (ParseFloat(lt) is { } len && len > 0)
+            {
+                double b = sec.A + Min(Max(len, C.PauseMin), C.PauseMax);
+                if (Math.Abs(b - sec.B) > 1e-9) PushUndo("pause length");
+                sec.B = b;
+            }
+            return SectionText(sec);
+        }
         string txt = text.Trim().ToLowerInvariant().Replace(",", ".").Replace("×", "").Replace("x", "").Trim();
         if (ParseFloat(txt) is { } v && v > 0)
         {
@@ -370,6 +417,7 @@ public sealed class TimelineEditor
         if (Active && InZoomLane(y))
             foreach (var (z, a, b) in VisZ())
                 if (a <= t && t <= b) return RemoveZoom(z);
+        if (NearPause(x, W) is { } p) return RemoveSection(p);
         foreach (var (sec, a, b) in Vis())
             if (a <= t && t <= b) return RemoveSection(sec);
         return false;
@@ -436,6 +484,8 @@ public sealed class TimelineEditor
             (Math.Abs(x - X(Clip.End, W)) + (inLane ? 6 : 0), DragKind.End, null),
         };
         var vis = Vis();
+        foreach (var p in VisP())                            // 2.9: a pause line moves as a whole
+            cands.Add((Math.Abs(x - X(p.A, W)) - 1, DragKind.PauseMove, p));
         foreach (var (sec, a, b) in vis)
         {
             cands.Add((Math.Abs(x - X(a, W)), DragKind.SecA, sec));
@@ -452,7 +502,8 @@ public sealed class TimelineEditor
         {
             Drag = pick.K;
             dragTarget = pick.Target;
-            if (pick.Target is SpeedSection s)
+            if (pick.Target is SpeedSection { IsPause: true } ps) (Sel, ZSel) = (ps, null);
+            else if (pick.Target is SpeedSection s)
             {
                 (s.A, s.B) = (Max(s.A, Clip.Start), Min(s.B, Clip.End));
                 (Sel, ZSel) = (s, null);
@@ -480,10 +531,15 @@ public sealed class TimelineEditor
         }
         if (Drag == DragKind.None) Drag = DragKind.Play;
         if (Drag != DragKind.Play)
-            PushUndo(Drag is DragKind.Start or DragKind.End ? "trim" : Drag is DragKind.ZoomA or DragKind.ZoomB ? "zoom section" : "speed section");
+            PushUndo(Drag is DragKind.Start or DragKind.End ? "trim" : Drag is DragKind.ZoomA or DragKind.ZoomB ? "zoom section"
+                     : Drag == DragKind.PauseMove ? "move pause" : "speed section");
         SnapSetup();
         Move(x, W);
     }
+
+    /// <summary>2.9: the pause whose line is within grabbing distance of x (the nearest one).</summary>
+    SpeedSection? NearPause(double x, double W) =>
+        VisP().Select(p => (p, d: Math.Abs(x - X(p.A, W)))).Where(v => v.d <= HandleGrab).OrderBy(v => v.d).Select(v => v.p).FirstOrDefault();
 
     /// <summary>True when a press at (x, y) would grab something rather than move the playhead: a trim handle, a
     /// section edge or bar, a zoom section or the overview bar (the same rules as Down). Used for the hand cursor.</summary>
@@ -501,6 +557,7 @@ public sealed class TimelineEditor
                  : VisZ().Any(v => v.A <= t && t <= v.B) ? HoverKind.Move : HoverKind.None;
         bool inLane = InSpeedLane(y);
         if (Near(Clip.Start, inLane ? 6 : 0) || Near(Clip.End, inLane ? 6 : 0)) return HoverKind.Edge;
+        if (NearPause(x, W) is not null) return HoverKind.Move;
         if (Vis().Any(v => Near(v.A) || Near(v.B))) return HoverKind.Edge;
         if (inLane && Vis().Any(v => v.A <= t && t <= v.B)) return HoverKind.Move;
         return VisZ().Any(v => Near(v.A, -0.5) || Near(v.B, -0.5)) ? HoverKind.Edge : HoverKind.None;
@@ -510,7 +567,7 @@ public sealed class TimelineEditor
     public HoverKind DragHover => Drag switch
     {
         DragKind.Start or DragKind.End or DragKind.SecA or DragKind.SecB or DragKind.ZoomA or DragKind.ZoomB => HoverKind.Edge,
-        DragKind.SecMove or DragKind.ZoomMove or DragKind.Overview => HoverKind.Move,
+        DragKind.SecMove or DragKind.ZoomMove or DragKind.Overview or DragKind.PauseMove => HoverKind.Move,
         _ => HoverKind.None,
     };
 
@@ -525,6 +582,7 @@ public sealed class TimelineEditor
             (DragKind.SecA, SpeedSection s) => [s.A],
             (DragKind.SecB, SpeedSection s) => [s.B],
             (DragKind.SecMove, SpeedSection s) => [s.A, s.B],
+            (DragKind.PauseMove, SpeedSection s) => [s.A],
             (DragKind.ZoomMove, ZoomSection z) => [z.A, z.B],
             (DragKind.ZoomA, ZoomSection z) => [z.A],
             (DragKind.ZoomB, ZoomSection z) => [z.B],
@@ -556,7 +614,7 @@ public sealed class TimelineEditor
         if (Zoomed && (x < Pad || x > W - Pad))              // edge scroll
             SetView(ViewA + (x < Pad ? -1 : 1) * 0.04 * ViewLen, ViewLen);
         double t = T(x, W);
-        if (Drag is DragKind.Start or DragKind.End or DragKind.SecA or DragKind.SecB or DragKind.ZoomA or DragKind.ZoomB)
+        if (Drag is DragKind.Start or DragKind.End or DragKind.SecA or DragKind.SecB or DragKind.ZoomA or DragKind.ZoomB or DragKind.PauseMove)
             t = Snap(t, W);
         switch (Drag)
         {
@@ -571,6 +629,14 @@ public sealed class TimelineEditor
             case DragKind.Play:
                 Playhead = t;
                 break;
+            case DragKind.PauseMove when dragTarget is SpeedSection p:
+            {
+                double len = p.B - p.A;
+                p.A = Min(Max(t, Clip.Start), Clip.End - 0.01);
+                p.B = p.A + len;
+                Playhead = p.A;
+                break;
+            }
             case DragKind.ZoomA or DragKind.ZoomB or DragKind.ZoomMove when dragTarget is ZoomSection z:
             {
                 var (lo, hi) = ZNeighbors(z);

@@ -64,6 +64,7 @@ public static class Mcp
     {
         string name = msg["params"]?["name"]?.GetValue<string>() ?? "";
         var args = msg["params"]?["arguments"] as JsonObject ?? [];
+        if (name == "guide") return AgentTools.Call(files, name, args);   // text only: also with an older app connected
         return link.TryCall(name, args) ?? AgentTools.Call(files, name, args);
     }
 

@@ -17,7 +17,7 @@ namespace ClipShrinker.App.Views;
 /// </summary>
 public sealed class TimelineView : Canvas
 {
-    /// <summary>Drag-and-drop data of an effect button under the preview: "speed", "slow" or "zoom".</summary>
+    /// <summary>Drag-and-drop data of an effect button under the preview: "speed", "slow", "pause" or "zoom".</summary>
     public const string EffectFormat = "ClipShrinker.Effect";
     double? dropX;                                             // an effect button is dragged over this timeline
     ClipItemViewModel? vm;
@@ -157,6 +157,18 @@ public sealed class TimelineView : Canvas
             else if (act) dc.DrawRectangle(Frozen(col[1]), new Pen(Frozen(col[2]), on ? 2 : 1), R(ca, 4, cb, LaneH - 4));
         }
 
+        foreach (var p in ed.VisP())                         // 2.9 pauses: an orange line with a tag for the length box
+        {
+            double xp = X(p.A);
+            if (xp < Lx - 6 || xp > Rx + 6) continue;
+            bool on = ReferenceEquals(p, ed.Sel);
+            string line = on ? "#FDBA74" : "#F97316";
+            dc.DrawLine(ov ? new Pen(Frozen(line), lineW + 1) : RoundPen(line, lineW + 1), new Point(xp, act ? (ov ? 0 : 8) : y0), new Point(xp, act ? ty1 : y1));
+            double tx = PauseTagX(ed, xp, W0);
+            if (act && ov) headers.Add(() => dc.DrawRectangle(Frozen(line), null, R(tx - 24, 0, tx + 24, OvSpeedH)));
+            else if (act) dc.DrawRectangle(Frozen(line), new Pen(Frozen(on ? "#FFF7ED" : "#EA580C"), on ? 2 : 1), R(tx - 31, 4, tx + 31, LaneH - 4));
+        }
+
         foreach (var (z, a, b) in ed.VisZ())                                  // zoom sections
         {
             double xa = X(a), xb = X(b);
@@ -243,6 +255,10 @@ public sealed class TimelineView : Canvas
         }
     }
 
+    /// <summary>2.9: the middle of a pause's tag (its line, kept inside the timeline).</summary>
+    static double PauseTagX(TimelineEditor ed, double xp, double W0) =>
+        Math.Min(Math.Max(xp, ed.Pad + 31), Math.Max(ed.Pad + 31, W0 - ed.Pad - 31));
+
     static Rect R(double x0, double y0, double x1, double y1) => new(new Point(x0, y0), new Point(Math.Max(x0, x1), Math.Max(y0, y1)));
 
     static Pen RoundPen(string hex, double w) => new(Frozen(hex), w) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
@@ -322,8 +338,9 @@ public sealed class TimelineView : Canvas
         {
             Width = 54, Height = 20, MinHeight = 0, MinWidth = 0, Padding = new Thickness(0), FontSize = 12, FontWeight = FontWeights.Bold,
             TextAlignment = TextAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, BorderThickness = new Thickness(1),
-            Template = PlainBoxTemplate(), Text = TimelineEditor.SpeedText(sec.Speed),
-            ToolTip = "Speed of this section: 2 = twice as fast, 0.5 = half speed (0.1 - 100). Enter confirms.",
+            Template = PlainBoxTemplate(), Text = TimelineEditor.SectionText(sec),
+            ToolTip = sec.IsPause ? "Length of this pause in seconds (the picture stops on this frame, then the clip goes on). Enter confirms."
+                                  : "Speed of this section: 2 = twice as fast, 0.5 = half speed (0.1 - 100). Enter confirms.",
         };
         b.GotKeyboardFocus += (_, _) =>
         {
@@ -338,7 +355,7 @@ public sealed class TimelineView : Canvas
         {
             if (Ed is null) return;
             if (e.Key == Key.Enter) { b.Text = Ed.CommitSpeedText(sec, b.Text); Focus(); Changed(); e.Handled = true; }
-            else if (e.Key == Key.Escape) { b.Text = TimelineEditor.SpeedText(sec.Speed); Focus(); e.Handled = true; }
+            else if (e.Key == Key.Escape) { b.Text = TimelineEditor.SectionText(sec); Focus(); e.Handled = true; }
         };
         b.LostKeyboardFocus += (_, _) => { if (Ed is not null) { b.Text = Ed.CommitSpeedText(sec, b.Text); Changed(); } };
         speedBoxes[sec] = b;
@@ -352,26 +369,28 @@ public sealed class TimelineView : Canvas
         if (Ed is not { } ed) return;
         double W0 = W, Lx = ed.Pad, Rx = W0 - ed.Pad;
         var vis = ed.Vis();
-        foreach (var dead in speedBoxes.Keys.Where(s => !ed.Clip.Sections.Contains(s)).ToList())
+        foreach (var dead in speedBoxes.Keys.Where(s => !ed.Clip.Sections.Contains(s) || s.IsPause != (speedBoxes[s].Tag is true)).ToList())
         {
             Children.Remove(speedBoxes[dead]);
             speedBoxes.Remove(dead);
         }
         foreach (var (sec, box) in speedBoxes) box.Visibility = Visibility.Collapsed;
         if (W0 < 2 * ed.Pad + 2) return;
-        foreach (var (sec, a, b) in vis)
+        foreach (var (sec, a, b) in vis.Concat(ed.VisP().Select(p => (Sec: p, A: p.A, B: p.A))))
         {
             if (!ed.Active) continue;
             double xa = ed.X(a, W0), xb = ed.X(b, W0);
             if (xb < Lx - 6 || xa > Rx + 6) continue;
             double ca = Math.Min(Math.Max(xa, Lx), Rx), cb = Math.Min(Math.Max(xb, Lx), Rx);
             var box = SpeedBox(sec);
+            box.Tag = sec.IsPause;
             bool slow = sec.Speed < 1;
-            box.Background = Frozen(slow ? "#FFE0EF" : "#DFF0FF");
-            box.Foreground = box.CaretBrush = Frozen(slow ? "#4A0B2A" : "#0B2A4A");
-            box.BorderBrush = Frozen(slow ? "#4A0B2A" : "#0B2A4A");
-            if (!box.IsKeyboardFocusWithin) box.Text = TimelineEditor.SpeedText(sec.Speed);
-            double cx = Math.Min(Math.Max((ca + cb) / 2, ed.Pad + 30), Math.Max(ed.Pad + 30, W0 - ed.Pad - 30));
+            string bg = sec.IsPause ? "#FFEDD5" : slow ? "#FFE0EF" : "#DFF0FF", fg = sec.IsPause ? "#4A1D0B" : slow ? "#4A0B2A" : "#0B2A4A";
+            box.Background = Frozen(bg);
+            box.Foreground = box.CaretBrush = Frozen(fg);
+            box.BorderBrush = Frozen(fg);
+            if (!box.IsKeyboardFocusWithin) box.Text = TimelineEditor.SectionText(sec);
+            double cx = sec.IsPause ? PauseTagX(ed, xa, W0) : Math.Min(Math.Max((ca + cb) / 2, ed.Pad + 30), Math.Max(ed.Pad + 30, W0 - ed.Pad - 30));
             if (ed.Overlay)                                  // the short 2.0 header: a smaller box
             {
                 (box.Width, box.Height, box.FontSize) = (40, 14, 10);

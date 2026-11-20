@@ -397,6 +397,7 @@ public partial class MainWindow : Window, IDialogs
     [
         ("speed", "Speed Up", "#3B82F6", "#3B82F6", "#FFFFFF", "a speed-up section (blue)"),
         ("slow", "Slow Down", "#EC4899", "#EC4899", "#FFFFFF", "a slow-down section (pink)"),
+        ("pause", "Pause", "#F97316", "#F97316", "#FFFFFF", "a pause (orange: the picture stops, then the clip goes on)"),
         ("zoom", "Zoom", "#F4F4F5", "#C8C8C8", "#000000", "a zoom section (white)"),
     ];
     Point? chipDown;                                           // where the mouse went down on an effect button

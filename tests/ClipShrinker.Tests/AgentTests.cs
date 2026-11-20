@@ -98,9 +98,23 @@ public class AgentTests
     public void NewToolsAreListed()
     {
         var names = AgentTools.List().Select(t => t!["name"]!.GetValue<string>()).ToList();
-        foreach (var n in new[] { "export_settings", "set_export_settings", "sound_library", "download_sound", "add_sound", "remove_sounds", "transcribe" })
+        foreach (var n in new[] { "export_settings", "set_export_settings", "sound_library", "download_sound", "add_sound", "remove_sounds", "transcribe", "guide" })
             Assert.Contains(n, names);
         Assert.Equal(names.Count, names.Distinct().Count());
+    }
+
+    [Fact]
+    public void GuidesAreEmbeddedAndServed()
+    {
+        Assert.Contains("subtitles", AgentTools.GuideTopics());
+        var list = AgentTools.Call(new FakeHost(), "guide", new JsonObject());
+        Assert.Contains("subtitles", TextOf(list));
+        var g = AgentTools.Call(new FakeHost(), "guide", new JsonObject { ["topic"] = "Subtitles" });
+        Assert.False(g["isError"]?.GetValue<bool>() ?? false);
+        Assert.Contains("# Subtitles for a clip", TextOf(g));
+        Assert.Contains("guide {\"topic\": \"subtitles\"}", AgentTools.Instructions);
+        var bad = AgentTools.Call(new FakeHost(), "guide", new JsonObject { ["topic"] = "nope" });
+        Assert.True(bad["isError"]!.GetValue<bool>());
     }
 
     static string TextOf(JsonObject r) => string.Join("\n", r["content"]!.AsArray().Select(c => c!["text"]?.GetValue<string>()));
