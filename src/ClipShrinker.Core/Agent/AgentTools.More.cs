@@ -64,7 +64,32 @@ public static partial class AgentTools
              Schema(("clip", "integer", "Clip number", true), ("from", "number", "Start in seconds (default: trim start)", false),
                     ("to", "number", "End in seconds (default: trim end)", false),
                     ("language", "string", "auto (default) or a code: en, hu, de, ...", false))),
+        Tool("guide", "Step-by-step guides for bigger jobs, learned from real clips. Read the one for the job before " +
+             "starting it. Without a topic: the list of guides.",
+             Schema(("topic", "string", "A guide's name, e.g. \"subtitles\"", false))),
     ];
+
+    // ------------------------------------------------------------------ guides (2.8.0-beta3)
+    /// <summary>The guides embedded from Agent/Guides/*.md (resource names "guides/&lt;topic&gt;.md").</summary>
+    public static IReadOnlyList<string> GuideTopics() =>
+        typeof(AgentTools).Assembly.GetManifestResourceNames()
+            .Where(n => n.StartsWith("guides/", StringComparison.Ordinal) && n.EndsWith(".md", StringComparison.Ordinal))
+            .Select(n => n["guides/".Length..^".md".Length]).Order().ToList();
+
+    public static string? GuideText(string topic)
+    {
+        using var s = typeof(AgentTools).Assembly.GetManifestResourceStream("guides/" + topic.Trim().ToLowerInvariant() + ".md");
+        return s is null ? null : new StreamReader(s, Encoding.UTF8).ReadToEnd();
+    }
+
+    static JsonObject GuideTool(JsonObject a)
+    {
+        var topics = GuideTopics();
+        if (OptStr(a, "topic") is not { Length: > 0 } topic)
+            return Content([Text("Guides: " + string.Join(", ", topics) + ". Call guide with one of them as topic.")]);
+        return GuideText(topic) is { } text ? Content([Text(text)])
+            : throw new AgentToolError($"No guide \"{topic}\". Guides: {string.Join(", ", topics)}.");
+    }
 
     // ------------------------------------------------------------------ arguments
     static string? OptStr(JsonObject a, string k) => a[k] is JsonValue v && v.TryGetValue(out string? s) ? s

@@ -4,6 +4,14 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.8.0-beta3 (test release)
+- AI editing: subtitles. Ask Claude for subtitles and it follows a step-by-step guide that comes with AI editing
+  0.6.0: speech is turned into text in short parts, made-up lines are left out, doubtful words are checked
+  against the game's own on-screen subtitles, each line starts when the voice starts, and every subtitle holds
+  one sentence of one person. The .srt file is saved next to the video. Needs AI editing 0.6.0
+  (Modules > AI editing > Update).
+
+
 2.8.0-beta2 (test release)
 - AI editing: speech to text runs on the graphics card (Vulkan: NVIDIA, AMD and Intel) when the PC has one,
   much faster than before. Without one it runs on the CPU as before; if a run on the graphics card fails, the

@@ -1,6 +1,12 @@
 AI EDITING - CHANGELOG
 ======================
 
+0.6.0 (Clip Shrinker 2.8.0-beta3)
+- New tool "guide": step-by-step guides Claude reads before a bigger job. The first one, "subtitles", is how to
+  make an .srt file: short transcribe windows, dropping made-up lines, checking words against the game's
+  on-screen subtitles, fixing line starts after pauses, one sentence per subtitle. The helper answers it itself,
+  so it also works with an older Clip Shrinker open.
+
 0.5.0 (Clip Shrinker 2.8.0-beta2)
 - Speech to text on the graphics card: the module's ffmpeg loads whisper's Vulkan backend (ggml-vulkan.dll) when
   the PC has a Vulkan driver, else the CPU backend; the CPU part picks the best build for the processor

@@ -73,6 +73,10 @@ public static partial class AgentTools
         frames(..., picture: true). Settings changes are not undo steps: tell the user the old values when it matters.
         Speech: transcribe gives what is said with times (game voice chat, the player's mic); use it to find moments
         by what someone says. The first call downloads the speech model (about 550 MB) in the background.
+        Subtitles: before making or translating an .srt file for a clip, read guide {"topic": "subtitles"} and
+        follow it (time estimate first, short transcribe windows with progress lines to the user, made-up lines
+        dropped, words checked against on-screen text, line starts fixed, one sentence per subtitle).
+        guide with no topic lists every guide.
         Sounds: sound_library lists the sounds the user has; download_sound saves a sound from a direct https link (find
         one on a free sound site such as Pixabay, Mixkit or Freesound; tell the user the source and its licence);
         add_sound places a sound on a clip (time in the clip's source seconds), remove_sounds takes them off.
@@ -180,6 +184,7 @@ public static partial class AgentTools
                 "add_sound" => AddSound(h, a),
                 "remove_sounds" => RemoveSounds(h, a),
                 "transcribe" => Transcribe(h, a),
+                "guide" => GuideTool(a),
                 _ => throw new AgentToolError("Unknown tool: " + name),
             };
         }

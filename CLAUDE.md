@@ -104,6 +104,12 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
   (CLIPSHRINKER_SPEECH_CPU=1 starts on the CPU). vad_min_silence_duration=2: ffmpeg's filter runs whisper once per
   VAD piece (each a full 30 s window), so the default 0.5 s made ~50 runs per 160 s. 9:00-11:40 of the GTA VI test
   clip: CPU 300 s -> 200 s (2 s silence), GPU (RTX 5070) 34 s.
+- 2.8.0-beta3 / AI editing 0.6.0: tool "guide" serves how-to guides embedded from src/ClipShrinker.Core/Agent/
+  Guides/*.md (resource "guides/<name>.md"; a new .md there is a new topic). The helper answers "guide" itself
+  (Mcp.CallTool) so an older app works too. Guide "subtitles" = the owner's hand-tuned SRT workflow (GTA VI test
+  clip): whisper starts a line after a pause where the previous one ended (end is right); the game's burned-in
+  subtitles are the reference for words and start times. The filter's max_len (word timing) helped but is not
+  used by transcribe yet (with vad_min_silence_duration 0.5 it took 536 s for 15 min on the GPU).
 
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.
