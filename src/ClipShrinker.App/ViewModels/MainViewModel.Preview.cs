@@ -128,7 +128,8 @@ public sealed partial class MainViewModel
         var i = row.Row.Info;
         var (w, h) = PreviewPlan.PlaySize(i, S.Ratio, PvDims());
         var ed = row.Editor;
-        var secs = ed.Vis().Select(v => new SpeedSection(v.A, v.B, v.Sec.Speed)).ToList();
+        var secs = ed.Vis().Select(v => new SpeedSection(v.A, v.B, v.Sec.Speed))
+                     .Concat(ed.VisP().Select(p => new SpeedSection(p.A, p.B, 0))).ToList();   // (2.9: pauses)
         var zooms = ed.VisZ().Select(v => new Zoom(v.A, v.B, v.Z.X, v.Z.Y, v.Z.W)).ToList();
         var clip = row.Row;
         var (t0, end, once) = PreviewPlan.PlayRange(clip, ed.Playhead);

@@ -128,14 +128,13 @@ public static partial class AgentTools
              Schema(("clip", "integer", "Clip number", true), ("start", "number", "Start in seconds", true), ("end", "number", "End in seconds", true))),
         Tool("add_section", "Add a speed section (speed: 2 = twice as fast, 0.5 = half speed, 0.1 to 100), a pause (the " +
              "picture stops on the frame at 'from' for 'length' seconds while added sounds play on, the clip's own sound is " +
-             "silent; then the clip goes on from there, nothing is cut) or a zoom section (x, y = top-left corner and w = " +
-             "width of the zoomed area, as fractions of the frame; default the middle half). It must lie inside the trim and " +
-             "not overlap another section of its kind (speed sections and pauses share one lane: a pause takes from .. " +
-             "from + length there).",
+             "silent; then the clip goes on from there, nothing is cut; it is a point and may lie inside a speed section) " +
+             "or a zoom section (x, y = top-left corner and w = width of the zoomed area, as fractions of the frame; default " +
+             "the middle half). It must lie inside the trim; speed and zoom sections must not overlap another of their kind.",
              Schema(("clip", "integer", "Clip number", true), ("kind", "string", "\"speed\", \"pause\" or \"zoom\"", true),
                     ("from", "number", "Start in seconds (pause: the frame that stays on screen)", true),
                     ("to", "number", "End in seconds (speed and zoom)", false),
-                    ("length", "number", "For pause: seconds the picture stops (0.2 or more)", false),
+                    ("length", "number", "For pause: seconds the picture stops (0.1 to 60)", false),
                     ("speed", "number", "For kind speed", false), ("x", "number", "For zoom (0..1)", false),
                     ("y", "number", "For zoom (0..1)", false), ("w", "number", "For zoom (0.1..1)", false))),
         Tool("clear_sections", "Remove a clip's speed sections, pauses and / or zoom sections.",
@@ -369,27 +368,24 @@ public static partial class AgentTools
         var r = ClipArg(h, a);
         string kind = Str(a, "kind").ToLowerInvariant();
         double from = Math.Max(r.Start, Num(a, "from") ?? throw new AgentToolError("from is required"));
-        double to0 = kind == "pause"
-            ? from + (Num(a, "length") ?? throw new AgentToolError("length is required for a pause"))
-            : Num(a, "to") ?? throw new AgentToolError("to is required");
-        double to = Math.Min(r.End, to0);
-        if (kind == "pause" && to < to0 - 0.001)
-            throw new AgentToolError($"A pause of {to0 - from:0.##} s at {from:0.##} s does not fit before the trim end ({r.End:0.##} s): " +
-                                     "the pause takes from .. from + length on the timeline. Use a shorter pause or move the trim end.");
-        if (to - from < C.MinSection) throw new AgentToolError($"The section must be at least {C.MinSection} s long and inside the trim ({r.Start:0.##}-{r.End:0.##} s).");
-        if (kind == "pause")
+        if (kind == "pause")                                 // 2.9: a point; it may lie inside a speed section
         {
-            if (r.Sections.FirstOrDefault(x => x.A < to - 0.001 && from < x.B - 0.001) is { } o)
-                throw new AgentToolError($"It overlaps the {(o.IsPause ? "pause" : "speed section")} {o.A:0.##}-{o.B:0.##} s " +
-                                         "(pauses and speed sections share a lane). Remove or shorten that first (clear_sections).");
-            h.Edit("pause", () => r.Sections.Add(new SpeedSection(from, to, 0)));
+            double len = Num(a, "length") ?? throw new AgentToolError("length is required for a pause");
+            if (len < C.PauseMin || len > C.PauseMax) throw new AgentToolError($"length must be {C.PauseMin} to {C.PauseMax} s.");
+            if (from >= r.End) throw new AgentToolError($"The pause must be inside the trim ({r.Start:0.##}-{r.End:0.##} s).");
+            if (r.Sections.FirstOrDefault(x => x.IsPause && Math.Abs(x.A - from) < 0.01) is { } o)
+                throw new AgentToolError($"There is already a pause at {o.A:0.##} s ({o.B - o.A:0.##} s). Remove it first (clear_sections kind pause).");
+            h.Edit("pause", () => r.Sections.Add(new SpeedSection(from, from + len, 0)));
+            return Content([Text(Saved(h) + Info(h, r))]);
         }
+        double to = Math.Min(r.End, Num(a, "to") ?? throw new AgentToolError("to is required"));
+        if (to - from < C.MinSection) throw new AgentToolError($"The section must be at least {C.MinSection} s long and inside the trim ({r.Start:0.##}-{r.End:0.##} s).");
         else if (kind == "speed")
         {
             double sp = Num(a, "speed") ?? throw new AgentToolError("speed is required for a speed section");
             if (sp < C.SpeedMin || sp > C.SpeedMax || Math.Abs(sp - 1) < 1e-6) throw new AgentToolError("speed must be 0.1 to 100 and not 1.");
-            if (r.Sections.FirstOrDefault(x => x.A < to - 0.001 && from < x.B - 0.001) is { } o)
-                throw new AgentToolError($"It overlaps the {(o.IsPause ? "pause" : "speed section")} {o.A:0.##}-{o.B:0.##} s. Remove or shorten that first (clear_sections).");
+            if (r.Sections.FirstOrDefault(x => !x.IsPause && x.A < to - 0.001 && from < x.B - 0.001) is { } o)
+                throw new AgentToolError($"It overlaps the speed section {o.A:0.##}-{o.B:0.##} s. Remove or shorten that first (clear_sections).");
             h.Edit("speed section", () => r.Sections.Add(new SpeedSection(from, to, sp)));
         }
         else if (kind == "zoom")

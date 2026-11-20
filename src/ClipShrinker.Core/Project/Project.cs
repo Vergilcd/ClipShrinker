@@ -134,7 +134,8 @@ public static class ProjectFile
             {
                 double sa = Float(Item(sd, "a")), sb = Float(Item(sd, "b"));
                 double sp0 = Float(Item(sd, "speed")), sp = sp0 == 0 ? 0 : Text.ClampSpeed(sp0);   // (2.9: speed 0 = a pause)
-                if (0 <= sa && sa < sb && sb <= dur + 0.01) row.Sections.Add(new SpeedSection(sa, Py.Py.Min(sb, dur), sp));
+                if (sp == 0) { if (0 <= sa && sa < dur && sb > sa) row.Sections.Add(new SpeedSection(sa, sa + Py.Py.Min(sb - sa, C.PauseMax), 0)); }   // (2.9: a pause at sa, sb - sa long)
+                else if (0 <= sa && sa < sb && sb <= dur + 0.01) row.Sections.Add(new SpeedSection(sa, Py.Py.Min(sb, dur), sp));
             }
             foreach (var zd in Iter(c, "zooms"))
             {

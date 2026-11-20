@@ -51,6 +51,8 @@ public static class C
     public static string MixFilter(int n) => Mix.Replace("{n}", Py.Py.I(n));
     public const double SpeedMin = 0.1, SpeedMax = 100.0;
     public const double MinSection = 0.2;
+    /// <summary>2.9: shortest and longest pause, seconds.</summary>
+    public const double PauseMin = 0.1, PauseMax = 60;
     public const double VhsMin = 0.15;
     public const double ZoomMinW = 0.1;
 

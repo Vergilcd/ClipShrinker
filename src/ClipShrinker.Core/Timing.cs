@@ -5,9 +5,30 @@ namespace ClipShrinker.Core;
 /// <summary>Speed pieces and zoom timing (reference lines 631-718).</summary>
 public static class Timing
 {
-    /// <summary>Splits [start, end] into pieces that follow the speed sections (1x elsewhere). 2.9: a pause section
-    /// gives a hold piece at its start (as long as the section, cut at the trim end); the clip then goes on from there.</summary>
+    /// <summary>Splits [start, end] into pieces that follow the speed sections (1x elsewhere). 2.9: a pause (a point
+    /// at A, B - A seconds long) adds a hold piece at A, inside a speed section too; the clip then goes on from A.</summary>
     public static IReadOnlyList<Piece> BuildPieces(double start, double end, IEnumerable<SpeedSection> sections)
+    {
+        var all = sections.ToList();
+        var pieces = SpeedPieces(start, end, all.Where(x => !x.IsPause));
+        foreach (var p in all.Where(x => x.IsPause && start - 1e-6 <= x.A && x.A < end && x.B - x.A >= 0.02).OrderBy(x => x.A))
+        {
+            double t = Max(p.A, start);
+            int i = pieces.FindIndex(q => !q.IsHold && q.B > t);
+            if (i < 0) continue;
+            var q = pieces[i];
+            if (t > q.A + 0.001)                             // inside a piece: split it there
+            {
+                pieces[i] = q with { B = t };
+                pieces.Insert(i + 1, q with { A = t });
+                i++;
+            }
+            pieces.Insert(i, new Piece(t, t, 1.0, p.B - p.A));
+        }
+        return pieces;
+    }
+
+    static List<Piece> SpeedPieces(double start, double end, IEnumerable<SpeedSection> sections)
     {
         var secs = sections.Where(x => x.B > start && x.A < end)
                            .Select(x => (a: Max(x.A, start), b: Min(x.B, end), sp: x.Speed))
@@ -19,12 +40,6 @@ public static class Timing
             double a = Max(a0, pos);
             if (b - a < 0.02) continue;
             if (a - pos > 0.001) pieces.Add(new Piece(pos, a, 1.0));
-            if (sp == 0)
-            {
-                pieces.Add(new Piece(a, a, 1.0, b - a));
-                pos = a;
-                continue;
-            }
             pieces.Add(new Piece(a, b, sp));
             pos = b;
         }

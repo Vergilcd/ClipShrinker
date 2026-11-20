@@ -8,9 +8,9 @@ Newest version first.
 - New: Pause (orange, P). The picture stops on one frame for as long as you like, then the clip goes on from
   that frame, so nothing is cut and the clip gets longer by the pause. The clip's own sound is silent during
   the pause; sounds you added on the Sounds lane keep playing over it, which is good for a freeze on an
-  impact. Add it with the Pause button under the preview (click or drag it onto a timeline) or P. The orange
-  bar is as wide as the pause: drag its edges or type the length in seconds in its box. It shares the lane
-  with speed sections, plays in the preview and is saved with projects.
+  impact. Add it with the Pause button under the preview (click or drag it onto a timeline) or P. It is an
+  orange line on the timeline: drag it to move it, type the length in seconds in its box, right-click or
+  Backspace removes it. It can sit inside a speed section, plays in the preview and is saved with projects.
 - Fix: a sound on the Sounds lane over a speed section was drawn at the wrong length. Sounds always play at
   their own speed, so over slow motion the bar now ends sooner, over a speed-up later, and at a pause it
   ends on the paused frame. Dragging its ends follows the same rule. What you hear was right already.

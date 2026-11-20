@@ -2,8 +2,8 @@ TIMELINE EFFECTS - CHANGELOG
 ============================
 
 1.2.0 (Clip Shrinker 2.9.0)
-- New: Pause sections (orange, P): the picture stops on a frame for the section's length, then the clip goes
-  on from there. The clip's own sound is silent meanwhile; Sound track sounds keep playing.
+- New: Pause (an orange line, P): the picture stops on that frame for the length typed in its box, then the
+  clip goes on from there. The clip's own sound is silent meanwhile; Sound track sounds keep playing.
 
 1.1.0 (Clip Shrinker 2.5.0)
 - Clip transitions moved out of this plugin: they are an app feature now, with their own Transition button

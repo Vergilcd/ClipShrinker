@@ -32,9 +32,23 @@ public class PauseTests
         Assert.Equal([new Piece(68, 74, 1), new Piece(74, 74, 1, 1.5), new Piece(74, 75.5, 1), new Piece(75.5, 77.5, 0.5),
                       new Piece(77.5, 83, 1)], p);
         Assert.Equal(15 + 1.5 + 2, Timing.Duration(p), 6);
-        // a pause running past the trim end is cut there (the timeline shows it that way too)
+        // a pause is a point: near the trim end it keeps its whole length; at or after the end it is left out
         var q = Timing.BuildPieces(68, 83, [new SpeedSection(82, 85, 0)]);
-        Assert.Equal(new Piece(82, 82, 1, 1), q[1]);
+        Assert.Equal(new Piece(82, 82, 1, 3), q[1]);
+        Assert.Single(Timing.BuildPieces(68, 83, [new SpeedSection(83, 85, 0)]));
+    }
+
+    [Fact]
+    public void PauseInsideSlowMotionSplitsIt()
+    {
+        var p = Timing.BuildPieces(68, 83, [new SpeedSection(75.5, 77.5, 0.5), new SpeedSection(76, 78, 0)]);
+        Assert.Equal([new Piece(68, 75.5, 1), new Piece(75.5, 76, 0.5), new Piece(76, 76, 1, 2), new Piece(76, 77.5, 0.5),
+                      new Piece(77.5, 83, 1)], p);
+        Assert.Equal(15 + 2 + 2, Timing.Duration(p), 6);
+        Assert.Equal(1 + 7.5, Timing.SrcToOut(p, 76), 6);                   // 7.5 s at 1x + 0.5 s at half speed
+        // two pauses at the same frame play one after the other
+        var two = Timing.BuildPieces(0, 10, [new SpeedSection(5, 6, 0), new SpeedSection(5, 7, 0)]);
+        Assert.Equal(13, Timing.Duration(two), 6);
     }
 
     [Fact]
@@ -97,7 +111,33 @@ public class PauseTests
         Assert.Equal("1s", TimelineEditor.SectionText(s));
         Assert.Equal("2.5s", ed.CommitSpeedText(s, "2,5 s"));
         Assert.Equal(78.5, s.B, 6);
-        Assert.Equal("7s", ed.CommitSpeedText(s, "30"));                     // cut at the trim end (83 - 76)
-        Assert.Equal(15 + 7, ed.EditedLen, 6);
+        Assert.Equal("30s", ed.CommitSpeedText(s, "30"));                    // a point: the trim end does not limit it
+        Assert.Equal("60s", ed.CommitSpeedText(s, "500"));                   // longest pause
+        Assert.Equal(15 + 60, ed.EditedLen, 6);
+        Assert.Empty(ed.Vis());                                              // not a speed section on the lane
+        // a slow-motion section can be added over it
+        ed.Playhead = 75;
+        var slow = ed.AddSection(0.5)!;
+        Assert.Equal(75, slow.A, 6);
+        ed.Playhead = 76;
+        Assert.Null(ed.AddSection(0));                                       // one pause per frame
+    }
+
+    [Fact]
+    public void PauseSavedAndLoadedPastTheVideoEnd()
+    {
+        var c = Clip();
+        c.Sections.Add(new SpeedSection(89, 94, 0));                         // 5 s pause 1 s before the end of a 90 s video
+        var json = ProjectSave.Data([c], 0, AppState.FromSettings(null), null);
+        string path = Path.Combine(Path.GetTempPath(), $"pause_{Guid.NewGuid():N}.clipproj");
+        try
+        {
+            ProjectSave.Save(path, json);
+            var load = ProjectFile.Load(path, _ => c.Info, _ => null, _ => true);
+            var s = Assert.Single(load.Clips[0].Sections);
+            Assert.True(s.IsPause);
+            Assert.Equal((89.0, 94.0), (s.A, s.B));
+        }
+        finally { File.Delete(path); }
     }
 }
