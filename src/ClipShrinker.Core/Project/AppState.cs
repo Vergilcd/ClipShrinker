@@ -265,28 +265,38 @@ public sealed class AppState
         double total = TotalLength(clips, out bool joined);
         double? br = Bitrate.Trim().Length > 0 ? BitrateMbps() : null;
         string crop = Crop.Split(' ')[0];
-        string l1 = n > 0 ? $"{n} clip{(n != 1 ? "s" : "")}  ·  {Text.FmtTime(total)}" + (joined ? " when joined" : "") : "No clips yet";
+        bool separate = Separate(n);
+        // 2.9.1: the One video / Separate files switch decides (before: "when joined" whenever a transition was set)
+        string l1 = n == 0 ? "No clips yet" : n == 1 ? $"1 clip  ·  {Text.FmtTime(total)}"
+            : separate ? $"{n} clips  ·  {n} files" : $"{n} clips joined  ·  {Text.FmtTime(total)}";
         string l2 = $"{Text.CodecShort(Codec)}  ·  {Res} resolution  ·  " + (crop == "Original" ? "no crop" : $"crop {crop}");
         string l3;
         if (br is { } b)
         {
-            string ak0 = Audio.TrimEnd('k');
-            long ak = ak0.Length > 0 ? long.Parse(ak0, System.Globalization.CultureInfo.InvariantCulture) : 128;
+            long ak = AudioK();                               // ("Original" made long.Parse throw)
             double mb = Py.Py.Max(total, 0) * (b * 1e6 + ak * 1000) / 8 / 1048576;
             l3 = $"Fixed {Py.Py.G(b)} Mbps video" + (n > 0 ? $"  ·  about {Py.Py.F(mb, 0)} MB in total" : "");
         }
         else l3 = $"Max {(Size.Trim() is { Length: > 0 } s ? s : "?")} MB per file";
-        string l4 = OutStem(n > 0 ? ExportPlanner.Stem(clips[0].Path) : "clip") + ".mp4";
+        string l4 = OutStem(n > 0 ? ExportPlanner.Stem(clips[0].Path) : "clip") + ".mp4" + (separate ? $" and {n - 1} more" : "");
         return [l1, l2, l3, l4];
     }
+
+    /// <summary>2.9.1: several clips exported as one file each (the Export panel's "Separate files"); one clip is
+    /// always one file.</summary>
+    public bool Separate(int clipCount) => clipCount > 1 && Mode == "separate";
+
+    /// <summary>The audio bitrate in kbit/s for size estimates (128 for "Original", whose rate is the clips' own).</summary>
+    long AudioK() => long.TryParse(Audio.TrimEnd('k'), System.Globalization.NumberStyles.Integer,
+                                   System.Globalization.CultureInfo.InvariantCulture, out var k) ? k : 128;
 
     /// <summary>The length of the exported video: every clip after its edits, minus the transitions' overlap.</summary>
     double TotalLength(IReadOnlyList<ExportClip> clips, out bool joined)
     {
         int n = clips.Count;
         double total = Py.Py.Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
-        joined = n > 1 && !string.IsNullOrEmpty(C.TransitionMode(Trans));
-        if (joined)                                          // transitions overlap the clips
+        joined = n > 1 && !Separate(n);
+        if (joined && !string.IsNullOrEmpty(C.TransitionMode(Trans)))   // transitions overlap the clips
         {
             double T = Py.Py.ParseFloat(Tlen.Replace(",", ".")) is { } t ? Py.Py.Max(0.1, Py.Py.Min(3.0, t)) : 0.4;
             total -= (n - 1) * T;
@@ -301,8 +311,7 @@ public sealed class AppState
     {
         int n = clips.Count;
         double total = TotalLength(clips, out _);
-        long ak = long.TryParse(Audio.TrimEnd('k'), System.Globalization.NumberStyles.Integer,
-                                System.Globalization.CultureInfo.InvariantCulture, out var k) ? k : 128;
+        long ak = AudioK();
         if (FixedRate || Bitrate.Trim().Length > 0)
         {
             if (BitrateMbps() is not { } b) return ("Enter a bitrate", "in Mbps, e.g. 20", true);
@@ -314,13 +323,14 @@ public sealed class AppState
         string big = $"Under {Py.Py.G(size)} MB";
         if (n == 0 || total <= 0) return (big, "per file", false);
         // separate files: the longest clip gets the least bitrate per second
-        bool separate = n > 1 && Mode == "separate";
+        bool separate = Separate(n);
         double len = separate ? clips.Max(c => Timing.Duration(c.GetPieces())) : total;
         double video = (size * 1048576 * 8 / len - ak * 1000) / 1e6;
         string forWhat = separate ? $"the longest clip ({Text.FmtTime(len)})" : Text.FmtTime(len);
-        if (video < 0.1) return (big, $"per file  ·  too small for {forWhat} of video", true);
+        string what = separate ? "per file  ·  " : n > 1 ? "one video  ·  " : "";
+        if (video < 0.1) return (big, $"{what}too small for {forWhat} of video", true);
         string v = video.ToString(video < 10 ? "0.0" : "0", System.Globalization.CultureInfo.InvariantCulture);
-        return (big, $"per file  ·  about {v} Mbps video for {forWhat}", false);
+        return (big, $"{what}about {v} Mbps video for {forWhat}", false);
     }
 
     /// <summary>Writes these values into settings.json's object (the AppState part of save_all_settings);

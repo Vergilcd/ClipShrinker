@@ -129,9 +129,11 @@ EXPORT SETTINGS (right side)
   again on the next start.
 
 EXPORT (Ctrl+E)
-With several clips you choose between one joined video or a separate file per clip. The joined video uses the
-transition picked with the "Transition" button next to "Clear all clips" (shown with 2 or more clips; point at
-an effect in its list to see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
+With several clips, the switch at the top of the Export settings picks "One video" (the clips joined) or
+"Separate files" (a file per clip; the Export button then says how many). The joined video uses the transition
+picked with the "Transition" button next to "Clear all clips" (shown when joining; point at an effect in its
+list to see a preview). The per-clip bitrate drop-downs and "Preset (all clips)" are shown for separate files
+and a single clip, where they are used. ClipShrinker encodes with the chosen codec, checks the file size, and
 re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.
 

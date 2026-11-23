@@ -216,6 +216,7 @@ public sealed partial class MainViewModel
         Features.SoundTrack = SoundModuleOn;
         OnPropertyChanged(nameof(EffectsModuleOn));
         OnPropertyChanged(nameof(PresetsModuleOn));
+        OnPropertyChanged(nameof(PresetsShown));
         OnPropertyChanged(nameof(PictureModuleOn));
         OnPropertyChanged(nameof(ShowPicturePanel));
         OnPropertyChanged(nameof(EqModuleOn));

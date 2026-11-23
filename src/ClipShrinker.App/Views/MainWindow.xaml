@@ -183,7 +183,7 @@
                     <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all clips"
                             Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
                     <!-- 2.5: clip transitions as a drop-down (shown with 2 or more clips) -->
-                    <Grid DockPanel.Dock="Right" Margin="0,0,10,0" Visibility="{Binding HasManyClips, Converter={StaticResource BoolToVis}}">
+                    <Grid DockPanel.Dock="Right" Margin="0,0,10,0" Visibility="{Binding TransitionShown, Converter={StaticResource BoolToVis}}">
                         <ToggleButton x:Name="TransitionButton" Focusable="False" AutomationProperties.Name="Transition"
                                       IsChecked="{Binding IsOpen, ElementName=TransitionPopup, Mode=TwoWay}"
                                       IsHitTestVisible="{Binding IsOpen, ElementName=TransitionPopup, Converter={StaticResource Not}}"
@@ -249,7 +249,7 @@
                                                 <Button DockPanel.Dock="Right" Style="{StaticResource HeadButton}" Content="Reset zoom" Click="Fit_Click"
                                                         ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)" />
                                                 <ComboBox DockPanel.Dock="Right" Width="240" Height="24" Margin="0,0,10,0" FontSize="12" Padding="9,2" MinHeight="0" Focusable="False" VerticalContentAlignment="Center"
-                                                          Visibility="{Binding DataContext.PresetsModuleOn, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
+                                                          Visibility="{Binding DataContext.PresetsShown, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
                                                           Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
                                                           ItemsSource="{Binding PresetLabels}" SelectedItem="{Binding PresetLabel}" PreviewMouseWheel="Combo_NoWheel"
                                                           ToolTip="Bitrate of this clip when the clips are exported as separate files: Auto bitrate = the size / bitrate from the Export panel. Presets are made in the Bitrate presets window.">
@@ -368,8 +368,22 @@
                         <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!-- 2.9.1: Size limit | Fixed bitrate, then only the picked one's box -->
-                    <Border Grid.Row="0" Grid.ColumnSpan="2" Margin="0,2,0,6" Padding="3" CornerRadius="6" BorderThickness="1"
+                    <!-- 2.9.1: One video | Separate files (2 or more clips), then Size limit | Fixed bitrate and only the
+                         picked one's box -->
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="2">
+                    <Border Margin="0,2,0,4" Padding="3" CornerRadius="6" BorderThickness="1"
+                            Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
+                            Visibility="{Binding HasManyClips, Converter={StaticResource BoolToVis}}">
+                        <UniformGrid Columns="2">
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="OutputMode" Content="One video" Margin="0,0,2,0"
+                                         IsChecked="{Binding OneVideo}" AutomationProperties.Name="One video"
+                                         ToolTip="Join the clips into one video (with the transition picked under the preview)" />
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="OutputMode" Content="Separate files" Margin="2,0,0,0"
+                                         IsChecked="{Binding SeparateFiles}" AutomationProperties.Name="Separate files"
+                                         ToolTip="Export each clip as its own file (each can have its own bitrate preset)" />
+                        </UniformGrid>
+                    </Border>
+                    <Border Margin="0,2,0,6" Padding="3" CornerRadius="6" BorderThickness="1"
                             Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}">
                         <UniformGrid Columns="2">
                             <RadioButton Style="{StaticResource SegmentButton}" GroupName="RateMode" Content="Size limit" Margin="0,0,2,0"
@@ -380,6 +394,7 @@
                                          ToolTip="Every second of video gets the same bitrate; the file is as big as that makes it (no size limit)" />
                         </UniformGrid>
                     </Border>
+                    </StackPanel>
 
                     <TextBlock Grid.Row="1" Text="Max size (MB):" Style="{StaticResource FieldLabel}"
                                Visibility="{Binding SizeLimit, Converter={StaticResource BoolToVis}}" />
@@ -387,7 +402,7 @@
                                 Visibility="{Binding SizeLimit, Converter={StaticResource BoolToVis}}">
                         <TextBox Width="70" AutomationProperties.Name="Max size (MB)" Text="{Binding Size, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Largest allowed file size in MB (per file, or for the whole video when joining)" />
-                        <TextBlock Text="per file" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
+                        <TextBlock Text="{Binding SizeHint}" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
                     </StackPanel>
 
                     <TextBlock Grid.Row="1" Text="Bitrate (Mbps):" Style="{StaticResource FieldLabel}"
@@ -401,10 +416,10 @@
 
                     <!-- (Bitrate presets module) -->
                     <TextBlock Grid.Row="2" Text="Preset (all clips):" Style="{StaticResource FieldLabel}"
-                               Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}" />
+                               Visibility="{Binding PresetsShown, Converter={StaticResource BoolToVis}}" />
                     <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Bitrate preset for all clips"
                               ItemsSource="{Binding AllPresetOptions}" SelectedItem="{Binding AllPreset}"
-                              Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}"
+                              Visibility="{Binding PresetsShown, Converter={StaticResource BoolToVis}}"
                               ToolTip="Sets the bitrate preset of every clip at once (used when the clips are exported as separate files). Auto = the size / bitrate above." />
 
                     <TextBlock Grid.Row="3" Text="Resolution:" Style="{StaticResource FieldLabel}" />

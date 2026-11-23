@@ -43,7 +43,7 @@ public sealed partial class MainViewModel : ObservableObject
         saveDir = Str("save_dir") ?? "";
         InitPreviewSettings();
         InitModules();
-        Clips.CollectionChanged += (_, _) => { Renumber(); Refresh(); OnPropertyChanged(nameof(HasManyClips)); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
+        Clips.CollectionChanged += (_, _) => { Renumber(); ClipCountChanged(); OnPropertyChanged(nameof(HasManyClips)); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
         Refresh();
     }
 
@@ -302,6 +302,42 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<string> TransitionNames { get; } = C.Transitions.Select(t => t.Name).ToList();
     /// <summary>2 or more clips: the Transition drop-down is shown (2.5).</summary>
     public bool HasManyClips => Clips.Count > 1;
+
+    /// <summary>2.9.1: "One video | Separate files" in the Export panel (shown with 2 or more clips); the saved "mode"
+    /// setting the export question used to set.</summary>
+    public bool SeparateFiles
+    {
+        get => S.Mode == "separate";
+        set
+        {
+            string m = value ? "separate" : "join";
+            if (S.Mode == m) return;
+            S.Mode = m;
+            OutputChanged();
+        }
+    }
+    public bool OneVideo { get => !SeparateFiles; set { if (value) SeparateFiles = false; } }
+    /// <summary>Per-clip bitrate presets only matter for separate files (or a single clip).</summary>
+    public bool PresetsShown => PresetsModuleOn && (Clips.Count <= 1 || S.Separate(Clips.Count));
+    /// <summary>Transitions only matter when clips are joined.</summary>
+    public bool TransitionShown => Clips.Count > 1 && !S.Separate(Clips.Count);
+    public string SizeHint => Clips.Count > 1 && !S.Separate(Clips.Count) ? "for the video" : "per file";
+
+    /// <summary>The clip count decides which of these apply (the switch itself only shows with 2 or more clips).</summary>
+    void ClipCountChanged()
+    {
+        foreach (var n in new[] { nameof(PresetsShown), nameof(TransitionShown), nameof(SizeHint), nameof(GoText) })
+            OnPropertyChanged(n);
+        Refresh();
+    }
+
+    void OutputChanged()
+    {
+        foreach (var n in new[] { nameof(SeparateFiles), nameof(OneVideo), nameof(PresetsShown), nameof(TransitionShown),
+                                  nameof(SizeHint), nameof(GoText) })
+            OnPropertyChanged(n);
+        Refresh();
+    }
     public string Tlen { get => S.Tlen; set => Set(ref S.Tlen, value); }
     public string FastAudio { get => S.FastAudio; set => Set(ref S.FastAudio, value); }
     public IReadOnlyList<string> FastAudioOptions => C.FastAudio;
@@ -832,7 +868,7 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(GoText))]
     private bool exporting;
 
-    public string GoText => Exporting ? "Abort" : "Export";
+    public string GoText => Exporting ? "Abort" : S.Separate(Clips.Count) ? $"Export {Clips.Count} files" : "Export";
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProgressCaption))]
     private double progress;
@@ -874,15 +910,7 @@ public sealed partial class MainViewModel : ObservableObject
         var rows = Clips.Select(c => c.Row).ToList();
         var clips = ExportPlanner.PrepareClips(S, rows);
         var inputs = ExportPlanner.InputSet(clips);
-        bool join = false;
-        if (clips.Count > 1)
-        {
-            int pick = Dialogs.Choice("Export", $"{clips.Count} clips are in the timeline. How do you want to export them?",
-                                      ["Join into one video", "Each clip as its own file", "Cancel"], S.Mode == "join" ? 0 : 1, 2);
-            if (pick is not (0 or 1)) return;
-            S.Mode = pick == 0 ? "join" : "separate";
-            join = pick == 0;
-        }
+        bool join = clips.Count > 1 && !S.Separate(clips.Count);   // 2.9.1: the Export panel's switch, no question
         var st = S.ToExportSettings(join, out _)!;
         string? firstDir = Path.GetDirectoryName(clips[0].Path);
         List<ExportJob> jobs;

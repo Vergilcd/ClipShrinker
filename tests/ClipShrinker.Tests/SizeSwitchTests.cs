@@ -65,14 +65,18 @@ public class SizeSwitchTests
 
         var a = Row(@"C:\v\a.mp4", 20);
         s.Size = "5";                                       // 5 MB / 20 s = 2.10 Mbps, minus 128k audio
-        Assert.Equal(("Under 5 MB", "per file  ·  about 2.0 Mbps video for 0:20.00", false), s.SummaryResult([a.ToExport()]));
+        Assert.Equal(("Under 5 MB", "about 2.0 Mbps video for 0:20.00", false), s.SummaryResult([a.ToExport()]));
 
         s.Size = "0.1";
-        Assert.Equal(("Under 0.1 MB", "per file  ·  too small for 0:20.00 of video", true), s.SummaryResult([a.ToExport()]));
+        Assert.Equal(("Under 0.1 MB", "too small for 0:20.00 of video", true), s.SummaryResult([a.ToExport()]));
 
         s.Size = "50"; s.Mode = "separate";                 // separate files: the longest clip decides
         var b = Row(@"C:\v\b.mp4", 10);
         Assert.Equal("per file  ·  about 21 Mbps video for the longest clip (0:20.00)", s.SummaryResult([a.ToExport(), b.ToExport()]).Sub);
+
+        s.Mode = "join";                                    // one video: the joined length (30 s, no transition)
+        s.Trans = "Hard cut";
+        Assert.Equal("one video  ·  about 14 Mbps video for 0:30.00", s.SummaryResult([a.ToExport(), b.ToExport()]).Sub);
 
         s.Size = "";
         Assert.Equal(("Enter a max size", "in MB, e.g. 50", true), s.SummaryResult([a.ToExport()]));
@@ -82,5 +86,29 @@ public class SizeSwitchTests
         s.Bitrate = "8"; s.BitrateChanged();
         Assert.Equal(("About 19 MB", "in total  ·  no size limit (fixed 8 Mbps)", true), s.SummaryResult([a.ToExport()]));
         Assert.Equal(("Fixed 8 Mbps", "no size limit", true), s.SummaryResult([]));
+    }
+
+    [Fact]
+    public void SummaryLinesFollowTheOutputSwitch()
+    {
+        var s = AppState.FromSettings(null);
+        var a = Row(@"C:\v\a.mp4", 20);
+        var b = Row(@"C:\v\b.mp4", 10);
+        s.Trans = "Hard cut";
+        Assert.Equal("2 clips joined  ·  0:30.00", s.SummaryLines([a.ToExport(), b.ToExport()])[0]);
+        Assert.False(s.Separate(2));
+        s.Mode = "separate";
+        var lines = s.SummaryLines([a.ToExport(), b.ToExport()]);
+        Assert.Equal(("2 clips  ·  2 files", "a.mp4 and 1 more"), (lines[0], lines[3]));
+        Assert.True(s.Separate(2));
+        Assert.False(s.Separate(1));                        // one clip is always one file
+        Assert.Equal("1 clip  ·  0:20.00", s.SummaryLines([a.ToExport()])[0]);
+    }
+
+    [Fact]
+    public void FixedBitrateWithOriginalAudioDoesNotThrow()
+    {
+        var s = AppState.FromSettings(new JsonObject { ["bitrate"] = "8", ["audio"] = "Original" });
+        Assert.StartsWith("Fixed 8 Mbps video  ·  about", s.SummaryLines([Row(@"C:\v\a.mp4", 20).ToExport()])[2]);
     }
 }

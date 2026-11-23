@@ -22,7 +22,7 @@ public class AppStateTests
         s.Trans = "Crossfade (gradient)";
         s.Tlen = "0,5";
         var lines = s.SummaryLines([a.ToExport(), b.ToExport()]);
-        Assert.Equal("2 clips  ·  0:27.50 when joined", lines[0]);  // 20 + 8 - 0.5
+        Assert.Equal("2 clips joined  ·  0:27.50", lines[0]);  // 20 + 8 - 0.5
         s.Bitrate = "8";
         s.BitrateChanged();
         lines = s.SummaryLines([a.ToExport()]);
