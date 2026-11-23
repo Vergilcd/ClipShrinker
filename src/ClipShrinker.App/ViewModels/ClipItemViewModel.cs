@@ -41,6 +41,8 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
         Editor.ViewChanged = () =>
         {
             OnPropertyChanged(nameof(ZoomLabel));
+            OnPropertyChanged(nameof(IsZoomed));
+            OnPropertyChanged(nameof(ZoomChipText));
             thumbTimer.Stop();
             thumbTimer.Interval = TimeSpan.FromMilliseconds(180);
             thumbTimer.Start();
@@ -81,6 +83,9 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
     public string TitleName => Editor.TitleName(Index);
     public string TitleInfo => Editor.TitleInfo;
     public string ZoomLabel => Editor.ZoomLabel;
+    /// <summary>2.9.1: the title bar's zoom chip shows while the timeline is zoomed in ("Zoom ×2.4").</summary>
+    public bool IsZoomed => Editor.ZoomLabel.Length > 0;
+    public string ZoomChipText => IsZoomed ? "Zoom ×" + Editor.ZoomFactor.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "";
 
     // thumbnails are served active clip first, then in list order
     bool IThumbOwner.ThumbActive => isActiveForThumbs;
@@ -96,6 +101,8 @@ public sealed partial class ClipItemViewModel : ObservableObject, IThumbOwner
         OnPropertyChanged(nameof(TitleName));
         OnPropertyChanged(nameof(TitleInfo));
         OnPropertyChanged(nameof(ZoomLabel));
+        OnPropertyChanged(nameof(IsZoomed));
+        OnPropertyChanged(nameof(ZoomChipText));
         Changed?.Invoke();
     }
 

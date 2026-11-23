@@ -72,12 +72,11 @@ public partial class App : Application
         Res("CsProgress", "#4CC2FF", "#5AB4F0");       // light mode: light enough for the black caption
         Res("CsProgressText", "#FFFFFF", "#000000");   // the caption on the export progress bar
         Res("CsDone", "#22C55E", "#16A34A");
-        Res("CsHeadBtn", "#3A3A3A", "#FFFFFF");        // Reset zoom / X in a clip's title bar
-        Res("CsHeadBtnHover", "#4A4A4A", "#F3F3F3");
-        Res("CsHeadBtnPressed", "#303030", "#E8E8E8");
-        Res("CsHeadBtnBorder", "#4A4A4A", "#C8C8C8");
-        Res("CsHeadBtnText", "#FFFFFF", "#000000");
         Res("CsHeadX", "#FF5A52", "#C42B1C");          // the red cross of the remove button
+        Res("CsChipBg", "#24FFFFFF", "#0F000000");      // 2.9.1 zoom chip in a clip's title bar
+        Res("CsChipBorder", "#38FFFFFF", "#2E000000");
+        Res("CsChipOnAccentBg", "#2406202F", "#29000000");   // ... on the active (accent) title bar
+        Res("CsChipOnAccentBorder", "#4D06202F", "#73FFFFFF");
         Res("CsOkText", "#4ADE80", "#116B32");         // 2.9.1 SUMMARY result: the size limit holds (green)
         Res("CsOkBg", "#12301C", "#DDF5E4");
         Res("CsWarnText", "#F0A030", "#8A5000");       // 2.9.1 SUMMARY result: no size limit / value missing (amber)

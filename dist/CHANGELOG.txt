@@ -29,6 +29,10 @@ Newest version first.
   presets are used. "Clear all clips" moved into the Project menu (new shortcut Ctrl + Shift + Delete, can be
   changed in Shortcuts) and to the end of the "Add videos" strip, where it is plain text that turns red only
   when pointed at. It can still be undone.
+- Changed: clip title bars show only what applies. "Reset zoom" and the "zoom x2.4" text became one chip,
+  "Zoom x2.4" with a reset arrow, shown only while that timeline is zoomed in; click it to show the whole clip.
+  The remove X is a quiet icon in the title bar's text colour and turns red only when pointed at, so 8 clips
+  no longer mean 8 red crosses and 8 Reset zoom buttons.
 - Changed: with no clips, the effect buttons and Sounds are dimmed, and "Drop videos here" fills the clip area
   with an accent outline and an "Add videos" button.
 - Fix: the Resolution box could show nothing after opening a project or switching between the size limit

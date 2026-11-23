@@ -81,7 +81,8 @@ folder is moved into "modules" by itself). All of them are on after the first st
   Claude session is connected.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
-at the bottom shows where you are. "Reset zoom" shows the whole clip again.
+at the bottom shows where you are. While a timeline is zoomed in, its title bar shows "Zoom x2.4" with a reset
+arrow: click it to show the whole clip again. The X at the end of a title bar removes the clip (Undo brings it back).
 
 EFFECTS (the band above the thumbnails - Timeline effects module)
 - S adds a speed-up section (blue), D a slow-down section (pink) at the playhead. Type the speed in the box on

@@ -263,12 +263,24 @@
                                                 MouseLeftButtonDown="Head_MouseDown" MouseMove="Head_MouseMove" MouseLeftButtonUp="Head_MouseUp"
                                                 ToolTip="Click to select - drag up or down to change the order of the clips">
                                             <DockPanel>
-                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadRemoveButton}" Content="&#xE711;" FontSize="12"
-                                                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" ToolTip="Remove this clip from the list"
+                                                <!-- 2.9.1: a quiet X in the title bar's own text colour, red only while pointed at -->
+                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadQuietX}" Content="&#xE711;"
+                                                        Foreground="{Binding Foreground, ElementName=TitleText}"
+                                                        AutomationProperties.Name="Remove clip" ToolTip="Remove this clip from the list (Undo brings it back)"
                                                         Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding ZoomLabel}" FontSize="12" VerticalAlignment="Center" Margin="8,0" x:Name="ZoomText" />
-                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadButton}" Content="Reset zoom" Click="Fit_Click"
-                                                        ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)" />
+                                                <!-- 2.9.1: the zoom amount and its reset in one chip, only while this timeline is zoomed in -->
+                                                <Button x:Name="ZoomChip" DockPanel.Dock="Right" Style="{StaticResource ZoomChip}" Click="Fit_Click"
+                                                        Foreground="{Binding Foreground, ElementName=TitleText}"
+                                                        Visibility="{Binding IsZoomed, Converter={StaticResource BoolToVis}}"
+                                                        AutomationProperties.Name="Reset zoom" ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding ZoomChipText}" VerticalAlignment="Center" />
+                                                        <Border Width="18" Height="18" CornerRadius="9" Margin="8,0,0,0" Background="#2E000000">
+                                                            <TextBlock Text="&#xE777;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                </Button>
                                                 <ComboBox DockPanel.Dock="Right" Width="240" Height="24" Margin="0,0,10,0" FontSize="12" Padding="9,2" MinHeight="0" Focusable="False" VerticalContentAlignment="Center"
                                                           Visibility="{Binding DataContext.PresetsShown, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
                                                           Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
@@ -307,7 +319,8 @@
                                         <Setter TargetName="Head" Property="Background" Value="{DynamicResource CsAccent}" />
                                         <Setter TargetName="TitleText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
                                         <Setter TargetName="InfoText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
-                                        <Setter TargetName="ZoomText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
+                                        <Setter TargetName="ZoomChip" Property="Background" Value="{DynamicResource CsChipOnAccentBg}" />
+                                        <Setter TargetName="ZoomChip" Property="BorderBrush" Value="{DynamicResource CsChipOnAccentBorder}" />
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
