@@ -232,6 +232,31 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <!-- 2.9.1: one half of the "Size limit | Fixed bitrate" switch: the picked one is filled with the accent -->
+            <Style x:Key="SegmentButton" TargetType="RadioButton">
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Border x:Name="Bd" CornerRadius="4" Background="Transparent" Padding="0,5,0,6">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CsHover}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CsAccent}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource CsOnAccent}" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <!-- The small "insert a dynamic label" buttons above Prefix / Suffix -->
             <Style x:Key="TokenButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FontSize" Value="11" />

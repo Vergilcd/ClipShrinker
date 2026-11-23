@@ -4,6 +4,15 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.9.1
+- Changed: the size limit and the fixed bitrate are now two sides of a switch at the top of the Export
+  settings ("Size limit | Fixed bitrate"), and only the picked one's box is shown. Before, a number left in
+  "or Bitrate" quietly turned the size limit off. The switch keeps both numbers. Settings and projects from
+  older versions open on the side they used (a filled-in bitrate = Fixed bitrate); exports are unchanged.
+- New: the Summary starts with what you will get, in large type: "Under 50 MB" plus about how much video
+  bitrate that leaves for the length (so a size too small for a long video shows before you export), or
+  with Fixed bitrate the expected size in amber, because no limit applies.
+
 2.9.0
 - New: Pause (orange, P). The picture stops on one frame for as long as you like, then the clip goes on from
   that frame, so nothing is cut and the clip gets longer by the pause. The clip's own sound is silent during

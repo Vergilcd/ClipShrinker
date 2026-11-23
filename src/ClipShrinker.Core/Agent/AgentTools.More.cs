@@ -157,7 +157,12 @@ public static partial class AgentTools
             string b = br.Trim().Replace(",", ".").Replace("Mbps", "", StringComparison.OrdinalIgnoreCase).Trim();
             if (b.Length > 0 && !(double.TryParse(b, NumberStyles.Float, CultureInfo.InvariantCulture, out var mb) && mb > 0 && mb <= 500))
                 throw new AgentToolError("bitrate must be Mbps (e.g. 20), or \"\" to use the size limit.");
-            Do(b.Length > 0 ? $"bitrate {b} Mbps" : "bitrate cleared (size limit)", () => { s.Bitrate = b; s.BitrateChanged(); });
+            Do(b.Length > 0 ? $"bitrate {b} Mbps" : "bitrate cleared (size limit)", () =>
+            {
+                if (b.Length > 0) { s.Bitrate = b; s.FixedRate = true; }      // the Export panel switches to Fixed bitrate
+                else s.SetFixedRate(false);                                 // ... or back to Size limit
+                s.BitrateChanged();
+            });
         }
         if (OptStr(a, "codec") is { } codec)
         {

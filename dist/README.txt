@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.9.0
+CLIP SHRINKER 2.9.1
 ===================
 
 GETTING STARTED
@@ -96,9 +96,15 @@ The line under a clip's title shows its length after editing. Pitch, frame blend
 zoom motion are set in "Effects". RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
-- Size: "Max size (MB)" applies per file: to each clip, or to the whole video when joining. Enter a value in
-  "or Bitrate (Mbps)" instead to use a fixed bitrate (it is ignored when empty); the size limit is then
-  ignored and resolution offers Original, 4K, 1440p, 1080p, 720p or 50%.
+- Size: the switch at the top picks "Size limit" or "Fixed bitrate". Size limit: "Max size (MB)" applies
+  per file: to each clip, or to the whole video when joining, and the export lands just under it. Fixed
+  bitrate: every second of video gets the "Bitrate (Mbps)" you enter and there is no size limit; resolution
+  then offers Original, 4K, 1440p, 1080p, 720p or 50%. The switch keeps both numbers, so going back and forth
+  does not lose them.
+- Summary: the large line at its top says what you will get. With Size limit: "Under 50 MB" and about how
+  much video bitrate that size leaves for the clips' length (with separate files: for the longest clip), so a
+  size that is too small for a long video shows before you export. With Fixed bitrate: the expected size, in
+  amber because nothing limits it. Amber also means a value is missing.
 - Presets (Bitrate presets module): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
   one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
   bitrate" means the size or bitrate above. Presets are used when clips are saved as separate files.

@@ -187,10 +187,26 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>2.9.1: the "Size limit | Fixed bitrate" switch; only the picked one's box is shown.</summary>
+    public bool FixedRate
+    {
+        get => S.FixedRate;
+        set
+        {
+            if (value == S.FixedRate) return;
+            S.SetFixedRate(value);
+            OnPropertyChanged(nameof(FixedRate));
+            OnPropertyChanged(nameof(SizeLimit));
+            OnPropertyChanged(nameof(Bitrate));
+            OnPropertyChanged(nameof(ResOptions));
+            OnPropertyChanged(nameof(Res));
+            Refresh();
+        }
+    }
+    public bool SizeLimit { get => !S.FixedRate; set { if (value) FixedRate = false; } }
+
     public string Res { get => S.Res; set { if (value is not null) Set(ref S.Res, value); } }
     public IReadOnlyList<string> ResOptions => S.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode;
-    public bool SizeEnabled => S.BitrateMbps() is null;
-    public string SizeHint => S.BitrateMbps() is null ? "per file" : "ignored";
     public string Codec { get => S.Codec; set { if (value is not null) Set(ref S.Codec, value); } }   // (null while the list changes)
     /// <summary>2.6: only the encoders that work on this PC (all of them until the start-up check has answered).</summary>
     public IReadOnlyList<string> Codecs => OfferedKeys is { Count: > 0 } w
@@ -360,6 +376,10 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string summary3 = "";
     [ObservableProperty] private string summary4 = "";
     [ObservableProperty] private string cropInfo = " ";
+    /// <summary>2.9.1: the large result line at the top of the SUMMARY (AppState.SummaryResult); Warn = amber.</summary>
+    [ObservableProperty] private string resultBig = "";
+    [ObservableProperty] private string resultSub = "";
+    [ObservableProperty] private bool resultWarn;
     public bool HasClips => Clips.Count > 0;
 
     void Refresh()
@@ -373,8 +393,7 @@ public sealed partial class MainViewModel : ObservableObject
             var (cw, ch) = Core.Geometry.CropSize(i.W, i.H, S.Ratio);
             CropInfo = (cw, ch) != (i.W, i.H) ? $"{i.W}x{i.H} -> {cw}x{ch}" : "(already narrower - no crop)";
         }
-        OnPropertyChanged(nameof(SizeEnabled));
-        OnPropertyChanged(nameof(SizeHint));
+        (ResultBig, ResultSub, ResultWarn) = S.SummaryResult(Clips.Select(c => c.Row.ToExport()).ToList());
         OnPropertyChanged(nameof(HasClips));
     }
 
@@ -849,7 +868,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (Clips.Count == 0) { Dialogs.Info("No clips", "Add at least one video first."); return; }
         if (S.ToExportSettings(false, out var error) is null)
         {
-            Dialogs.Error(S.Bitrate.Trim().Length > 0 ? "Invalid bitrate" : "Invalid size", error!);
+            Dialogs.Error(S.FixedRate ? "Invalid bitrate" : "Invalid size", error!);
             return;
         }
         var rows = Clips.Select(c => c.Row).ToList();
