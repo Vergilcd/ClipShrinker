@@ -292,6 +292,7 @@ public partial class MainWindow : Window, IDialogs
             case "undo": vm.Undo(); break;
             case "redo" or "redo_alt": vm.Redo(); break;
             case "select_all": vm.SelectAll(); break;
+            case "clear_all": vm.ClearAllCommand.Execute(null); break;   // 2.9.1
             case "delete": vm.OnDelete(); break;
             case "delete_section": vm.OnBackspace(); break;
             case "play":
@@ -485,8 +486,8 @@ public partial class MainWindow : Window, IDialogs
 
     void SetZoneHover(object sender, bool on)
     {
-        var dash = sender == DropZone ? DropZoneDash : AddStripDash;
-        dash.SetResourceReference(Shape.StrokeProperty, on ? "AccentFillColorDefaultBrush" : "ControlStrokeColorDefaultBrush");
+        if (sender == DropZone) { DropZoneTint.Opacity = on ? 0.12 : 0.06; return; }   // 2.9.1: always accent, a bit stronger on hover
+        AddStripDash.SetResourceReference(Shape.StrokeProperty, on ? "AccentFillColorDefaultBrush" : "ControlStrokeColorDefaultBrush");
     }
 
     void ProjectButton_Click(object sender, RoutedEventArgs e)

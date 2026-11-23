@@ -24,7 +24,7 @@ public sealed class ShortcutsWindow : Window
         WindowStartupLocation = WindowStartupLocation.Manual;
         SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
         static (string, string) K(string act) => (Text.KeyText[act], "@" + act);   // a rebindable shortcut
-        (string Desc, string Key)[] clips = [K("select_all"), K("delete"), ("Change the order by dragging a clip above or below another one.", "")];
+        (string Desc, string Key)[] clips = [K("select_all"), K("delete"), K("clear_all"), ("Change the order by dragging a clip above or below another one.", "")];
         if (vm.PresetsModuleOn)
             clips = [.. clips, ("Bitrate presets module: apply a preset with its hotkey or by choosing it in the clip's title bar.", "")];
         var sections = new List<(string, (string Desc, string Key)[])>

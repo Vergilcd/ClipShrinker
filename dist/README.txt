@@ -25,8 +25,10 @@ BASICS
   library\settings.json to reset everything, shortcuts included.
 
 ADDING AND TRIMMING CLIPS
-Drag videos onto the window, or click the "Add videos" strip (or the "Drop videos here" area when the list is
-empty). When you add a lot at once, a small window counts them until the thumbnails are ready.
+Drag videos onto the window, or click the "Add videos" strip (or "Add videos" in the "Drop videos here" area
+when the list is empty). When you add a lot at once, a small window counts them until the thumbnails are ready.
+"Clear all clips" (at the end of the "Add videos" strip, in the Project menu, or Ctrl + Shift + Delete) empties
+the list; Undo brings the clips back.
 
 Each clip gets its own thumbnail timeline. The active clip has a blue title bar; the preview and shortcuts work
 on it. Click a timeline or title bar to make it active, drag a title bar up or down to reorder (this is also the
@@ -59,7 +61,7 @@ folder is moved into "modules" by itself). All of them are on after the first st
   and press Enter. Heard in the preview, used on every audio track of the export, and saved with projects. A
   limiter keeps boosted sound from clipping.
 - Sound track: your own sound files on a Sounds lane under each clip's thumbnails. Drop sound files (mp3,
-  wav, ogg, m4a, aac, flac, opus) on the lane where they should play, or open "Sounds" (next to Transition).
+  wav, ogg, m4a, aac, flac, opus) on the lane where they should play, or open "Sounds" (under the preview, after the effect buttons).
   It lists the green sounds in modules\sound-track\sounds ("Add files..." copies files there, "Open folder"
   opens it), each with its waveform: drag one onto a clip's lane, click its play button to listen, or its +
   to add it at the playhead (A adds the highlighted one). On the lane: drag a sound to move it, drag its ends to trim it, right-click or
@@ -93,7 +95,7 @@ EFFECTS (the band above the thumbnails - Timeline effects module)
   stay inside the trimmed part.
 
 The line under a clip's title shows its length after editing. Pitch, frame blending, RIFE AI slow motion and
-zoom motion are set in "Effects". RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
+zoom motion are set in the effect settings (the gear button after Sounds, or F2). RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
 - Size: the switch at the top picks "Size limit" or "Fixed bitrate". Size limit: "Max size (MB)" applies
@@ -105,7 +107,8 @@ EXPORT SETTINGS (right side)
   much video bitrate that size leaves for the clips' length (with separate files: for the longest clip), so a
   size that is too small for a long video shows before you export. With Fixed bitrate: the expected size, in
   amber because nothing limits it. Amber also means a value is missing.
-- Presets (Bitrate presets module): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
+- Presets (Bitrate presets module): create them with the pencil button next to "Preset (all clips)" (name,
+  bitrate, optional hotkey). Pick
   one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
   bitrate" means the bitrate above. Presets work with Fixed bitrate, for separate files or a single clip;
   the drop-downs are hidden otherwise (with the size limit every clip follows Max size).
@@ -132,7 +135,7 @@ EXPORT SETTINGS (right side)
 EXPORT (Ctrl+E)
 With several clips, "Export as" at the top of the Export settings picks "One video" (the clips joined) or
 "Separate files" (a file per clip; the Export button then says how many). The joined video uses the transition picked
-with the "Transition" button next to "Clear all clips" (shown when joining; point at an effect in its list to
+with the "Transition" button at the right under the preview (shown when joining; point at an effect in its list to
 see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
 re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.

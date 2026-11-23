@@ -77,6 +77,7 @@ public static class C
         ["select_all"] = "ctrl+a", ["delete"] = "delete", ["delete_section"] = "backspace", ["fullscreen"] = "f",
         ["sound"] = "a",                                       // (2.7 Sound track module)
         ["pause"] = "p",                                       // (2.9)
+        ["clear_all"] = "ctrl+shift+delete",                   // (2.9.1, also in the Project menu)
     };
 
     /// <summary>Shortcuts added after 1.0.8, with a second key for a settings file whose shortcuts already use the default.</summary>

@@ -23,6 +23,14 @@ Newest version first.
   and the per-clip bitrate drop-downs and "Preset (all clips)" are hidden; they show with Fixed bitrate for
   separate files or a single clip. Presets set on clips are kept. (Before, a clip's preset replaced the size
   limit for that clip when exporting separate files.)
+- Changed: the bar under the preview holds only what goes on the clips: the effect buttons and Sounds, a gear
+  button for the effect settings (before: "Effects", which looked like a fifth effect) and, on the right,
+  Transition. "Bitrate presets" moved next to "Preset (all clips)" in the Export panel (a pencil button), where
+  presets are used. "Clear all clips" moved into the Project menu (new shortcut Ctrl + Shift + Delete, can be
+  changed in Shortcuts) and to the end of the "Add videos" strip, where it is plain text that turns red only
+  when pointed at. It can still be undone.
+- Changed: with no clips, the effect buttons and Sounds are dimmed, and "Drop videos here" fills the clip area
+  with an accent outline and an "Add videos" button.
 - Fix: the Resolution box could show nothing after opening a project or switching between the size limit
   and a fixed bitrate (both change its list). The setting itself was right.
 - Fix: the Summary's size estimate with Fixed bitrate and Audio "Original" no longer stops with an error.
