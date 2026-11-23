@@ -101,7 +101,7 @@ EXPORT SETTINGS (right side)
   bitrate: every second of video gets the "Bitrate (Mbps)" you enter and there is no size limit; resolution
   then offers Original, 4K, 1440p, 1080p, 720p or 50%. The switch keeps both numbers, so going back and forth
   does not lose them.
-- Summary: the large line at its top says what you will get. With Size limit: "Under 50 MB" and about how
+- Summary: the coloured box at its top says what you will get. With Size limit (green): "Under 50 MB" and about how
   much video bitrate that size leaves for the clips' length (with separate files: for the longest clip), so a
   size that is too small for a long video shows before you export. With Fixed bitrate: the expected size, in
   amber because nothing limits it. Amber also means a value is missing.
@@ -130,8 +130,8 @@ EXPORT SETTINGS (right side)
   again on the next start.
 
 EXPORT (Ctrl+E)
-With several clips, the switch right above the Summary picks "One video" (the clips joined) or "Separate
-files" (a file per clip; the Export button then says how many). The joined video uses the transition picked
+With several clips, "Export as" at the top of the Export settings picks "One video" (the clips joined) or
+"Separate files" (a file per clip; the Export button then says how many). The joined video uses the transition picked
 with the "Transition" button next to "Clear all clips" (shown when joining; point at an effect in its list to
 see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
 re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red

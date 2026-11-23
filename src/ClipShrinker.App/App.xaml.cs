@@ -78,6 +78,8 @@ public partial class App : Application
         Res("CsHeadBtnBorder", "#4A4A4A", "#C8C8C8");
         Res("CsHeadBtnText", "#FFFFFF", "#000000");
         Res("CsHeadX", "#FF5A52", "#C42B1C");          // the red cross of the remove button
+        Res("CsOkText", "#4ADE80", "#116B32");         // 2.9.1 SUMMARY result: the size limit holds (green)
+        Res("CsOkBg", "#12301C", "#DDF5E4");
         Res("CsWarnText", "#F0A030", "#8A5000");       // 2.9.1 SUMMARY result: no size limit / value missing (amber)
         Res("CsWarnBg", "#3A2A10", "#FFF1DC");
     }

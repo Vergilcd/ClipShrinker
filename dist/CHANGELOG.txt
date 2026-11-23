@@ -9,15 +9,16 @@ Newest version first.
   settings ("Size limit | Fixed bitrate"), and only the picked one's box is shown. Before, a number left in
   "or Bitrate" quietly turned the size limit off. The switch keeps both numbers. Settings and projects from
   older versions open on the side they used (a filled-in bitrate = Fixed bitrate); exports are unchanged.
-- New: the Summary starts with what you will get, in large type: "Under 50 MB" plus about how much video
-  bitrate that leaves for the length (so a size too small for a long video shows before you export), or
-  with Fixed bitrate the expected size in amber, because no limit applies.
-- Changed: with several clips, "One video | Separate files" is a switch right above the Summary, instead
-  of a question after Export (0.8.0 made it a question). So the panel shows what Export will make before you
-  press it: the Summary says "8 clips joined" or "8 clips  ·  8 files", Max size and Bitrate say "for the
-  video" or "per file", and the button says "Export 8 files" for separate files. Transition is hidden with
-  separate files. The switch remembers the last choice, as the question did, and AI editing's join_mode
-  sets it.
+- New: the Summary starts with what you will get, in a coloured box: green "Under 50 MB" plus about how much
+  video bitrate that leaves for the length (so a size too small for a long video shows before you export),
+  or with Fixed bitrate the expected size in amber, because no limit applies.
+- Changed: with several clips, "Export as" (One video / Separate files) is a drop-down at the top of the
+  Export settings, instead of a question after Export (0.8.0 made it a question). Its list says what each
+  choice makes ("the 8 clips joined into one file", "8 files, one per clip"). So the panel shows what Export
+  will make before you press it: the Summary says "8 clips joined" or "8 clips  ·  8 files", Max size and
+  Bitrate say "for the video" or "per file", and the button says "Export 8 files" for separate files.
+  Transition is hidden with separate files. It remembers the last choice, as the question did, and AI
+  editing's join_mode sets it.
 - Changed: bitrate presets work with Fixed bitrate only. With the size limit every clip follows Max size,
   and the per-clip bitrate drop-downs and "Preset (all clips)" are hidden; they show with Fixed bitrate for
   separate files or a single clip. Presets set on clips are kept. (Before, a clip's preset replaced the size

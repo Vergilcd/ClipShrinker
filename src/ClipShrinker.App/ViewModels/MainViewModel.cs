@@ -317,7 +317,10 @@ public sealed partial class MainViewModel : ObservableObject
             OutputChanged();
         }
     }
-    public bool OneVideo { get => !SeparateFiles; set { if (value) SeparateFiles = false; } }
+    /// <summary>2.9.1: the "Export as" drop-down: 0 = One video, 1 = Separate files. The two items stay the same objects
+    /// (only their second line changes with the clip count), so the list is never swapped under the selection.</summary>
+    public IReadOnlyList<OutputChoice> OutputChoices { get; } = [new("One video"), new("Separate files")];
+    public int OutputIndex { get => SeparateFiles ? 1 : 0; set { if (value is 0 or 1) SeparateFiles = value == 1; } }
     /// <summary>Per-clip bitrate presets are used with Fixed bitrate, for separate files or a single clip.</summary>
     public bool PresetsShown => PresetsModuleOn && S.FixedRate && (Clips.Count <= 1 || S.Separate(Clips.Count));
     /// <summary>Transitions only matter when clips are joined.</summary>
@@ -327,6 +330,9 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>The clip count decides which of these apply (the switch itself only shows with 2 or more clips).</summary>
     void ClipCountChanged()
     {
+        int c = Clips.Count;
+        OutputChoices[0].Detail = $"the {c} clips joined into one file";
+        OutputChoices[1].Detail = $"{c} files, one per clip";
         foreach (var n in new[] { nameof(PresetsShown), nameof(TransitionShown), nameof(SizeHint), nameof(GoText) })
             OnPropertyChanged(n);
         Refresh();
@@ -334,7 +340,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     void OutputChanged()
     {
-        foreach (var n in new[] { nameof(SeparateFiles), nameof(OneVideo), nameof(PresetsShown), nameof(TransitionShown),
+        foreach (var n in new[] { nameof(SeparateFiles), nameof(OutputIndex), nameof(PresetsShown), nameof(TransitionShown),
                                   nameof(SizeHint), nameof(GoText) })
             OnPropertyChanged(n);
         Refresh();
@@ -1072,4 +1078,12 @@ public sealed partial class MainViewModel : ObservableObject
         encoder?.Cancel();
         return true;
     }
+}
+
+/// <summary>2.9.1: an item of the "Export as" drop-down; Detail is the line under it in the open list.</summary>
+public sealed partial class OutputChoice(string title) : ObservableObject
+{
+    public string Title { get; } = title;
+    [ObservableProperty] private string detail = "";
+    public override string ToString() => Title;              // (UI Automation name, the closed box)
 }
