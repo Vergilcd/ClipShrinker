@@ -107,7 +107,8 @@ EXPORT SETTINGS (right side)
   amber because nothing limits it. Amber also means a value is missing.
 - Presets (Bitrate presets module): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
   one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
-  bitrate" means the size or bitrate above. Presets are used when clips are saved as separate files.
+  bitrate" means the bitrate above. Presets work with Fixed bitrate, for separate files or a single clip;
+  the drop-downs are hidden otherwise (with the size limit every clip follows Max size).
 - Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger
   than it is), codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
   or Windows on the GPU, and the Windows CPU encoder only when no graphics card encoder works; a project from
@@ -129,11 +130,10 @@ EXPORT SETTINGS (right side)
   again on the next start.
 
 EXPORT (Ctrl+E)
-With several clips, the switch at the top of the Export settings picks "One video" (the clips joined) or
-"Separate files" (a file per clip; the Export button then says how many). The joined video uses the transition
-picked with the "Transition" button next to "Clear all clips" (shown when joining; point at an effect in its
-list to see a preview). The per-clip bitrate drop-downs and "Preset (all clips)" are shown for separate files
-and a single clip, where they are used. ClipShrinker encodes with the chosen codec, checks the file size, and
+With several clips, the switch right above the Summary picks "One video" (the clips joined) or "Separate
+files" (a file per clip; the Export button then says how many). The joined video uses the transition picked
+with the "Transition" button next to "Clear all clips" (shown when joining; point at an effect in its list to
+see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
 re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.
 

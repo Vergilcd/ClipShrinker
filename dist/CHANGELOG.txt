@@ -12,13 +12,18 @@ Newest version first.
 - New: the Summary starts with what you will get, in large type: "Under 50 MB" plus about how much video
   bitrate that leaves for the length (so a size too small for a long video shows before you export), or
   with Fixed bitrate the expected size in amber, because no limit applies.
-- Changed: with several clips, "One video | Separate files" is a switch at the top of the Export settings
-  again, instead of a question after Export (0.8.0 made it a question). So the panel shows what Export will
-  make before you press it: the Summary says "8 clips joined" or "8 clips  ·  8 files", Max size says "for
-  the video" or "per file", and the button says "Export 8 files" for separate files. Controls that do nothing
-  in the picked mode are hidden: Transition with separate files, the per-clip bitrate drop-downs and "Preset
-  (all clips)" when joining (presets set on clips are kept). The switch remembers the last choice, as the
-  question did, and AI editing's join_mode sets it.
+- Changed: with several clips, "One video | Separate files" is a switch right above the Summary, instead
+  of a question after Export (0.8.0 made it a question). So the panel shows what Export will make before you
+  press it: the Summary says "8 clips joined" or "8 clips  ·  8 files", Max size and Bitrate say "for the
+  video" or "per file", and the button says "Export 8 files" for separate files. Transition is hidden with
+  separate files. The switch remembers the last choice, as the question did, and AI editing's join_mode
+  sets it.
+- Changed: bitrate presets work with Fixed bitrate only. With the size limit every clip follows Max size,
+  and the per-clip bitrate drop-downs and "Preset (all clips)" are hidden; they show with Fixed bitrate for
+  separate files or a single clip. Presets set on clips are kept. (Before, a clip's preset replaced the size
+  limit for that clip when exporting separate files.)
+- Fix: the Resolution box could show nothing after opening a project or switching between the size limit
+  and a fixed bitrate (both change its list). The setting itself was right.
 - Fix: the Summary's size estimate with Fixed bitrate and Audio "Original" no longer stops with an error.
 
 2.9.0

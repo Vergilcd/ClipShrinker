@@ -1,6 +1,11 @@
 BITRATE PRESETS - CHANGELOG
 ===========================
 
+1.1.0 (Clip Shrinker 2.9.1)
+- Presets work with Fixed bitrate only. With the size limit every clip follows Max size, and the preset list
+  in the clip title bars and "Preset (all clips)" are hidden (presets set on clips are kept). They show with
+  Fixed bitrate for separate files or a single clip.
+
 1.0.0
 - Split out of Clip Shrinker 2.3 into its own plugin: the Bitrate presets window, the preset list in each
   clip's title bar, "Preset (all clips)" in the Export panel and the preset hotkeys.

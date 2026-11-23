@@ -59,7 +59,7 @@ public class Release21Tests
     [Fact]
     public void SeparateFilesGetTheirPreset()
     {
-        var s = AppState.FromSettings(null);
+        var s = AppState.FromSettings(new System.Text.Json.Nodes.JsonObject { ["bitrate"] = "8" });   // 2.9.1: presets need Fixed bitrate
         s.Suffix = "{preset}";
         var rows = new List<TimelineClip> { Row(@"C:\v\a.mp4", 10), Row(@"C:\v\b.mp4", 10) };
         rows[1].Preset = "Small";

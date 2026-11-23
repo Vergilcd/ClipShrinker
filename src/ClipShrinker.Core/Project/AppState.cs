@@ -254,6 +254,10 @@ public sealed class AppState
         };
     }
 
+    /// <summary>2.9.1: a clip's bitrate preset is used only with Fixed bitrate (the owner's call: presets are bitrates,
+    /// so with the size limit every clip follows Max size and the presets are hidden).</summary>
+    public Preset? UsedPreset(Func<string, Preset?> presetByName, string name) => FixedRate ? presetByName(name) : null;
+
     /// <summary>Settings that replace the global ones for one separately exported clip (its bitrate preset).</summary>
     public ExportSettings ClipOverride(ExportSettings st, Preset? p) =>
         p is null ? st : st with { BitrateMbps = p.Mbps, TargetMb = null, ResMode = Res == "Auto" ? "Original" : Res };

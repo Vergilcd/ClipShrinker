@@ -39,7 +39,7 @@ public static class ExportPlanner
     public static NameContext OneFileName(AppState state, ExportSettings st, IReadOnlyList<TimelineClip> rows, IReadOnlyList<ExportClip> clips,
                                           bool join, Func<string, Preset?> presetByName)
     {
-        var over = !join && rows[0].ActivePreset is { } n ? presetByName(n) : null;
+        var over = !join && rows[0].ActivePreset is { } n ? state.UsedPreset(presetByName, n) : null;
         return new NameContext(DateTime.Now, over?.Name, clips, join ? st : state.ClipOverride(st, over));
     }
 
@@ -48,7 +48,7 @@ public static class ExportPlanner
                                     string output, bool join, Func<string, Preset?> presetByName)
     {
         if (join) return new ExportJob(output, clips, st, false);
-        var over = rows[0].ActivePreset is { } n ? presetByName(n) : null;
+        var over = rows[0].ActivePreset is { } n ? state.UsedPreset(presetByName, n) : null;
         return new ExportJob(output, clips, state.ClipOverride(st, over), over is not null);
     }
 
@@ -62,7 +62,7 @@ public static class ExportPlanner
         var now = DateTime.Now;                              // one time for all files of this export
         for (int i = 0; i < clips.Count; i++)
         {
-            var over = rows[i].ActivePreset is { } n ? presetByName(n) : null;
+            var over = rows[i].ActivePreset is { } n ? state.UsedPreset(presetByName, n) : null;
             var cst = state.ClipOverride(st, over);
             string p = AutoPath(state, folder, Stem(clips[i].Path), used, exists, new NameContext(now, over?.Name, [clips[i]], cst));
             used.Add(p.ToLowerInvariant());

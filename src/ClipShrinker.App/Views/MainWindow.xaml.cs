@@ -31,6 +31,8 @@ public partial class MainWindow : Window, IDialogs
         vm.Dialogs = this;
         DataContext = vm;
         InitializeComponent();
+        KeepSelectionShown(ResCombo);
+        KeepSelectionShown(CodecCombo);
         RestoreGeometry();
         RefreshHints();
         toastTimer.Tick += (_, _) => FadeToast();
@@ -53,6 +55,24 @@ public partial class MainWindow : Window, IDialogs
         RightPill.Children.Insert(0, PicturePanel.ToggleButton());
         RightPill.Children.Insert(0, EqualizerPanel.ToggleButton());   // (2.6 Sound equalizer module)
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
+    }
+
+    /// <summary>2.9.1: a drop-down whose list is swapped (Resolution: Size limit / Fixed bitrate lists; Codec) sends null
+    /// back when its value is not in the new list. The view model ignores null, but the binding then reads the value
+    /// back into the box in the middle of the swap, and the closed box could keep showing nothing (about every second
+    /// project load, and when the size switch flips). Its SelectedItem binding is UpdateSourceTrigger=Explicit in the
+    /// XAML, and only a real selection is sent here; the view model then sets the value after the list is in.</summary>
+    static void KeepSelectionShown(ComboBox cb)
+    {
+        var dp = System.Windows.Controls.Primitives.Selector.SelectedItemProperty;
+        cb.SelectionChanged += (_, _) =>
+        {
+            if (cb.SelectedItem is not null) cb.GetBindingExpression(dp)?.UpdateSource();
+        };
+        // and after a list swap the value is read in again once the swap is done (a refresh of every binding at once,
+        // as after AI editing, may set the value before the list)
+        DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ComboBox)).AddValueChanged(cb, (_, _) =>
+            cb.Dispatcher.BeginInvoke(DispatcherPriority.Background, () => cb.GetBindingExpression(dp)?.UpdateTarget()));
     }
 
     /// <summary>The export bar glides to each new value (ffmpeg reports in steps); a reset to 0 jumps.</summary>

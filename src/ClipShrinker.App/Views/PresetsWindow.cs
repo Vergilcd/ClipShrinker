@@ -53,7 +53,7 @@ public sealed class PresetsWindow : Window
         head.SetResourceReference(StyleProperty, "SectionText");
         head.Margin = new Thickness(0, 0, 0, 3);
         Add(head, 0, 0, 5);
-        var info = Muted("Pick one for a clip in its title bar, or press its hotkey on the active clip. Used when the clips are exported as separate files.");
+        var info = Muted("Pick one for a clip in its title bar, or press its hotkey on the active clip. Used with Fixed bitrate, when the clips are exported as separate files (or for a single clip).");
         info.TextWrapping = TextWrapping.Wrap;
         info.MaxWidth = 400;
         info.HorizontalAlignment = HorizontalAlignment.Left;

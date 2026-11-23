@@ -197,6 +197,7 @@ public sealed partial class MainViewModel : ObservableObject
             S.SetFixedRate(value);
             OnPropertyChanged(nameof(FixedRate));
             OnPropertyChanged(nameof(SizeLimit));
+            OnPropertyChanged(nameof(PresetsShown));
             OnPropertyChanged(nameof(Bitrate));
             OnPropertyChanged(nameof(ResOptions));
             OnPropertyChanged(nameof(Res));
@@ -317,8 +318,8 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
     public bool OneVideo { get => !SeparateFiles; set { if (value) SeparateFiles = false; } }
-    /// <summary>Per-clip bitrate presets only matter for separate files (or a single clip).</summary>
-    public bool PresetsShown => PresetsModuleOn && (Clips.Count <= 1 || S.Separate(Clips.Count));
+    /// <summary>Per-clip bitrate presets are used with Fixed bitrate, for separate files or a single clip.</summary>
+    public bool PresetsShown => PresetsModuleOn && S.FixedRate && (Clips.Count <= 1 || S.Separate(Clips.Count));
     /// <summary>Transitions only matter when clips are joined.</summary>
     public bool TransitionShown => Clips.Count > 1 && !S.Separate(Clips.Count);
     public string SizeHint => Clips.Count > 1 && !S.Separate(Clips.Count) ? "for the video" : "per file";
