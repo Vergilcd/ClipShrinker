@@ -9,3 +9,7 @@
 *.ico binary
 *.exe binary
 *.syso binary
+*.gif binary
+
+# GitHub language bar: the frozen 1.0.8 Python copy is not part of the app
+tools/reference/** linguist-vendored
