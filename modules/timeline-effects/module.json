@@ -2,7 +2,7 @@
   "id": "timeline-effects",
   "name": "Timeline effects",
   "author": "Vergil",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "builtin": true,
   "description": "Speed up, slow motion, pause and zoom sections on the timeline, and RIFE AI slow-motion smoothing (RIFE is downloaded into this module's folder)."
 }

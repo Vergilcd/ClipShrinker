@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.9.0
+CLIP SHRINKER 2.9.1
 ===================
 
 GETTING STARTED
@@ -25,8 +25,10 @@ BASICS
   library\settings.json to reset everything, shortcuts included.
 
 ADDING AND TRIMMING CLIPS
-Drag videos onto the window, or click the "Add videos" strip (or the "Drop videos here" area when the list is
-empty). When you add a lot at once, a small window counts them until the thumbnails are ready.
+Drag videos onto the window, or click the "Add videos" strip (or "Add videos" in the "Drop videos here" area
+when the list is empty). When you add a lot at once, a small window counts them until the thumbnails are ready.
+"Clear all clips" (at the end of the "Add videos" strip, in the Project menu, or Ctrl + Shift + Delete) empties
+the list; Undo brings the clips back.
 
 Each clip gets its own thumbnail timeline. The active clip has a blue title bar; the preview and shortcuts work
 on it. Click a timeline or title bar to make it active, drag a title bar up or down to reorder (this is also the
@@ -52,14 +54,14 @@ folder is moved into "modules" by itself). All of them are on after the first st
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
   saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
   (OpenCL, any recent NVIDIA, AMD or Intel driver) and on the CPU otherwise, where exports get much slower.
-  Clips that stay HDR ("Convert HDR" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
+  Clips that stay HDR ("Fix HDR colours" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
   library folder has no denoise filter (an older copy): use the ffmpeg.exe and ffprobe.exe from the download.
 - Sound equalizer: five bands (60 Hz to 12 kHz, -12 to +12 dB) and Volume (-20 to +20 dB) for the whole
   export. Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
   and press Enter. Heard in the preview, used on every audio track of the export, and saved with projects. A
   limiter keeps boosted sound from clipping.
 - Sound track: your own sound files on a Sounds lane under each clip's thumbnails. Drop sound files (mp3,
-  wav, ogg, m4a, aac, flac, opus) on the lane where they should play, or open "Sounds" (next to Transition).
+  wav, ogg, m4a, aac, flac, opus) on the lane where they should play, or open "Sounds" (under the preview, after the effect buttons).
   It lists the green sounds in modules\sound-track\sounds ("Add files..." copies files there, "Open folder"
   opens it), each with its waveform: drag one onto a clip's lane, click its play button to listen, or its +
   to add it at the playhead (A adds the highlighted one). On the lane: drag a sound to move it, drag its ends to trim it, right-click or
@@ -79,38 +81,53 @@ folder is moved into "modules" by itself). All of them are on after the first st
   Claude session is connected.
 
 Timeline zoom: Ctrl + mouse wheel zooms around the pointer, the wheel alone then scrolls, and an overview bar
-at the bottom shows where you are. "Reset zoom" shows the whole clip again.
+at the bottom shows where you are. While a timeline is zoomed in, its title bar shows "Zoom x2.4" with a reset
+arrow: click it to show the whole clip again. The X at the end of a title bar removes the clip (Undo brings it back).
 
 EFFECTS (the band above the thumbnails - Timeline effects module)
 - S adds a speed-up section (blue), D a slow-down section (pink) at the playhead. Type the speed in the box on
   its header: 4 is four times faster, 0.5 is half speed (0.1 to 100, Enter confirms).
+- P adds a pause (orange line) at the playhead: the picture stops on that frame for the length typed in its
+  box (seconds), then the clip goes on from the same frame, so nothing is cut and the clip gets longer. The
+  clip's own sound is silent during it; sounds you added on the Sounds lane keep playing. Drag the line to move
+  it; right-click or Backspace removes it. It can sit inside a speed section.
 - Z adds a zoom section (white, header at the bottom of the timeline). While the playhead is inside it, a
   bracket on the preview marks the zoomed area; drag it to move it or drag its corners to resize it.
-- The Speed Up, Slow Down and Zoom buttons under the preview do the same: click one to add the effect at the
+- The Speed Up, Slow Down, Pause and Zoom buttons under the preview do the same: click one to add the effect at the
   playhead of the active clip, or drag it onto any clip's timeline to add it where you drop it.
 - Drag a section's edge lines to resize it, or its header or body to move it. Click to select a section;
   Delete or Backspace removes it, and right-click removes the one under the mouse. Sections can't overlap and
   stay inside the trimmed part.
 
 The line under a clip's title shows its length after editing. Pitch, frame blending, RIFE AI slow motion and
-zoom motion are set in "Effects". RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
+zoom motion are set in the effect settings (the gear button after Sounds, or F2). Hold a volume slider there
+to listen: a sample (normal sound, the effect, normal again) loops at that volume while you drag, and stops when
+you let go. RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
-- Size: "Max size (MB)" applies per file: to each clip, or to the whole video when joining. Enter a value in
-  "or Bitrate (Mbps)" instead to use a fixed bitrate (it is ignored when empty); the size limit is then
-  ignored and resolution offers Original, 4K, 1440p, 1080p, 720p or 50%.
-- Presets (Bitrate presets module): create them in "Bitrate presets" (name, bitrate, optional hotkey). Pick
+- Size: the switch at the top picks "Size limit" or "Fixed bitrate". Size limit: "Max size (MB)" applies
+  per file: to each clip, or to the whole video when joining, and the export lands just under it. Fixed
+  bitrate: every second of video gets the "Bitrate (Mbps)" you enter and there is no size limit; resolution
+  then offers Original, 4K, 1440p, 1080p, 720p or 50%. The switch keeps both numbers, so going back and forth
+  does not lose them.
+- Summary: the coloured box at its top says what you will get. With Size limit (green): "Under 50 MB" and about how
+  much video bitrate that size leaves for the clips' length (with separate files: for the longest clip), so a
+  size that is too small for a long video shows before you export. With Fixed bitrate: the expected size, in
+  amber because nothing limits it. Amber also means a value is missing.
+- Presets (Bitrate presets module): create them with the pencil button next to "Preset (all clips)" (name,
+  bitrate, optional hotkey). Pick
   one per clip in its title bar or with its hotkey, or set all clips at once with "Preset (all clips)". "Auto
-  bitrate" means the size or bitrate above. Presets are used when clips are saved as separate files.
+  bitrate" means the bitrate above. Presets work with Fixed bitrate, for separate files or a single clip;
+  the drop-downs are hidden otherwise (with the size limit every clip follows Max size).
 - Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger
-  than it is), codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
+  than it is; the open list says what each does), codec (shown as "HEVC · NVIDIA" and so on; HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
   or Windows on the GPU, and the Windows CPU encoder only when no graphics card encoder works; a project from
   another PC switches to the closest one; the open list marks the recommended one), centered crop to 21:9,
-  16:9, 16:10 or 4:3 (only wider clips get cut), and "Convert HDR clips to SDR".
-- Audio: Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track. ShadowPlay can
-  record game and microphone as two tracks. "Keep as separate tracks" saves both (Game audio / Microphone),
-  "Mix into one track" combines them (use this for Discord, browsers and phones), and "Mute microphone"
-  leaves the mic out.
+  16:9, 16:10 or 4:3 (only wider clips get cut), and "Fix HDR colours (convert to SDR)".
+- Audio: the audio bitrate is Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track.
+  ShadowPlay can record game and microphone as two tracks. "Keep separate" saves both (Game audio /
+  Microphone), "Mix all into one" combines them (use this for Discord, browsers and phones), and "Leave out
+  the microphone" leaves the mic out.
 - File names: prefix and suffix. They can hold dynamic labels that are filled in for each file: {date},
   {time}, {preset} (the clip's bitrate preset), {res} (output height, e.g. 1080p, 1440p or 4K), {size} (the
   size limit) and {codec} (HEVC or H264). Click a label button to insert it at the cursor of the box you
@@ -119,13 +136,14 @@ EXPORT SETTINGS (right side)
   so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick is greyed out while
   Prefix and Suffix are both empty.
 - Saving: "Export folder" (exports are saved there without asking; when empty, a save dialog asks at every
-  export) and "Save session on exit", which keeps the open clips when you close the program and opens them
-  again on the next start.
+  export) and "Reopen these clips next time", which keeps the open clips when you close the program and opens
+  them again on the next start.
 
 EXPORT (Ctrl+E)
-With several clips you choose between one joined video or a separate file per clip. The joined video uses the
-transition picked with the "Transition" button next to "Clear all clips" (shown with 2 or more clips; point at
-an effect in its list to see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
+With several clips, "Export as" at the top of the Export settings picks "One video" (the clips joined) or
+"Separate files" (a file per clip; the Export button then says how many). The joined video uses the transition picked
+with the "Transition" button at the right under the preview (shown when joining; point at an effect in its list to
+see a preview). ClipShrinker encodes with the chosen codec, checks the file size, and
 re-encodes with a corrected bitrate (up to 6 passes) until the file fits under the limit and lands close to it. The bar shows progress; the red
 button stops the export.
 
@@ -133,7 +151,7 @@ PROJECTS
 Ctrl+S saves the clips with their trims, effects and presets, plus the export settings, as a .clipproj file.
 Ctrl+Shift+S saves under a new name and Ctrl+O opens one. Clip paths on the same drive are stored relative to
 the project, so you can move the project folder. Ctrl+Z undoes; Ctrl+Shift+Z or Ctrl+Y redoes.
-"Save session on exit" (under SAVING) reopens the clips you had open when you closed the program.
+"Reopen these clips next time" (under SAVING) reopens the clips you had open when you closed the program.
 
 NOTES
 - Single clips keep their frame rate. Joined clips use the highest frame rate among them.

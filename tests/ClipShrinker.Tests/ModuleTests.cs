@@ -275,7 +275,7 @@ public class ModuleTests
         var row = Clip();
         row.Preset = "Discord";
         var preset = new Preset("Discord", 6, "");
-        var s = AppState.FromSettings(null);
+        var s = AppState.FromSettings(new System.Text.Json.Nodes.JsonObject { ["bitrate"] = "8" });   // 2.9.1: presets need Fixed bitrate
         var st = s.ToExportSettings(false, out _)!;
         var clips = ExportPlanner.PrepareClips(s, [row]);
         try
@@ -283,7 +283,7 @@ public class ModuleTests
             Features.BitratePresets = false;
             var job = ExportPlanner.OneFile(s, st, [row], clips, "C:/out/a.mp4", false, _ => preset);
             Assert.False(job.HasOverride);
-            Assert.Null(job.Settings.BitrateMbps);
+            Assert.Equal(8, job.Settings.BitrateMbps);                 // the Export panel's bitrate, not the preset's
             Assert.Equal("Discord", row.Preset);                       // kept
         }
         finally { Features.BitratePresets = true; }

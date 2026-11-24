@@ -31,6 +31,8 @@ public partial class MainWindow : Window, IDialogs
         vm.Dialogs = this;
         DataContext = vm;
         InitializeComponent();
+        KeepSelectionShown(ResCombo);
+        KeepSelectionShown(CodecCombo);
         RestoreGeometry();
         RefreshHints();
         toastTimer.Tick += (_, _) => FadeToast();
@@ -53,6 +55,24 @@ public partial class MainWindow : Window, IDialogs
         RightPill.Children.Insert(0, PicturePanel.ToggleButton());
         RightPill.Children.Insert(0, EqualizerPanel.ToggleButton());   // (2.6 Sound equalizer module)
         vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.Progress)) AnimateProgress(vm.Progress); };
+    }
+
+    /// <summary>2.9.1: a drop-down whose list is swapped (Resolution: Size limit / Fixed bitrate lists; Codec) sends null
+    /// back when its value is not in the new list. The view model ignores null, but the binding then reads the value
+    /// back into the box in the middle of the swap, and the closed box could keep showing nothing (about every second
+    /// project load, and when the size switch flips). Its SelectedItem binding is UpdateSourceTrigger=Explicit in the
+    /// XAML, and only a real selection is sent here; the view model then sets the value after the list is in.</summary>
+    static void KeepSelectionShown(ComboBox cb)
+    {
+        var dp = System.Windows.Controls.Primitives.Selector.SelectedItemProperty;
+        cb.SelectionChanged += (_, _) =>
+        {
+            if (cb.SelectedItem is not null) cb.GetBindingExpression(dp)?.UpdateSource();
+        };
+        // and after a list swap the value is read in again once the swap is done (a refresh of every binding at once,
+        // as after AI editing, may set the value before the list)
+        DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ComboBox)).AddValueChanged(cb, (_, _) =>
+            cb.Dispatcher.BeginInvoke(DispatcherPriority.Background, () => cb.GetBindingExpression(dp)?.UpdateTarget()));
     }
 
     /// <summary>The export bar glides to each new value (ffmpeg reports in steps); a reset to 0 jumps.</summary>
@@ -272,6 +292,7 @@ public partial class MainWindow : Window, IDialogs
             case "undo": vm.Undo(); break;
             case "redo" or "redo_alt": vm.Redo(); break;
             case "select_all": vm.SelectAll(); break;
+            case "clear_all": vm.ClearAllCommand.Execute(null); break;   // 2.9.1
             case "delete": vm.OnDelete(); break;
             case "delete_section": vm.OnBackspace(); break;
             case "play":
@@ -393,11 +414,13 @@ public partial class MainWindow : Window, IDialogs
     }
 
     /// <summary>The effect buttons under the preview, labelled with their current hotkeys (rebuilt when a key changes).</summary>
+    /// 2.9.1: dark text on all four (white on the blue, pink and orange was 3.7, 3.5 and 2.8 : 1; dark is 5.7, 6.0 and 7.5 : 1),
+    /// so the buttons keep the exact colours of their sections on the timeline.
     static readonly (string Act, string Name, string Bg, string Border, string Fg, string What)[] EffectButtons =
     [
-        ("speed", "Speed Up", "#3B82F6", "#3B82F6", "#FFFFFF", "a speed-up section (blue)"),
-        ("slow", "Slow Down", "#EC4899", "#EC4899", "#FFFFFF", "a slow-down section (pink)"),
-        ("pause", "Pause", "#F97316", "#F97316", "#FFFFFF", "a pause (orange: the picture stops, then the clip goes on)"),
+        ("speed", "Speed Up", "#3B82F6", "#3B82F6", "#111111", "a speed-up section (blue)"),
+        ("slow", "Slow Down", "#EC4899", "#EC4899", "#111111", "a slow-down section (pink)"),
+        ("pause", "Pause", "#F97316", "#F97316", "#111111", "a pause (orange: the picture stops, then the clip goes on)"),
         ("zoom", "Zoom", "#F4F4F5", "#C8C8C8", "#000000", "a zoom section (white)"),
     ];
     Point? chipDown;                                           // where the mouse went down on an effect button
@@ -465,8 +488,8 @@ public partial class MainWindow : Window, IDialogs
 
     void SetZoneHover(object sender, bool on)
     {
-        var dash = sender == DropZone ? DropZoneDash : AddStripDash;
-        dash.SetResourceReference(Shape.StrokeProperty, on ? "AccentFillColorDefaultBrush" : "ControlStrokeColorDefaultBrush");
+        if (sender == DropZone) { DropZoneTint.Opacity = on ? 0.12 : 0.06; return; }   // 2.9.1: always accent, a bit stronger on hover
+        AddStripDash.SetResourceReference(Shape.StrokeProperty, on ? "AccentFillColorDefaultBrush" : "ControlStrokeColorDefaultBrush");
     }
 
     void ProjectButton_Click(object sender, RoutedEventArgs e)

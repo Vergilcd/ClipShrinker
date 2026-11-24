@@ -15,7 +15,7 @@ public sealed class AboutWindow : Window
     public AboutWindow()
     {
         Title = $"About {C.AppName}";
-        Width = 820;
+        Width = 920;                                             // 2.9.1: the hand-wrapped texts fit at 13 px
         Height = 640;
         MinWidth = 560;
         MinHeight = 420;
@@ -29,17 +29,18 @@ public sealed class AboutWindow : Window
         var by = new TextBlock { Text = "Made with Claude (Anthropic) by Vergil. Free and open source (MIT license).", Margin = new Thickness(0, 4, 0, 2) };
         by.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
         head.Children.Add(by);
-        var link = new Hyperlink(new Run(C.RepoUrl)) { NavigateUri = new Uri(C.RepoUrl) };
+        var link = new Hyperlink(new Run("GitHub page")) { NavigateUri = new Uri(C.RepoUrl) };   // 2.9.1: words, not the address
         link.RequestNavigate += (_, e) => Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
         var linkRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
-        linkRow.Children.Add(new TextBlock(link) { VerticalAlignment = VerticalAlignment.Center, ToolTip = "Open the project page on GitHub (source code, releases, bug reports)" });
+        linkRow.Children.Add(new TextBlock(link) { VerticalAlignment = VerticalAlignment.Center, ToolTip = $"Open the project page on GitHub: source code, releases, bug reports ({C.RepoUrl})" });
         linkRow.Children.Add(UpdateLine());
         head.Children.Add(linkRow);
         head.Children.Add(new Separator { Margin = new Thickness(0, 0, 0, 12) });
         DockPanel.SetDock(head, Dock.Top);
         root.Children.Add(head);
 
-        var close = new Button { Content = "Close", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0), Padding = new Thickness(16, 5, 16, 6) };
+        var close = new Button { Content = "Close", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0), Padding = new Thickness(18, 5, 18, 6) };
+        close.SetResourceReference(StyleProperty, "AccentButtonStyle");   // 2.9.1: like Close / Done in the other windows
         close.Click += (_, _) => Close();
         DockPanel.SetDock(close, Dock.Bottom);
         root.Children.Add(close);
@@ -57,7 +58,7 @@ public sealed class AboutWindow : Window
                  })
             if (Read(path) is { } t) parts.Add($"{new string('=', 70)}\n{title}\n{new string('=', 70)}\n\n{t}");
         tabs.Items.Add(Tab("Licenses", parts.Count > 0 ? string.Join("\n\n\n", parts) : "No license files were found."));
-        tabs.Items.Add(Tab("Readme", Read(Path.Combine(docs, "README.txt")) ?? "README.txt was not found."));
+        tabs.Items.Add(Tab("User guide", Read(Path.Combine(docs, "README.txt")) ?? "README.txt was not found."));   // (README.txt is the guide)
         root.Children.Add(tabs);
         Content = root;
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) Close(); };
@@ -74,7 +75,7 @@ public sealed class AboutWindow : Window
     {
         var tb = new TextBox
         {
-            Text = text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, FontFamily = new FontFamily("Consolas"), FontSize = 12,
+            Text = text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, FontFamily = new FontFamily("Consolas"), FontSize = 13,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto, BorderThickness = new Thickness(0), Padding = new Thickness(12, 10, 12, 10),
         };
         return new TabItem { Header = title, Content = tb };

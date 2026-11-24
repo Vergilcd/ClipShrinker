@@ -33,7 +33,14 @@ public class AiModuleTests : IDisposable
         File.Delete(z);
         using var a = ZipFile.Open(z, ZipArchiveMode.Create);
         foreach (var (f, t) in entries)
-            using (var w = new StreamWriter(a.CreateEntry(f).Open())) w.Write(t);
+        {
+            // a fixed time: zips store it (2 s steps), so the same files zipped twice a moment apart could differ,
+            // and an unchanged part then looked like an update (the test failed about 2 runs in 10)
+            var e = a.CreateEntry(f);
+            e.LastWriteTime = new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
+            using var w = new StreamWriter(e.Open());
+            w.Write(t);
+        }
         return z;
     }
 

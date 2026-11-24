@@ -24,7 +24,7 @@ public sealed class ShortcutsWindow : Window
         WindowStartupLocation = WindowStartupLocation.Manual;
         SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
         static (string, string) K(string act) => (Text.KeyText[act], "@" + act);   // a rebindable shortcut
-        (string Desc, string Key)[] clips = [K("select_all"), K("delete"), ("Change the order by dragging a clip above or below another one.", "")];
+        (string Desc, string Key)[] clips = [K("select_all"), K("delete"), K("clear_all"), ("Change the order by dragging a clip above or below another one.", "")];
         if (vm.PresetsModuleOn)
             clips = [.. clips, ("Bitrate presets module: apply a preset with its hotkey or by choosing it in the clip's title bar.", "")];
         var sections = new List<(string, (string Desc, string Key)[])>
@@ -60,10 +60,13 @@ public sealed class ShortcutsWindow : Window
         for (int c = 0; c < 2; c++)
         {
             var col = new Grid { VerticalAlignment = VerticalAlignment.Top };
-            col.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) });
-            col.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            // 2.9.1: one column; each row lays out its text and keycaps itself (the keycaps share a width per column)
+            col.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(540) });
+            col.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0) });
             int r = 0;
-            foreach (var (title, items) in c == 0 ? sections.Take(2) : sections.Skip(2))
+            // 2.9.1: General, Preview and Trimming left, the rest right (it left a large empty block on the left)
+            Grid.SetIsSharedSizeScope(col, true);
+            foreach (var (title, items) in c == 0 ? sections.Take(3) : sections.Skip(3))
             {
                 if (r > 0) Add(col, new Separator { Margin = new Thickness(0, 14, 0, 0) }, r++, 0, 2);
                 var head = new TextBlock { Text = title };
@@ -81,8 +84,7 @@ public sealed class ShortcutsWindow : Window
                         firstTip = false;
                         continue;
                     }
-                    Add(col, new TextBlock { Text = desc, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 24, 2), VerticalAlignment = VerticalAlignment.Center }, r, 0);
-                    Add(col, BindRow(key[1..]), r++, 1);
+                    Add(col, Row(desc, key[1..]), r++, 0, 2);
                 }
             }
             Grid.SetColumn(col, c * 2);
@@ -97,7 +99,8 @@ public sealed class ShortcutsWindow : Window
         Grid.SetRow(note, 1);
         Grid.SetColumnSpan(note, 2);
         box.Children.Add(note);
-        var close = new Button { Content = "Close", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 18, 0, 0), Padding = new Thickness(16, 5, 16, 6) };
+        var close = new Button { Content = "Close", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 18, 0, 0), Padding = new Thickness(18, 5, 18, 6) };
+        close.SetResourceReference(StyleProperty, "AccentButtonStyle");   // 2.9.1: like the other windows
         close.Click += (_, _) => Close();
         Grid.SetRow(close, 1);
         Grid.SetColumn(close, 2);
@@ -106,11 +109,43 @@ public sealed class ShortcutsWindow : Window
         PreviewKeyDown += OnKey;
     }
 
+    /// <summary>The effect buttons' colours: a square before their rows instead of "(blue)" in the text.</summary>
+    static readonly Dictionary<string, string> EffectColour = new() { ["speed"] = "#3B82F6", ["slow"] = "#EC4899", ["pause"] = "#F97316", ["zoom"] = "#F4F4F5" };
+
+    /// <summary>2.9.1: one shortcut row: the text (with its effect's colour square), the keycaps, and a pencil that shows
+    /// with a light highlight while the row is under the mouse. A click anywhere on the row changes the key.</summary>
+    UIElement Row(string desc, string act)
+    {
+        var hb = BindRow(act);
+        var text = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 24, 0) };
+        if (EffectColour.TryGetValue(act, out var hex))
+        {
+            var sq = new System.Windows.Shapes.Rectangle { Width = 10, Height = 10, RadiusX = 3, RadiusY = 3, Margin = new Thickness(0, 1, 8, 0),
+                                                           Fill = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex)) };
+            if (act == "zoom") { sq.Stroke = System.Windows.Media.Brushes.Gray; sq.StrokeThickness = 1; }
+            text.Children.Add(sq);
+            desc = System.Text.RegularExpressions.Regex.Replace(desc, @" \((blue|pink|orange|white)\)", "");
+        }
+        text.Children.Add(new TextBlock { Text = desc, VerticalAlignment = VerticalAlignment.Center });
+        var g = new Grid();
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "Keys" });
+        Grid.SetColumn(hb, 1);
+        g.Children.Add(text);
+        g.Children.Add(hb);
+        var rowBox = new Border { Child = g, CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 0, 4, 0), Margin = new Thickness(-8, 0, -4, 0),
+                                  Background = System.Windows.Media.Brushes.Transparent, Cursor = Cursors.Hand, ToolTip = "Click to change this shortcut" };
+        rowBox.MouseEnter += (_, _) => { rowBox.SetResourceReference(Border.BackgroundProperty, "CsHover"); hb.SetHot(true); };
+        rowBox.MouseLeave += (_, _) => { rowBox.Background = System.Windows.Media.Brushes.Transparent; hb.SetHot(false); };
+        rowBox.MouseLeftButtonUp += (_, _) => hb.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent, hb));
+        return rowBox;
+    }
+
     /// <summary>One rebindable shortcut: its keys as keycaps with a pencil; a click opens the recording dialog
     /// (Save / Reset to the original / Cancel).</summary>
-    UIElement BindRow(string act)
+    HotkeyButton BindRow(string act)
     {
-        var hb = new HotkeyButton { Margin = new Thickness(0, 1, 0, 1), ToolTip = "Click to change this shortcut" };
+        var hb = new HotkeyButton { Margin = new Thickness(0, 1, 0, 1), InRow = true };
         AutomationProperties.SetHelpText(hb, act);
         void Refresh() => hb.Chord = vm.Keys[act];
         hb.Click += (_, _) =>

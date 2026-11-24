@@ -13,6 +13,19 @@
         <app:NotConverter x:Key="Not" />
         <app:IsNullConverter x:Key="IsNull" />
         <app:HintLookupConverter x:Key="HintLookup" />
+        <app:ShownTextConverter x:Key="Shown" />
+        <!-- 2.9.1: a list item with a second line that shows only in the open list (Resolution, Audio tracks) -->
+        <Style x:Key="OpenListOnly" TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="Opacity" Value="0.65" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,1,0,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}, Converter={StaticResource IsNull}}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="TopButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="Focusable" Value="False" />
@@ -23,9 +36,17 @@
             <Setter Property="MinWidth" Value="0" />
             <Setter Property="Focusable" Value="False" />
         </Style>
+        <!-- 2.9.1: Export panel fields fill their column, so their right edges line up with the switch above them -->
+        <!-- 2.9.1: a small button right of a field (Export folder "...", the presets pencil): as tall as the field -->
+        <Style x:Key="FieldButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="Padding" Value="11,0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Focusable" Value="False" />
+        </Style>
         <Style x:Key="SideCombo" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-            <Setter Property="Width" Value="190" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Margin" Value="0,3" />
         </Style>
     </Window.Resources>
@@ -55,6 +76,10 @@
                             <MenuItem Header="Open project..." InputGestureText="Ctrl+O" Command="{Binding OpenProjectDialogCommand}" />
                             <MenuItem Header="Save project" InputGestureText="Ctrl+S" Command="{Binding SaveProjectCmdCommand}" />
                             <MenuItem Header="Save project as..." InputGestureText="Ctrl+Shift+S" Command="{Binding SaveProjectAsCommand}" />
+                            <Separator />
+                            <!-- 2.9.1: moved here from the bar under the preview (it can be undone) -->
+                            <MenuItem Header="Clear all clips" InputGestureText="Ctrl+Shift+Del" Command="{Binding ClearAllCommand}"
+                                      IsEnabled="{Binding HasClips}" Foreground="{DynamicResource CsHeadX}" />
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
@@ -72,31 +97,31 @@
                         VerticalAlignment="Center" Background="Transparent" ToolTip="{Binding GpuTip}" AutomationProperties.Name="{Binding GpuText}">
                     <Border.Style>
                         <Style TargetType="Border">
-                            <Setter Property="BorderBrush" Value="#99808080" />
-                            <Setter Property="TextElement.Foreground" Value="#FF8A8A8A" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource CsBadgeIdle}" />
+                            <Setter Property="TextElement.Foreground" Value="{DynamicResource CsBadgeIdle}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding GpuOn}" Value="True">
-                                    <Setter Property="BorderBrush" Value="#2EA043" /><Setter Property="TextElement.Foreground" Value="#2EA043" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource CsBadgeOn}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource CsBadgeOn}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding GpuOn}" Value="False">
-                                    <Setter Property="BorderBrush" Value="#F0900A" /><Setter Property="TextElement.Foreground" Value="#F0900A" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource CsBadgeOff}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource CsBadgeOff}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <TextBlock Text="{Binding GpuText}" FontSize="12" />
-                </Border>
+                    <TextBlock Text="{Binding GpuText}" FontSize="12" />
+                </Border>
                 <!-- dev (AI editing module): is a Claude session connected? blue = yes, orange = no -->
                 <Border x:Name="AgentBadge" DockPanel.Dock="Right" Margin="0,0,8,0" Padding="11,2,11,3" CornerRadius="12" BorderThickness="1"
                         VerticalAlignment="Center" Background="Transparent" ToolTip="{Binding AgentTip}" AutomationProperties.Name="{Binding AgentText}"
                         Visibility="{Binding AgentModuleOn, Converter={StaticResource BoolToVis}}">
                     <Border.Style>
                         <Style TargetType="Border">
-                            <Setter Property="BorderBrush" Value="#F0900A" />
-                            <Setter Property="TextElement.Foreground" Value="#F0900A" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource CsBadgeOff}" />
+                            <Setter Property="TextElement.Foreground" Value="{DynamicResource CsBadgeOff}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding AgentConnected}" Value="True">
-                                    <Setter Property="BorderBrush" Value="#3B82F6" /><Setter Property="TextElement.Foreground" Value="#3B82F6" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource CsBadgeLink}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource CsBadgeLink}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -175,31 +200,26 @@
                         </Border>
                     </Grid>
                 </Border>
+                <!-- 2.9.1: only what goes on the clips: the effects and Sounds, a gear for the effect settings, and on the
+                     right Transition (when joining). Bitrate presets moved to the Export panel, Clear all clips to the
+                     Project menu and the "Add videos" strip. -->
                 <DockPanel Grid.Row="1" Margin="0,4,0,0" LastChildFill="False">
                     <!-- effect buttons: click = add at the playhead of the active clip, drag onto a timeline = add there -->
-                    <!-- (Timeline effects module) -->
-                    <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center"
+                    <!-- (Timeline effects module; dimmed until there is a clip) -->
+                    <StackPanel x:Name="EffectChips" Orientation="Horizontal" VerticalAlignment="Center" IsEnabled="{Binding HasClips}"
                                 Visibility="{Binding EffectsModuleOn, Converter={StaticResource BoolToVis}}" />
-                    <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Focusable="False" Content="Clear all clips"
-                            Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list" />
-                    <!-- 2.5: clip transitions as a drop-down (shown with 2 or more clips) -->
-                    <Grid DockPanel.Dock="Right" Margin="0,0,10,0" Visibility="{Binding HasManyClips, Converter={StaticResource BoolToVis}}">
-                        <ToggleButton x:Name="TransitionButton" Focusable="False" AutomationProperties.Name="Transition"
-                                      IsChecked="{Binding IsOpen, ElementName=TransitionPopup, Mode=TwoWay}"
-                                      IsHitTestVisible="{Binding IsOpen, ElementName=TransitionPopup, Converter={StaticResource Not}}"
-                                      ToolTip="How the clips blend into each other when they are joined into one video">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Transition" VerticalAlignment="Center" />
-                                <TextBlock Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Margin="8,1,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </ToggleButton>
-                        <Popup x:Name="TransitionPopup" PlacementTarget="{Binding ElementName=TransitionButton}" Placement="Bottom"
-                               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4">
-                            <local:TransitionPanel x:Name="TransitionPanel" />
-                        </Popup>
-                    </Grid>
+                    <Rectangle Width="1" Margin="0,5,8,5" Fill="{DynamicResource DividerStrokeColorDefaultBrush}"
+                               Visibility="{Binding EffectsModuleOn, Converter={StaticResource BoolToVis}}" />
                     <!-- 2.7 Sound track module: the sound library and the selected sound's settings -->
-                    <Grid DockPanel.Dock="Right" Margin="0,0,10,0" Visibility="{Binding SoundModuleOn, Converter={StaticResource BoolToVis}}">
+                    <Grid Margin="0,0,8,0" Visibility="{Binding SoundModuleOn, Converter={StaticResource BoolToVis}}" IsEnabled="{Binding HasClips}">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <!-- dimmed like the effect buttons until there is a clip (Fluent barely greys a disabled button) -->
+                                    <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.35" /></Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
                         <ToggleButton x:Name="SoundsButton" Focusable="False" AutomationProperties.Name="Sounds"
                                       IsChecked="{Binding IsOpen, ElementName=SoundsPopup, Mode=TwoWay}"
                                       IsHitTestVisible="{Binding IsOpen, ElementName=SoundsPopup, Converter={StaticResource Not}}"
@@ -215,13 +235,27 @@
                             <local:SoundsPanel />
                         </Popup>
                     </Grid>
-                    <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Effects" Click="Effects_Click"
+                    <Button Style="{StaticResource TopButton}" Click="Effects_Click" MinWidth="40" Padding="11,0" VerticalAlignment="Stretch"
+                            Content="&#xE713;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15"
+                            AutomationProperties.Name="Effect settings"
                             Visibility="{Binding EffectsModuleOn, Converter={StaticResource BoolToVis}}"
-                            ToolTip="Speed up / slow motion / zoom effects (F2). Changes are kept automatically." />
-                    <!-- (Bitrate presets module) -->
-                    <Button DockPanel.Dock="Right" Style="{StaticResource TopButton}" Margin="0,0,10,0" Content="Bitrate presets" Click="Presets_Click"
-                            Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}"
-                            ToolTip="Bitrate presets: name, Mbps and a hotkey. Pick one for each clip when exporting separate files" />
+                            ToolTip="Effect settings: speed up, slow motion, pause and zoom (F2). Changes are kept automatically." />
+                    <!-- 2.5: clip transitions as a drop-down (shown with 2 or more clips) -->
+                    <Grid DockPanel.Dock="Right" Visibility="{Binding TransitionShown, Converter={StaticResource BoolToVis}}">
+                        <ToggleButton x:Name="TransitionButton" Focusable="False" AutomationProperties.Name="Transition"
+                                      IsChecked="{Binding IsOpen, ElementName=TransitionPopup, Mode=TwoWay}"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=TransitionPopup, Converter={StaticResource Not}}"
+                                      ToolTip="How the clips blend into each other when they are joined into one video">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Transition" VerticalAlignment="Center" />
+                                <TextBlock Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Margin="8,1,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </ToggleButton>
+                        <Popup x:Name="TransitionPopup" PlacementTarget="{Binding ElementName=TransitionButton}" Placement="Bottom"
+                               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4">
+                            <local:TransitionPanel x:Name="TransitionPanel" />
+                        </Popup>
+                    </Grid>
                 </DockPanel>
             </Grid>
 
@@ -242,17 +276,29 @@
                                                 MouseLeftButtonDown="Head_MouseDown" MouseMove="Head_MouseMove" MouseLeftButtonUp="Head_MouseUp"
                                                 ToolTip="Click to select - drag up or down to change the order of the clips">
                                             <DockPanel>
-                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadRemoveButton}" Content="&#xE711;" FontSize="12"
-                                                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" ToolTip="Remove this clip from the list"
+                                                <!-- 2.9.1: a quiet X in the title bar's own text colour, red only while pointed at -->
+                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadQuietX}" Content="&#xE711;"
+                                                        Foreground="{Binding Foreground, ElementName=TitleText}"
+                                                        AutomationProperties.Name="Remove clip" ToolTip="Remove this clip from the list (Undo brings it back)"
                                                         Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding ZoomLabel}" FontSize="12" VerticalAlignment="Center" Margin="8,0" x:Name="ZoomText" />
-                                                <Button DockPanel.Dock="Right" Style="{StaticResource HeadButton}" Content="Reset zoom" Click="Fit_Click"
-                                                        ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)" />
+                                                <!-- 2.9.1: the zoom amount and its reset in one chip, only while this timeline is zoomed in -->
+                                                <Button x:Name="ZoomChip" DockPanel.Dock="Right" Style="{StaticResource ZoomChip}" Click="Fit_Click"
+                                                        Foreground="{Binding Foreground, ElementName=TitleText}"
+                                                        Visibility="{Binding IsZoomed, Converter={StaticResource BoolToVis}}"
+                                                        AutomationProperties.Name="Reset zoom" ToolTip="Show the whole clip again (zoom: Ctrl + mouse wheel)">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding ZoomChipText}" VerticalAlignment="Center" />
+                                                        <Border Width="18" Height="18" CornerRadius="9" Margin="8,0,0,0" Background="#2E000000">
+                                                            <TextBlock Text="&#xE777;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                </Button>
                                                 <ComboBox DockPanel.Dock="Right" Width="240" Height="24" Margin="0,0,10,0" FontSize="12" Padding="9,2" MinHeight="0" Focusable="False" VerticalContentAlignment="Center"
-                                                          Visibility="{Binding DataContext.PresetsModuleOn, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
+                                                          Visibility="{Binding DataContext.PresetsShown, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
                                                           Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}"
                                                           ItemsSource="{Binding PresetLabels}" SelectedItem="{Binding PresetLabel}" PreviewMouseWheel="Combo_NoWheel"
-                                                          ToolTip="Bitrate of this clip when the clips are exported as separate files: Auto bitrate = the size / bitrate from the Export panel. Presets are made in the Bitrate presets window.">
+                                                          ToolTip="Bitrate of this clip when the clips are exported as separate files: Auto bitrate = the bitrate from the Export panel. Presets are made in the Bitrate presets window.">
                                                     <ComboBox.Style>
                                                         <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
                                                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
@@ -286,39 +332,13 @@
                                         <Setter TargetName="Head" Property="Background" Value="{DynamicResource CsAccent}" />
                                         <Setter TargetName="TitleText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
                                         <Setter TargetName="InfoText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
-                                        <Setter TargetName="ZoomText" Property="Foreground" Value="{DynamicResource CsOnAccent}" />
+                                        <Setter TargetName="ZoomChip" Property="Background" Value="{DynamicResource CsChipOnAccentBg}" />
+                                        <Setter TargetName="ZoomChip" Property="BorderBrush" Value="{DynamicResource CsChipOnAccentBorder}" />
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
-                    <!-- "Drop videos here" (no clips) -->
-                    <Border x:Name="DropZone" Height="180" Margin="4,6" Cursor="Hand" Background="Transparent"
-                            MouseLeftButtonUp="DropZone_Click" MouseEnter="Zone_MouseEnter" MouseLeave="Zone_MouseLeave">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasClips}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <Grid>
-                            <Rectangle x:Name="DropZoneDash" RadiusX="18" RadiusY="18" StrokeThickness="2" StrokeDashArray="3.5 2.5"
-                                       Stroke="{DynamicResource ControlStrokeColorDefaultBrush}" />
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Grid Width="68" Height="44" HorizontalAlignment="Center">
-                                    <Rectangle Stroke="{DynamicResource TextFillColorSecondaryBrush}" StrokeThickness="3" />
-                                    <Polygon Points="26,11 26,33 47,22" Fill="{DynamicResource AccentFillColorDefaultBrush}" />
-                                </Grid>
-                                <TextBlock Text="Drop videos here" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,12,0,0" />
-                                <TextBlock Text="or click to browse  -  several clips can be trimmed, sped up and joined"
-                                           Style="{StaticResource MutedText}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
 
                     <!-- "+ Add videos" strip (with clips) -->
                     <Border x:Name="AddStrip" Height="34" Margin="0,0,0,4" Cursor="Hand" Background="Transparent"
@@ -329,10 +349,35 @@
                                        Stroke="{DynamicResource ControlStrokeColorDefaultBrush}" />
                             <TextBlock Text="+  Add videos  -  drop files here or click to browse" Style="{StaticResource MutedText}"
                                        HorizontalAlignment="Center" />
+                            <!-- 2.9.1: also in the Project menu; quiet until pointed at, since it empties the list -->
+                            <Button HorizontalAlignment="Right" Margin="0,0,4,0" Style="{StaticResource QuietDangerButton}" Content="Clear all clips"
+                                    Command="{Binding ClearAllCommand}" ToolTip="Remove all clips from the list (Ctrl+Shift+Del). Undo brings them back." />
                         </Grid>
                     </Border>
                 </StackPanel>
             </ScrollViewer>
+
+            <!-- "Drop videos here" (no clips): 2.9.1 fills the clip area, with the accent outline and an Add videos button -->
+            <Border x:Name="DropZone" Grid.Row="3" Margin="12,6,9,14" Cursor="Hand" Background="Transparent"
+                    MouseLeftButtonUp="DropZone_Click" MouseEnter="Zone_MouseEnter" MouseLeave="Zone_MouseLeave"
+                    Visibility="{Binding HasClips, Converter={StaticResource NotBoolToVis}}">
+                <Grid>
+                    <Rectangle x:Name="DropZoneTint" RadiusX="18" RadiusY="18" Fill="{DynamicResource AccentFillColorDefaultBrush}" Opacity="0.06" />
+                    <Rectangle x:Name="DropZoneDash" RadiusX="18" RadiusY="18" StrokeThickness="2" StrokeDashArray="3.5 2.5"
+                               Stroke="{DynamicResource AccentFillColorDefaultBrush}" />
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Grid Width="68" Height="44" HorizontalAlignment="Center">
+                            <Rectangle Stroke="{DynamicResource TextFillColorSecondaryBrush}" StrokeThickness="3" />
+                            <Polygon Points="26,11 26,33 47,22" Fill="{DynamicResource AccentFillColorDefaultBrush}" />
+                        </Grid>
+                        <TextBlock Text="Drop videos here" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                        <TextBlock Text="several clips can be trimmed, sped up and joined"
+                                   Style="{StaticResource MutedText}" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                        <Button Content="Add videos" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,16,0,0"
+                                Padding="18,6" Focusable="False" Command="{Binding AddVideosCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
 
         <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
@@ -352,9 +397,9 @@
             </DockPanel>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16,0,14,8">
-                <Grid>
+                <Grid Grid.IsSharedSizeScope="True">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -368,42 +413,108 @@
                         <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="Max size (MB):" Style="{StaticResource FieldLabel}" />
-                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
-                        <TextBox Width="70" AutomationProperties.Name="Max size (MB)" Text="{Binding Size, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding SizeEnabled}"
+                    <!-- 2.9.1: "Export as" (One video / Separate files, 2 or more clips), then Size limit | Fixed bitrate and only
+                         the picked one's box -->
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="2">
+                    <Grid Visibility="{Binding HasManyClips, Converter={StaticResource BoolToVis}}" Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Export as:" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="OutputCombo" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Export as"
+                                  ItemsSource="{Binding OutputChoices}" SelectedIndex="{Binding OutputIndex}"
+                                  ToolTip="One video joins the clips (with the transition picked under the preview); Separate files makes a file per clip">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" />
+                                        <!-- the line under it only in the open list -->
+                                        <TextBlock Text="{Binding Detail}" Opacity="0.65" FontSize="12" Margin="0,1,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}, Converter={StaticResource IsNull}}" Value="False">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Border Margin="0,2,0,6" Padding="3" CornerRadius="6" BorderThickness="1"
+                            Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}">
+                        <UniformGrid Columns="2">
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="RateMode" Content="Size limit" Margin="0,0,2,0"
+                                         IsChecked="{Binding SizeLimit}" AutomationProperties.Name="Size limit"
+                                         ToolTip="The export lands just under the size you set (the bitrate is worked out for you)" />
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="RateMode" Content="Fixed bitrate" Margin="2,0,0,0"
+                                         IsChecked="{Binding FixedRate}" AutomationProperties.Name="Fixed bitrate"
+                                         ToolTip="Every second of video gets the same bitrate; the file is as big as that makes it (no size limit)" />
+                        </UniformGrid>
+                    </Border>
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="1" Text="Max size (MB):" Style="{StaticResource FieldLabel}"
+                               Visibility="{Binding SizeLimit, Converter={StaticResource BoolToVis}}" />
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3"
+                                Visibility="{Binding SizeLimit, Converter={StaticResource BoolToVis}}">
+                        <TextBox Width="70" AutomationProperties.Name="Max size (MB)" Text="{Binding Size, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Largest allowed file size in MB (per file, or for the whole video when joining)" />
                         <TextBlock Text="{Binding SizeHint}" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
                     </StackPanel>
 
-                    <TextBlock Grid.Row="1" Text="or Bitrate (Mbps):" Style="{StaticResource FieldLabel}" />
-                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                    <TextBlock Grid.Row="1" Text="Bitrate (Mbps):" Style="{StaticResource FieldLabel}"
+                               Visibility="{Binding FixedRate, Converter={StaticResource BoolToVis}}" />
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3"
+                                Visibility="{Binding FixedRate, Converter={StaticResource BoolToVis}}">
                         <TextBox Width="70" AutomationProperties.Name="Bitrate (Mbps)" Text="{Binding Bitrate, UpdateSourceTrigger=PropertyChanged}"
-                                 ToolTip="Fixed video bitrate in Mbps. When filled in, the size limit is ignored." />
-                        <TextBlock Text="ignored if empty" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
+                                 ToolTip="Fixed video bitrate in Mbps, e.g. 20" />
+                        <TextBlock Text="{Binding SizeHint}" Style="{StaticResource MutedText}" Margin="6,0,0,0" />
                     </StackPanel>
 
                     <!-- (Bitrate presets module) -->
                     <TextBlock Grid.Row="2" Text="Preset (all clips):" Style="{StaticResource FieldLabel}"
-                               Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}" />
-                    <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Bitrate preset for all clips"
-                              ItemsSource="{Binding AllPresetOptions}" SelectedItem="{Binding AllPreset}"
-                              Visibility="{Binding PresetsModuleOn, Converter={StaticResource BoolToVis}}"
-                              ToolTip="Sets the bitrate preset of every clip at once (used when the clips are exported as separate files). Auto = the size / bitrate above." />
+                               Visibility="{Binding PresetsShown, Converter={StaticResource BoolToVis}}" />
+                    <!-- 2.9.1: the pencil opens the Bitrate presets window (moved here from the bar under the preview) -->
+                    <DockPanel Grid.Row="2" Grid.Column="1" Margin="0,3" Visibility="{Binding PresetsShown, Converter={StaticResource BoolToVis}}">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource FieldButton}" Click="Presets_Click"
+                                Content="&#xE70F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                AutomationProperties.Name="Edit bitrate presets" ToolTip="Edit the bitrate presets: name, Mbps and a hotkey" />
+                        <ComboBox Style="{StaticResource SideCombo}" Margin="0" AutomationProperties.Name="Bitrate preset for all clips"
+                                  ItemsSource="{Binding AllPresetOptions}" SelectedItem="{Binding AllPreset}"
+                                  ToolTip="Sets the bitrate preset of every clip at once (used when the clips are exported as separate files). Auto = the bitrate above." />
+                    </DockPanel>
 
                     <TextBlock Grid.Row="3" Text="Resolution:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="3" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Resolution" ItemsSource="{Binding ResOptions}" SelectedItem="{Binding Res}" />
+                    <ComboBox x:Name="ResCombo" Grid.Row="3" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Resolution" ItemsSource="{Binding ResOptions}" SelectedItem="{Binding Res, UpdateSourceTrigger=Explicit}"
+                              ToolTip="Size of the exported video. Auto keeps the full size unless the size limit leaves too little bitrate for it. 4K, 1440p, 1080p and 720p set the height and never make a clip larger than it is.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding}" />
+                                    <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=reshint}" Style="{StaticResource OpenListOnly}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Grid.Row="4" Text="Codec:" Style="{StaticResource FieldLabel}" />
                     <!-- 2.6: in the open list each codec has a short hint ("- recommended for your NVIDIA GPU"); the closed box shows
                          only the name -->
                     <ComboBox x:Name="CodecCombo" Grid.Row="4" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Codec"
-                              ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec}"
-                              ToolTip="Video encoder. Open the list for a hint on which one fits this PC best.">
+                              ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec, UpdateSourceTrigger=Explicit}"
+                              ToolTip="Video encoder: HEVC makes smaller files for the same quality, H.264 plays on older devices. NVIDIA, AMD and Intel encode on that graphics card. Open the list for a hint on which one fits this PC best.">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
-                                    <TextBlock Text="{Binding}" />
-                                    <TextBlock Opacity="0.65" FontSize="11" Margin="0,1,0,0">
+                                    <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=codec}" />
+                                    <TextBlock Opacity="0.65" FontSize="12" Margin="0,1,0,0">
                                         <TextBlock.Text>
                                             <MultiBinding Converter="{StaticResource HintLookup}">
                                                 <Binding />
@@ -426,23 +537,32 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <TextBlock Grid.Row="5" Text="Crop (centered):" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="5" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Crop" ItemsSource="{Binding Crops}" SelectedItem="{Binding Crop}" />
+                    <TextBlock Grid.Row="5" Text="Crop:" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Row="5" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Crop" ItemsSource="{Binding Crops}" SelectedItem="{Binding Crop}"
+                              ToolTip="Cuts the picture to this shape, keeping the middle: e.g. 16:9 from an ultrawide 21:9 recording. Clips that are already this shape or narrower are not cut." />
                     <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CropInfo}" Style="{StaticResource SmallMutedText}" Margin="0,0,0,2" />
 
-                    <CheckBox Grid.Row="7" Grid.ColumnSpan="2" Content="Convert HDR clips to SDR (tone-map)" IsChecked="{Binding Hdr}"
-                              Focusable="False" Margin="0,4" ToolTip="Fixes dark, washed-out colours of HDR recordings" />
+                    <CheckBox Grid.Row="7" Grid.ColumnSpan="2" Content="Fix HDR colours (convert to SDR)" IsChecked="{Binding Hdr}"
+                              Focusable="False" Margin="0,4" ToolTip="HDR recordings look dark and washed out on most screens and sites. This converts them to normal (SDR) colours (tone-mapping). Untick to keep HDR." />
 
                     <Separator Grid.Row="9" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
                     <TextBlock Grid.Row="10" Grid.ColumnSpan="2" Text="AUDIO SETTINGS" Style="{StaticResource SectionText}" />
 
-                    <TextBlock Grid.Row="11" Text="Bitrate per track:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate per track" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}" />
+                    <TextBlock Grid.Row="11" Text="Audio bitrate:" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}"
+                              ToolTip="Bitrate of each audio track. Original keeps the clips' own audio bitrate." />
 
                     <TextBlock Grid.Row="12" Text="Audio tracks:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" Width="200" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}" />
+                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}"
+                              ToolTip="Mix all into one: game and microphone in one track (use this for Discord, browsers and phones; many players play only the first track). Keep separate: each track stays its own (Game audio / Microphone).">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=tracks}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                    <CheckBox Grid.Row="13" Grid.ColumnSpan="2" Content="Mute microphone (2nd audio track)" IsChecked="{Binding MuteMic}"
+                    <CheckBox Grid.Row="13" Grid.ColumnSpan="2" Content="Leave out the microphone (2nd track)" IsChecked="{Binding MuteMic}"
                               Focusable="False" Margin="0,4"
                               ToolTip="Leave out the second audio track (ShadowPlay microphone) in the preview and export" />
 
@@ -452,17 +572,17 @@
                     <!-- dynamic labels: filled in when a file is named; the buttons insert one at the cursor of Prefix / Suffix -->
                     <StackPanel Grid.Row="16" Grid.ColumnSpan="2" Margin="0,0,0,4">
                         <TextBlock Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,0,0,3"
-                                   Text="You can add dynamic labels to prefixes and suffixes by clicking on the buttons or typing their code. (visible on hover)" />
+                                   Text="Click a label to put it in Prefix or Suffix; it is filled in when a file is named. Point at a label to see its code, e.g. {date}." />
                         <WrapPanel x:Name="TokenPanel" />
                     </StackPanel>
 
                     <TextBlock Grid.Row="17" Text="Prefix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox x:Name="PrefixBox" Grid.Row="17" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBox x:Name="PrefixBox" Grid.Row="17" Grid.Column="1" Margin="0,3"
                              AutomationProperties.Name="Prefix" Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
                              ToolTip="Added before the clip name with an underscore, e.g. prefix_clip.mp4 (empty = nothing). May hold dynamic labels like {date}." />
 
                     <TextBlock Grid.Row="18" Text="Suffix:" Style="{StaticResource FieldLabel}" />
-                    <TextBox x:Name="SuffixBox" Grid.Row="18" Grid.Column="1" Width="190" HorizontalAlignment="Left" Margin="0,3"
+                    <TextBox x:Name="SuffixBox" Grid.Row="18" Grid.Column="1" Margin="0,3"
                              AutomationProperties.Name="Suffix" Text="{Binding Suffix, UpdateSourceTrigger=PropertyChanged}" GotKeyboardFocus="NameBox_Focus"
                              ToolTip="Added after the clip name with an underscore, e.g. clip_suffix.mp4 (empty = nothing). May hold dynamic labels like {codec}." />
 
@@ -476,16 +596,31 @@
 
                     <TextBlock Grid.Row="22" Text="Export folder:" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" Margin="0,8,12,4" />
                     <StackPanel Grid.Row="22" Grid.Column="1" Margin="0,3">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox Width="146" AutomationProperties.Name="Export folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="Exports are saved here without asking (empty = a save dialog asks every time)" />
-                            <Button Content="..." Margin="6,0,0,0" Padding="10,4" MinWidth="0" Focusable="False" Click="PickSaveDir_Click" ToolTip="Choose the folder" />
-                        </StackPanel>
-                        <TextBlock Text="Asks at export when empty." Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource FieldButton}" Content="..." Click="PickSaveDir_Click" ToolTip="Choose the folder" />
+                            <TextBox AutomationProperties.Name="Export folder" Text="{Binding SaveDir, UpdateSourceTrigger=PropertyChanged}">
+                                <!-- 2.9.1: the whole path first, since a long one is cut off in the box -->
+                                <TextBox.ToolTip>
+                                    <StackPanel MaxWidth="520">
+                                        <TextBlock Text="{Binding SaveDir}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="Exports are saved here without asking (empty = a save dialog asks every time)" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </TextBox.ToolTip>
+                            </TextBox>
+                        </DockPanel>
+                        <TextBlock Text="Empty: asks where to save at every export." Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
                     </StackPanel>
 
-                    <CheckBox Grid.Row="23" Grid.ColumnSpan="2" Content="Save session on exit" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,4"
-                              AutomationProperties.Name="Save session on exit"
+                    <CheckBox Grid.Row="23" Grid.ColumnSpan="2" Content="Reopen these clips next time" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,4"
+                              AutomationProperties.Name="Reopen these clips next time"
                               ToolTip="Keep the open clips (with trims, effects and presets) when the program closes, and open them again on the next start." />
                 </Grid>
             </ScrollViewer>
@@ -496,15 +631,45 @@
             <Border Grid.Row="3" Background="{DynamicResource CsFoot}" Padding="16,14,14,12">
                 <StackPanel>
                     <TextBlock Text="SUMMARY" Style="{StaticResource SectionText}" Margin="0,0,0,5" />
-                    <TextBlock Text="{Binding Summary1}" FontSize="11" TextWrapping="Wrap" />
+                    <!-- 2.9.1: what the export promises, large: green when the size limit holds, amber when no size limit
+                         applies or a value is missing -->
+                    <Border x:Name="ResultBox" Margin="0,0,0,8" Padding="10,7,10,9" CornerRadius="6"
+                            AutomationProperties.AutomationId="SummaryResult">
+                        <StackPanel>
+                            <TextBlock x:Name="ResultBigText" Text="{Binding ResultBig}" FontSize="26" FontWeight="SemiBold" TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource CsOkText}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ResultWarn}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource CsWarnText}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock x:Name="ResultSubText" Text="{Binding ResultSub}" FontSize="13" TextWrapping="Wrap" Margin="0,2,0,0"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" Opacity="0.85" />
+                        </StackPanel>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource CsOkBg}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ResultWarn}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource CsWarnBg}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+                    <TextBlock Text="{Binding Summary1}" FontSize="12" TextWrapping="Wrap" />
                     <Rectangle Height="1" Margin="0,3" Fill="{DynamicResource CsFootLine}" />
-                    <TextBlock Text="{Binding Summary2}" FontSize="11" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Summary2}" FontSize="12" TextWrapping="Wrap" />
                     <Rectangle Height="1" Margin="0,3" Fill="{DynamicResource CsFootLine}" />
-                    <TextBlock Text="{Binding Summary3}" FontSize="11" TextWrapping="Wrap" />
-                    <Rectangle Height="1" Margin="0,3" Fill="{DynamicResource CsFootLine}" />
-                    <TextBlock Text="{Binding Summary4}" FontSize="11" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Summary4}" FontSize="12" TextWrapping="Wrap" />
 
-                    <DockPanel Margin="0,16,0,0">
+                    <!-- 2.9.1: the bar shows once an export has started (then keeps its "Done in ..." until the next one) -->
+                    <DockPanel Margin="0,16,0,0" Visibility="{Binding ShowProgress, Converter={StaticResource BoolToVis}}">
                         <Button DockPanel.Dock="Right" Content="Open folder" Margin="8,0,0,0" Focusable="False"
                                 Command="{Binding OpenOutputFolderCommand}">
                             <Button.Style>
@@ -535,7 +700,15 @@
                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource CsProgressText}" Text="{Binding ProgressCaption}" AutomationProperties.AutomationId="ProgressCaption" />
                         </Grid>
                     </DockPanel>
-                    <TextBlock AutomationProperties.AutomationId="ExportMessage" Text="{Binding ExportMessage}" Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" Margin="0,4,0,0" MinHeight="15" />
+                    <TextBlock AutomationProperties.AutomationId="ExportMessage" Text="{Binding ExportMessage}" TextWrapping="Wrap" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource SmallMutedText}">
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <!-- Export, and while exporting a red Abort (lighter red on hover) in its place -->
                     <Grid Margin="0,10,0,0">
                         <Button Height="40" HorizontalAlignment="Stretch" FontSize="14" Focusable="False" Style="{StaticResource AccentButtonStyle}"

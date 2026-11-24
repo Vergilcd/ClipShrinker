@@ -7,7 +7,8 @@ param(
     [string]$ShotScript
 )
 # Phase 3 check: drives the WPF app with UI Automation the way a user would:
-# Project > Open project..., set the save folder, Export, choose join / separate, wait for "Done in ...".
+# Project > Open project..., set the save folder, pick One video / Separate files (2.9.1: "Export as" in the Export panel
+# instead of a question after Export), Export, wait for "Done in ...". -Choice still takes the old answers too.
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
 $A = [System.Windows.Automation.AutomationElement]
@@ -45,10 +46,15 @@ try {
 
     SetText (Find $win $A::NameProperty "Export folder") $OutDir
     Start-Sleep -Milliseconds 800
+    $mode = if ($Choice -like "Each*" -or $Choice -like "Separate*") { "Separate files" } else { "One video" }
+    $combo = Find $win $A::NameProperty "Export as"                 # 2.9.1: the "Export as" drop-down (2 or more clips)
+    $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+    Start-Sleep -Milliseconds 400
+    (Find $combo $A::NameProperty $mode).GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse()
+    Start-Sleep -Milliseconds 300
     Invoke (Find $win $A::AutomationIdProperty "GoButton")
-    $choiceWin = Find $root $A::NameProperty "Export"
-    Invoke (Find $choiceWin $A::NameProperty $Choice)
-    "export started ($Choice)"
+    "export started ($mode)"
 
     $cap = Find $win $A::AutomationIdProperty "ProgressCaption"
     $sw = [Diagnostics.Stopwatch]::StartNew()

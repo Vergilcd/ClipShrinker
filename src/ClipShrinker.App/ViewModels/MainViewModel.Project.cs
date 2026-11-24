@@ -202,9 +202,16 @@ public sealed partial class MainViewModel
         SetPresets(list);
     }
 
+    /// <summary>2.9.1: asks first (presets are global and their deletion can't be undone), saying how many clips use it;
+    /// those clips go back to Auto bitrate.</summary>
     public void DeletePreset(int index)
     {
         if (index < 0 || index >= presets.Count) return;
+        var p = presets[index];
+        int used = Clips.Count(c => c.Row.Preset == p.Name);
+        string clips = used == 0 ? "" : used == 1 ? "\n1 clip uses it; it goes back to Auto bitrate." : $"\n{used} clips use it; they go back to Auto bitrate.";
+        if (Dialogs.Choice("Delete preset", $"Delete \"{p.Name}\" ({Core.Py.Py.G(p.Mbps)} Mbps)?{clips}\nThis cannot be undone.",
+                           ["Delete", "Cancel"], 1, 1) != 0) return;
         var list = presets.ToList();
         list.RemoveAt(index);
         SetPresets(list);

@@ -1,5 +1,5 @@
 # Phase 6 check in the real app: undo / redo, save project (Ctrl+S), bitrate presets editor, key rebinding,
-# the close dialog and "Save session on exit". UI Automation for buttons and fields; real key presses only where
+# the close dialog and "Reopen these clips next time" (was "Save session on exit"). UI Automation for buttons and fields; real key presses only where
 # a key must be captured (Ctrl+S, the new shortcut). Works on a copy of a test project in %TEMP%.
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path "$PSScriptRoot\.."
@@ -74,7 +74,7 @@ Check ($saved.clips[0].rel -eq $null -or $saved.clips[0].rel -like "*a_1080p60.m
 
 "3. bitrate presets"
 Invoke (Find $win $A::NameProperty "Bitrate presets"); $pw = Win "Bitrate presets"
-Invoke (Find $pw $A::NameProperty "+ Add profile"); $nd = Win "New profile"
+Invoke (Find $pw $A::NameProperty "+ Add preset"); $nd = Win "New preset"
 $edits = @($nd.FindAll($TS::Descendants, (New-Object $P($A::ControlTypeProperty, $CT::Edit))))
 SetText $edits[0] "Discord"; SetText $edits[1] "4,5"
 Invoke (Find $nd $A::NameProperty "Save")
@@ -98,7 +98,7 @@ Invoke (Find $hd $A::NameProperty "Cancel")
 $sw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
 
 "5. session restore + close dialog"
-Toggle (Find $win $A::NameProperty "Save session on exit")   # (2.4: in the Export panel SAVING section)
+Toggle (Find $win $A::NameProperty "Reopen these clips next time")   # (2.4: in the Export panel SAVING section)
 $proc.CloseMainWindow() | Out-Null
 $cd = Win "Close Clip Shrinker"
 Check ((Find $cd $A::NameProperty "1 clip is open in the timeline.") -ne $null) "the close dialog asks"
@@ -113,7 +113,7 @@ Check ((Clips $win) -eq 1) "started without a file: the last session came back"
 Check ($win.Current.Name -notlike "*.clipproj") "(as a session, not as a project file)"
 
 "6. clean up (back to the defaults)"
-Toggle (Find $win $A::NameProperty "Save session on exit")
+Toggle (Find $win $A::NameProperty "Reopen these clips next time")
 Invoke (Find $win $A::NameProperty "Shortcuts"); $sw = Win "Shortcuts"
 Invoke (Find $sw $A::NameProperty "X"); $hd = Win "Change shortcut"; Invoke (Find $hd $A::NameProperty "Reset"); Invoke (Find $hd $A::NameProperty "Save")
 $sw.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()

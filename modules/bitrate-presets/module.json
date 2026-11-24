@@ -2,7 +2,7 @@
   "id": "bitrate-presets",
   "name": "Bitrate presets",
   "author": "Vergil",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "builtin": true,
-  "description": "Named bitrates with their own hotkeys, picked per clip in its title bar or for all clips at once, used when the clips are exported as separate files."
+  "description": "Named bitrates with their own hotkeys, picked per clip in its title bar or for all clips at once, used with Fixed bitrate when the clips are exported as separate files (or for a single clip)."
 }

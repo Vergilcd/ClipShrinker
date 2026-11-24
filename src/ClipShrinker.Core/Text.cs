@@ -149,7 +149,8 @@ public static class Text
         ["redo"] = "Redo", ["redo_alt"] = "Redo (second key)", ["play"] = "Play / pause (loops the trimmed part)",
         ["fullscreen"] = "Full-screen preview on / off",
         ["mute"] = "Mute / unmute the preview sound", ["select_all"] = "Select all clips",
-        ["delete"] = "Remove the selected section, or else the selected clips",
+        ["clear_all"] = "Remove all clips (Undo brings them back)",
+        ["delete"] = "Remove the selected section or clips",
         ["delete_section"] = "Remove the selected section only",
     };
 

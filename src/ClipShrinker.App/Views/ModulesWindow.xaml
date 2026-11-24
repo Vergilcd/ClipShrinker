@@ -8,6 +8,22 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <app:NotBoolToVisConverter x:Key="NotBoolToVis" />
+        <!-- 2.9.1: "Changelog" as a link in the version line (it still opens the changelog across the card) -->
+        <Style x:Key="LinkToggle" TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{DynamicResource CsSection}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="Transparent"><ContentPresenter VerticalAlignment="Center" /></Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Opacity" Value="0.8" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <DockPanel Margin="22,18,22,18">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -16,8 +32,8 @@
             <StackPanel>
                 <TextBlock Text="MODULES" Style="{StaticResource SectionText}" Margin="0" />
                 <TextBlock Text="Switch features on or off. Each module is a folder with its version and changelog."
-                           Style="{StaticResource SmallMutedText}" Margin="0,4,0,0" />
-                <TextBlock Text="{Binding ModulesDirText}" Style="{StaticResource SmallMutedText}" Margin="0,1,0,0" />
+                           Style="{StaticResource MutedText}" FontSize="12" Margin="0,4,0,0" />
+                <TextBlock Text="{Binding ModulesDirText}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,1,0,0" />
             </StackPanel>
         </DockPanel>
 
@@ -33,19 +49,29 @@
                         <Border Margin="0,10,0,0" Padding="16,12,14,12" CornerRadius="8" BorderThickness="1"
                                 Background="{DynamicResource CsCard}" BorderBrush="{DynamicResource CsBorder}">
                             <StackPanel>
+                            <!-- 2.9.1: name, switch with On / Off and a quiet bin on one line; the changelog is a link in the
+                                 version line; a switched-off module is dimmed -->
                             <DockPanel>
-                                <!-- right: switch + delete, or restore when deleted -->
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="12,0,0,0">
-                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Enabled}" Content="{x:Null}"
-                                              AutomationProperties.Name="{Binding Name}" Margin="0,4,6,0" VerticalAlignment="Top"
+                                    <CheckBox AutomationProperties.Name="{Binding Name}" IsChecked="{Binding Enabled}" VerticalAlignment="Center"
                                               Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"
-                                              ToolTip="Switch this module on or off" />
-                                    <Button Content="&#xE74D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Padding="9,6" MinWidth="0" FontSize="14"
-                                            Style="{StaticResource DangerButton}" Margin="8,0,0,0" Focusable="False" VerticalAlignment="Top"
+                                              ToolTip="Switch this module on or off">
+                                        <CheckBox.Style>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource ToggleSwitch}">
+                                                <Setter Property="Content" Value="Off" />
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsChecked" Value="True"><Setter Property="Content" Value="On" /></Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </CheckBox.Style>
+                                    </CheckBox>
+                                    <Button Content="&#xE74D;" Style="{StaticResource HeadQuietX}" FontSize="14" Width="34" Height="30" Margin="10,0,0,0"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"
                                             Command="{Binding DataContext.DeleteModuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding}" AutomationProperties.Name="Delete"
-                                            ToolTip="Delete this module and its folder (a module that came with Clip Shrinker can be restored later)" />
+                                            ToolTip="Delete this module and its folder (asks first; a module that came with Clip Shrinker can be restored later)" />
                                     <!-- 2.8: AI editing is downloaded from GitHub -->
                                     <Button Content="Install" Focusable="False" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}"
                                             Visibility="{Binding CanInstall, Converter={StaticResource BoolToVis}}"
@@ -58,11 +84,23 @@
                                             CommandParameter="{Binding}"
                                             ToolTip="Download this module again from GitHub and switch it on" />
                                 </StackPanel>
-
                                 <StackPanel x:Name="Info">
-                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding Byline}" Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
-                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                    <TextBlock x:Name="NameText" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
+                                    <WrapPanel Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding Byline}" Style="{StaticResource MutedText}" FontSize="12" />
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="  ·  " Style="{StaticResource MutedText}" FontSize="12" />
+                                            <ToggleButton x:Name="LogToggle" Style="{StaticResource LinkToggle}" AutomationProperties.Name="Changelog"
+                                                          ToolTip="Show what changed in each version of this module">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Changelog" FontSize="12" VerticalAlignment="Center" />
+                                                    <TextBlock x:Name="LogArrow" Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="9"
+                                                               VerticalAlignment="Center" Margin="5,1,0,0" />
+                                                </StackPanel>
+                                            </ToggleButton>
+                                        </StackPanel>
+                                    </WrapPanel>
+                                    <TextBlock x:Name="DescText" Text="{Binding Description}" TextWrapping="Wrap" Margin="0,6,0,0" />
                                     <TextBlock Text="{Binding Busy}" Margin="0,4,0,0">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource SmallMutedText}">
@@ -86,16 +124,6 @@
                                                 Command="{Binding DataContext.UpdateAiCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}" ToolTip="Download the new version of AI editing from GitHub" />
                                     </StackPanel>
-                                    <!-- changelog: a small toggle (text and arrow centred on one line) and the text below it -->
-                                    <ToggleButton x:Name="LogToggle" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="10,4,8,5" Focusable="False"
-                                                  Visibility="{Binding Installed, Converter={StaticResource BoolToVis}}"
-                                                  AutomationProperties.Name="Changelog" ToolTip="Show what changed in each version of this module">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Changelog" VerticalAlignment="Center" />
-                                            <TextBlock x:Name="LogArrow" Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
-                                                       VerticalAlignment="Center" Margin="8,1,0,0" />
-                                        </StackPanel>
-                                    </ToggleButton>
                                 </StackPanel>
                             </DockPanel>
                             <!-- the changelog opens across the whole card (2.6) -->
@@ -107,6 +135,10 @@
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding Installed}" Value="False">
                                 <Setter TargetName="Info" Property="Opacity" Value="0.45" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Enabled}" Value="False">
+                                <Setter TargetName="NameText" Property="Opacity" Value="0.55" />
+                                <Setter TargetName="DescText" Property="Opacity" Value="0.55" />
                             </DataTrigger>
                             <Trigger SourceName="LogToggle" Property="IsChecked" Value="True">
                                 <Setter TargetName="LogText" Property="Visibility" Value="Visible" />

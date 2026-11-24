@@ -23,6 +23,11 @@ public sealed class AppState
     public static readonly string[] ExportModes = ["separate", "join"];
 
     public string Size = "50", Bitrate = "", Res = "Auto", ResBeforeBitrate = "Auto", Codec = "HEVC (hevc_nvenc)";
+    /// <summary>2.9.1: the Export panel's "Size limit | Fixed bitrate" switch. Bitrate stays the value the export uses
+    /// (empty in size-limit mode, so exports and saved files read as before); KeptBitrate keeps the number typed for
+    /// Fixed bitrate while Size limit is picked, so switching back brings it back (settings key "bitrate_kept").</summary>
+    public bool FixedRate;
+    public string KeptBitrate = "";
     public string Crop = "16:9", Audio = "128k", Atrk = "Mix into one track", Mode = "join";
     public string Trans = "Gradient wipe, left to right", Tlen = "0.4";
     public string FastAudio = C.FastAudio[0], SlowAudio = C.SlowAudio[0];
@@ -106,6 +111,8 @@ public sealed class AppState
             Suffix = Saved("suffix", ""),
             KeepName = SavedB("keep_name", true),
         };
+        a.KeptBitrate = Saved("bitrate_kept", "");
+        a.FixedRate = a.Bitrate.Trim().Length > 0;
         a.ReadPicture(s);
         a.ReadEq(s);
         a.BitrateChanged();
@@ -140,6 +147,21 @@ public sealed class AppState
         return v is { } x && x > 0 ? x : null;
     }
 
+    /// <summary>The "Size limit | Fixed bitrate" switch (2.9.1). Leaving Fixed bitrate keeps its number in KeptBitrate
+    /// and clears Bitrate; coming back puts it in again.</summary>
+    public void SetFixedRate(bool on)
+    {
+        if (on == FixedRate) return;
+        if (on) Bitrate = KeptBitrate;
+        else
+        {
+            if (Bitrate.Trim().Length > 0) KeptBitrate = Bitrate;
+            Bitrate = "";
+        }
+        FixedRate = on;
+        BitrateChanged();
+    }
+
     /// <summary>Bitrate mode switches the resolution list (Original / 75% / 50%), size mode switches it back.</summary>
     public void BitrateChanged()
     {
@@ -162,7 +184,13 @@ public sealed class AppState
             return false;
         }
         Put(ref Size, "size");
-        if (Put(ref Bitrate, "bitrate")) BitrateChanged();          // the Tk trace on the bitrate entry
+        string oldBitrate = Bitrate;
+        if (Put(ref Bitrate, "bitrate"))                            // the Tk trace on the bitrate entry
+        {
+            FixedRate = Bitrate.Trim().Length > 0;
+            if (!FixedRate && oldBitrate.Trim().Length > 0) KeptBitrate = oldBitrate;
+            BitrateChanged();
+        }
         Put(ref Res, "res", ResModes);
         Put(ref Codec, "codec", C.Codecs);
         Put(ref Crop, "crop", C.Aspects.Select(x => x.Name));
@@ -200,12 +228,12 @@ public sealed class AppState
     {
         error = null;
         double? bitrate = null, targetMb = null;
-        if (Bitrate.Trim().Length > 0)
+        if (Bitrate.Trim().Length > 0 || FixedRate)
         {
             bitrate = BitrateMbps();
             if (bitrate is null)
             {
-                error = "Enter the bitrate in Mbps, e.g. 20 (or clear the field to use the file size limit).";
+                error = "Enter the bitrate in Mbps, e.g. 20 (or pick Size limit).";
                 return null;
             }
         }
@@ -226,6 +254,10 @@ public sealed class AppState
         };
     }
 
+    /// <summary>2.9.1: a clip's bitrate preset is used only with Fixed bitrate (the owner's call: presets are bitrates,
+    /// so with the size limit every clip follows Max size and the presets are hidden).</summary>
+    public Preset? UsedPreset(Func<string, Preset?> presetByName, string name) => FixedRate ? presetByName(name) : null;
+
     /// <summary>Settings that replace the global ones for one separately exported clip (its bitrate preset).</summary>
     public ExportSettings ClipOverride(ExportSettings st, Preset? p) =>
         p is null ? st : st with { BitrateMbps = p.Mbps, TargetMb = null, ResMode = Res == "Auto" ? "Original" : Res };
@@ -234,35 +266,82 @@ public sealed class AppState
     public string[] SummaryLines(IReadOnlyList<ExportClip> clips)
     {
         int n = clips.Count;
-        double total = Py.Py.Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
+        double total = TotalLength(clips, out bool joined);
         double? br = Bitrate.Trim().Length > 0 ? BitrateMbps() : null;
         string crop = Crop.Split(' ')[0];
-        bool joined = n > 1 && !string.IsNullOrEmpty(C.TransitionMode(Trans));
-        if (joined)                                          // transitions overlap the clips
-        {
-            double T = Py.Py.ParseFloat(Tlen.Replace(",", ".")) is { } t ? Py.Py.Max(0.1, Py.Py.Min(3.0, t)) : 0.4;
-            total -= (n - 1) * T;
-        }
-        string l1 = n > 0 ? $"{n} clip{(n != 1 ? "s" : "")}  ·  {Text.FmtTime(total)}" + (joined ? " when joined" : "") : "No clips yet";
+        bool separate = Separate(n);
+        // 2.9.1: the One video / Separate files switch decides (before: "when joined" whenever a transition was set)
+        string l1 = n == 0 ? "No clips yet" : n == 1 ? $"1 clip  ·  {Text.FmtTime(total)}"
+            : separate ? $"{n} clips  ·  {n} files" : $"{n} clips joined  ·  {Text.FmtTime(total)}";
         string l2 = $"{Text.CodecShort(Codec)}  ·  {Res} resolution  ·  " + (crop == "Original" ? "no crop" : $"crop {crop}");
         string l3;
         if (br is { } b)
         {
-            string ak0 = Audio.TrimEnd('k');
-            long ak = ak0.Length > 0 ? long.Parse(ak0, System.Globalization.CultureInfo.InvariantCulture) : 128;
+            long ak = AudioK();                               // ("Original" made long.Parse throw)
             double mb = Py.Py.Max(total, 0) * (b * 1e6 + ak * 1000) / 8 / 1048576;
             l3 = $"Fixed {Py.Py.G(b)} Mbps video" + (n > 0 ? $"  ·  about {Py.Py.F(mb, 0)} MB in total" : "");
         }
         else l3 = $"Max {(Size.Trim() is { Length: > 0 } s ? s : "?")} MB per file";
-        string l4 = OutStem(n > 0 ? ExportPlanner.Stem(clips[0].Path) : "clip") + ".mp4";
+        string l4 = OutStem(n > 0 ? ExportPlanner.Stem(clips[0].Path) : "clip") + ".mp4" + (separate ? $" and {n - 1} more" : "");
         return [l1, l2, l3, l4];
+    }
+
+    /// <summary>2.9.1: several clips exported as one file each (the Export panel's "Separate files"); one clip is
+    /// always one file.</summary>
+    public bool Separate(int clipCount) => clipCount > 1 && Mode == "separate";
+
+    /// <summary>The audio bitrate in kbit/s for size estimates (128 for "Original", whose rate is the clips' own).</summary>
+    long AudioK() => long.TryParse(Audio.TrimEnd('k'), System.Globalization.NumberStyles.Integer,
+                                   System.Globalization.CultureInfo.InvariantCulture, out var k) ? k : 128;
+
+    /// <summary>The length of the exported video: every clip after its edits, minus the transitions' overlap.</summary>
+    double TotalLength(IReadOnlyList<ExportClip> clips, out bool joined)
+    {
+        int n = clips.Count;
+        double total = Py.Py.Sum(clips.Select(c => Timing.Duration(c.GetPieces())));
+        joined = n > 1 && !Separate(n);
+        if (joined && !string.IsNullOrEmpty(C.TransitionMode(Trans)))   // transitions overlap the clips
+        {
+            double T = Py.Py.ParseFloat(Tlen.Replace(",", ".")) is { } t ? Py.Py.Max(0.1, Py.Py.Min(3.0, t)) : 0.4;
+            total -= (n - 1) * T;
+        }
+        return total;
+    }
+
+    /// <summary>2.9.1: the large line at the top of the SUMMARY, what the export promises. Size limit: "Under 50 MB" and
+    /// the video bitrate that size leaves for this length. Fixed bitrate: the expected size, flagged (Warn) because no
+    /// limit applies. Warn also flags a missing value or a size too small for the length.</summary>
+    public (string Big, string Sub, bool Warn) SummaryResult(IReadOnlyList<ExportClip> clips)
+    {
+        int n = clips.Count;
+        double total = TotalLength(clips, out _);
+        long ak = AudioK();
+        if (FixedRate || Bitrate.Trim().Length > 0)
+        {
+            if (BitrateMbps() is not { } b) return ("Enter a bitrate", "in Mbps, e.g. 20", true);
+            if (n == 0 || total <= 0) return ($"Fixed {Py.Py.G(b)} Mbps", "no size limit", true);
+            double mb = total * (b * 1e6 + ak * 1000) / 8 / 1048576;
+            return ($"About {Py.Py.F(mb, 0)} MB", $"in total  ·  no size limit (fixed {Py.Py.G(b)} Mbps)", true);
+        }
+        if (Py.Py.ParseFloat(Size.Replace(",", ".")) is not { } size || !(size > 0)) return ("Enter a max size", "in MB, e.g. 50", true);
+        string big = $"Under {Py.Py.G(size)} MB";
+        if (n == 0 || total <= 0) return (big, "per file", false);
+        // separate files: the longest clip gets the least bitrate per second
+        bool separate = Separate(n);
+        double len = separate ? clips.Max(c => Timing.Duration(c.GetPieces())) : total;
+        double video = (size * 1048576 * 8 / len - ak * 1000) / 1e6;
+        string forWhat = separate ? $"the longest clip ({Text.FmtTime(len)})" : Text.FmtTime(len);
+        string what = separate ? "per file  ·  " : n > 1 ? "one video  ·  " : "";
+        if (video < 0.1) return (big, $"{what}too small for {forWhat} of video", true);
+        string v = video.ToString(video < 10 ? "0.0" : "0", System.Globalization.CultureInfo.InvariantCulture);
+        return (big, $"{what}about {v} Mbps video for {forWhat}", false);
     }
 
     /// <summary>Writes these values into settings.json's object (the AppState part of save_all_settings);
     /// other keys are kept.</summary>
     public void WriteTo(JsonObject d)
     {
-        d["size"] = Size; d["bitrate"] = Bitrate; d["crop"] = Crop; d["res"] = Res; d["res_before_bitrate"] = ResBeforeBitrate;
+        d["size"] = Size; d["bitrate"] = Bitrate; d["bitrate_kept"] = KeptBitrate; d["crop"] = Crop; d["res"] = Res; d["res_before_bitrate"] = ResBeforeBitrate;
         d["codec"] = Codec; d["audio"] = Audio; d["atrk"] = Atrk; d["mute_mic"] = MuteMic;
         d["fast_audio"] = FastAudio; d["slow_audio"] = SlowAudio; d["slow_pitch"] = SlowPitch; d["fast_pitch"] = FastPitch;
         d["vhs"] = Vhs; d["fast_vol"] = FastVol; d["slow_vol"] = SlowVol; d["zoom_fx"] = ZoomFx; d["zoom_snd"] = ZoomSnd;

@@ -22,7 +22,7 @@ public class AppStateTests
         s.Trans = "Crossfade (gradient)";
         s.Tlen = "0,5";
         var lines = s.SummaryLines([a.ToExport(), b.ToExport()]);
-        Assert.Equal("2 clips  ·  0:27.50 when joined", lines[0]);  // 20 + 8 - 0.5
+        Assert.Equal("2 clips joined  ·  0:27.50", lines[0]);  // 20 + 8 - 0.5
         s.Bitrate = "8";
         s.BitrateChanged();
         lines = s.SummaryLines([a.ToExport()]);
@@ -61,6 +61,7 @@ public class AppStateTests
         var s = AppState.FromSettings(null);
         var rows = new List<TimelineClip> { Row(@"C:\v\a.mp4", 5), Row(@"D:\w\a.mp4", 5), Row(@"C:\v\b.mov", 5) };
         rows[2].Preset = "Low";
+        s.Bitrate = "8"; s.FixedRate = true; s.BitrateChanged();   // 2.9.1: presets work with Fixed bitrate only
         s.Suffix = "{codec}";                               // 2.2: no codec name unless asked for
         var clips = ExportPlanner.PrepareClips(s, rows);
         var st = s.ToExportSettings(false, out _)!;
@@ -70,6 +71,18 @@ public class AppStateTests
         Assert.Equal((3.0, (double?)null, "Original"), (jobs[2].Settings.BitrateMbps!.Value, jobs[2].Settings.TargetMb, jobs[2].Settings.ResMode));
         var (_, line) = ExportPlanner.Report(jobs, st, [(jobs[0].Out, 2 * 1048576)], ["b_HEVC.mp4: boom"]);
         Assert.Equal("1 saved (per-clip bitrates): a_HEVC (2).mp4 (2.00 MB)  |  1 failed: b_HEVC.mp4: boom", line);
+    }
+
+    [Fact]
+    public void SizeLimitIgnoresClipPresets()
+    {
+        var s = AppState.FromSettings(null);                // Size limit
+        var rows = new List<TimelineClip> { Row(@"C:\v\a.mp4", 5), Row(@"C:\v\b.mp4", 5) };
+        rows[1].Preset = "Low";
+        var clips = ExportPlanner.PrepareClips(s, rows);
+        var st = s.ToExportSettings(false, out _)!;
+        var jobs = ExportPlanner.Separate(s, st, rows, clips, @"C:\out", n => n == "Low" ? new Preset("Low", 3, "") : null, _ => false);
+        Assert.Equal(((double?)null, (double?)50), (jobs[1].Settings.BitrateMbps, jobs[1].Settings.TargetMb));
     }
 
     [Fact]

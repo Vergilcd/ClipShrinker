@@ -83,7 +83,7 @@ $cc = Find $win $A::NameProperty "Codec"
 $cc.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand(); Start-Sleep -Milliseconds 700
 Shot $win "1d_codec_list"
 $cc.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse(); Start-Sleep -Milliseconds 400
-Check (Has $win "Save session on exit") "Save session on exit in the Export panel"
+Check (Has $win "Reopen these clips next time") "Reopen these clips next time (2.9.1: was Save session on exit) in the Export panel"
 Check (-not (Has $win "Transition")) "no Transition button with one clip"
 Shot $win "1_main"
 function Key($vk) { [W]::keybd_event($vk, 0, 0, [IntPtr]::Zero); [W]::keybd_event($vk, 0, 2, [IntPtr]::Zero); Start-Sleep -Milliseconds 400 }

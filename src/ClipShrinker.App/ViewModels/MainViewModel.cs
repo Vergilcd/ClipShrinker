@@ -43,7 +43,7 @@ public sealed partial class MainViewModel : ObservableObject
         saveDir = Str("save_dir") ?? "";
         InitPreviewSettings();
         InitModules();
-        Clips.CollectionChanged += (_, _) => { Renumber(); Refresh(); OnPropertyChanged(nameof(HasManyClips)); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
+        Clips.CollectionChanged += (_, _) => { Renumber(); ClipCountChanged(); OnPropertyChanged(nameof(HasManyClips)); OnPropertyChanged(nameof(AllPresetOptions)); OnPropertyChanged(nameof(AllPreset)); };
         Refresh();
     }
 
@@ -187,10 +187,27 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>2.9.1: the "Size limit | Fixed bitrate" switch; only the picked one's box is shown.</summary>
+    public bool FixedRate
+    {
+        get => S.FixedRate;
+        set
+        {
+            if (value == S.FixedRate) return;
+            S.SetFixedRate(value);
+            OnPropertyChanged(nameof(FixedRate));
+            OnPropertyChanged(nameof(SizeLimit));
+            OnPropertyChanged(nameof(PresetsShown));
+            OnPropertyChanged(nameof(Bitrate));
+            OnPropertyChanged(nameof(ResOptions));
+            OnPropertyChanged(nameof(Res));
+            Refresh();
+        }
+    }
+    public bool SizeLimit { get => !S.FixedRate; set { if (value) FixedRate = false; } }
+
     public string Res { get => S.Res; set { if (value is not null) Set(ref S.Res, value); } }
     public IReadOnlyList<string> ResOptions => S.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode;
-    public bool SizeEnabled => S.BitrateMbps() is null;
-    public string SizeHint => S.BitrateMbps() is null ? "per file" : "ignored";
     public string Codec { get => S.Codec; set { if (value is not null) Set(ref S.Codec, value); } }   // (null while the list changes)
     /// <summary>2.6: only the encoders that work on this PC (all of them until the start-up check has answered).</summary>
     public IReadOnlyList<string> Codecs => OfferedKeys is { Count: > 0 } w
@@ -286,6 +303,48 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<string> TransitionNames { get; } = C.Transitions.Select(t => t.Name).ToList();
     /// <summary>2 or more clips: the Transition drop-down is shown (2.5).</summary>
     public bool HasManyClips => Clips.Count > 1;
+
+    /// <summary>2.9.1: "One video | Separate files" in the Export panel (shown with 2 or more clips); the saved "mode"
+    /// setting the export question used to set.</summary>
+    public bool SeparateFiles
+    {
+        get => S.Mode == "separate";
+        set
+        {
+            string m = value ? "separate" : "join";
+            if (S.Mode == m) return;
+            S.Mode = m;
+            OutputChanged();
+        }
+    }
+    /// <summary>2.9.1: the "Export as" drop-down: 0 = One video, 1 = Separate files. The two items stay the same objects
+    /// (only their second line changes with the clip count), so the list is never swapped under the selection.</summary>
+    public IReadOnlyList<OutputChoice> OutputChoices { get; } = [new("One video"), new("Separate files")];
+    public int OutputIndex { get => SeparateFiles ? 1 : 0; set { if (value is 0 or 1) SeparateFiles = value == 1; } }
+    /// <summary>Per-clip bitrate presets are used with Fixed bitrate, for separate files or a single clip.</summary>
+    public bool PresetsShown => PresetsModuleOn && S.FixedRate && (Clips.Count <= 1 || S.Separate(Clips.Count));
+    /// <summary>Transitions only matter when clips are joined.</summary>
+    public bool TransitionShown => Clips.Count > 1 && !S.Separate(Clips.Count);
+    public string SizeHint => Clips.Count > 1 && !S.Separate(Clips.Count) ? "for the video" : "per file";
+
+    /// <summary>The clip count decides which of these apply (the switch itself only shows with 2 or more clips).</summary>
+    void ClipCountChanged()
+    {
+        int c = Clips.Count;
+        OutputChoices[0].Detail = $"the {c} clips joined into one file";
+        OutputChoices[1].Detail = $"{c} files, one per clip";
+        foreach (var n in new[] { nameof(PresetsShown), nameof(TransitionShown), nameof(SizeHint), nameof(GoText) })
+            OnPropertyChanged(n);
+        Refresh();
+    }
+
+    void OutputChanged()
+    {
+        foreach (var n in new[] { nameof(SeparateFiles), nameof(OutputIndex), nameof(PresetsShown), nameof(TransitionShown),
+                                  nameof(SizeHint), nameof(GoText) })
+            OnPropertyChanged(n);
+        Refresh();
+    }
     public string Tlen { get => S.Tlen; set => Set(ref S.Tlen, value); }
     public string FastAudio { get => S.FastAudio; set => Set(ref S.FastAudio, value); }
     public IReadOnlyList<string> FastAudioOptions => C.FastAudio;
@@ -322,7 +381,7 @@ public sealed partial class MainViewModel : ObservableObject
     void RefreshRife()
     {
         RifeStatus = RifeBusy.Length > 0 ? RifeBusy
-            : RifeInstalled ? "RIFE is installed (used when exporting; the preview shows blending)"
+            : RifeInstalled ? "RIFE is installed. Used in the export; the preview shows blending."
             : "RIFE is not installed" + (Text.InterpKey(S.SlowInterp) == "rife" ? " - exports use frame blending" : "");
         OnPropertyChanged(nameof(RifeInstalled));
         OnPropertyChanged(nameof(ShowRifeButton));
@@ -360,6 +419,10 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string summary3 = "";
     [ObservableProperty] private string summary4 = "";
     [ObservableProperty] private string cropInfo = " ";
+    /// <summary>2.9.1: the large result line at the top of the SUMMARY (AppState.SummaryResult); Warn = amber.</summary>
+    [ObservableProperty] private string resultBig = "";
+    [ObservableProperty] private string resultSub = "";
+    [ObservableProperty] private bool resultWarn;
     public bool HasClips => Clips.Count > 0;
 
     void Refresh()
@@ -371,10 +434,11 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var i = Clips[0].Row.Info;
             var (cw, ch) = Core.Geometry.CropSize(i.W, i.H, S.Ratio);
-            CropInfo = (cw, ch) != (i.W, i.H) ? $"{i.W}x{i.H} -> {cw}x{ch}" : "(already narrower - no crop)";
+            // 2.9.1: says what happens to the picture (only wider clips are cut, so it is always the sides)
+            CropInfo = (cw, ch) != (i.W, i.H) ? $"{i.W}x{i.H} → {cw}x{ch}, the sides are cut"
+                : $"Already {S.Crop.Split(' ')[0]} or narrower: nothing is cut.";
         }
-        OnPropertyChanged(nameof(SizeEnabled));
-        OnPropertyChanged(nameof(SizeHint));
+        (ResultBig, ResultSub, ResultWarn) = S.SummaryResult(Clips.Select(c => c.Row.ToExport()).ToList());
         OnPropertyChanged(nameof(HasClips));
     }
 
@@ -813,7 +877,7 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(GoText))]
     private bool exporting;
 
-    public string GoText => Exporting ? "Abort" : "Export";
+    public string GoText => Exporting ? "Abort" : S.Separate(Clips.Count) ? $"Export {Clips.Count} files" : "Export";
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProgressCaption))]
     private double progress;
@@ -824,7 +888,10 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>Text in the progress bar: the percentage while exporting, then "Done in ..." / "Failed" / "Aborted".</summary>
     public string ProgressCaption => Exporting ? Core.Py.Py.F(Progress, 0) + "%" : ProgressText;
 
-    partial void OnExportingChanged(bool value) => OnPropertyChanged(nameof(ProgressCaption));
+    partial void OnExportingChanged(bool value) { OnPropertyChanged(nameof(ProgressCaption)); OnPropertyChanged(nameof(ShowProgress)); }
+    partial void OnProgressTextChanged(string value) => OnPropertyChanged(nameof(ShowProgress));
+    /// <summary>2.9.1: the progress bar is hidden until the first export (an empty bar above Export said nothing).</summary>
+    public bool ShowProgress => Exporting || ProgressText.Length > 0;
     [ObservableProperty] private ProgressLook progressLook = ProgressLook.Normal;
     [ObservableProperty] private string exportMessage = "";
     [ObservableProperty] private string? outPath;
@@ -849,21 +916,13 @@ public sealed partial class MainViewModel : ObservableObject
         if (Clips.Count == 0) { Dialogs.Info("No clips", "Add at least one video first."); return; }
         if (S.ToExportSettings(false, out var error) is null)
         {
-            Dialogs.Error(S.Bitrate.Trim().Length > 0 ? "Invalid bitrate" : "Invalid size", error!);
+            Dialogs.Error(S.FixedRate ? "Invalid bitrate" : "Invalid size", error!);
             return;
         }
         var rows = Clips.Select(c => c.Row).ToList();
         var clips = ExportPlanner.PrepareClips(S, rows);
         var inputs = ExportPlanner.InputSet(clips);
-        bool join = false;
-        if (clips.Count > 1)
-        {
-            int pick = Dialogs.Choice("Export", $"{clips.Count} clips are in the timeline. How do you want to export them?",
-                                      ["Join into one video", "Each clip as its own file", "Cancel"], S.Mode == "join" ? 0 : 1, 2);
-            if (pick is not (0 or 1)) return;
-            S.Mode = pick == 0 ? "join" : "separate";
-            join = pick == 0;
-        }
+        bool join = clips.Count > 1 && !S.Separate(clips.Count);   // 2.9.1: the Export panel's switch, no question
         var st = S.ToExportSettings(join, out _)!;
         string? firstDir = Path.GetDirectoryName(clips[0].Path);
         List<ExportJob> jobs;
@@ -1024,4 +1083,12 @@ public sealed partial class MainViewModel : ObservableObject
         encoder?.Cancel();
         return true;
     }
+}
+
+/// <summary>2.9.1: an item of the "Export as" drop-down; Detail is the line under it in the open list.</summary>
+public sealed partial class OutputChoice(string title) : ObservableObject
+{
+    public string Title { get; } = title;
+    [ObservableProperty] private string detail = "";
+    public override string ToString() => Title;              // (UI Automation name, the closed box)
 }

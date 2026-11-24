@@ -239,8 +239,8 @@ public class PresetRuleTests
     [InlineData(null, "New", "12,5", "w", null, null)]
     [InlineData(null, "New", "abc", "", "Bitrate", "Enter the bitrate in Mbps, e.g. 20.")]
     [InlineData(null, "New", "0.05", "", "Bitrate", "Enter the bitrate in Mbps, e.g. 20.")]
-    [InlineData(null, "  ", "5", "", "Name", "Give the profile a name.")]
-    [InlineData(null, "discord", "5", "", "Name", "There is already a profile with this name.")]
+    [InlineData(null, "  ", "5", "", "Name", "Give the preset a name.")]
+    [InlineData(null, "discord", "5", "", "Name", "There is already a preset with this name.")]
     [InlineData(0, "discord", "5", "", null, null)]                       // renaming itself is fine
     [InlineData(null, "New", "5", "S", "Hotkey", "This key already does something else - pick another one.")]
     [InlineData(null, "New", "5", "Q", "Hotkey", "The key is already used by \"Discord\".")]
