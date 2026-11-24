@@ -2,7 +2,7 @@
 
 **Trim, join and shrink game clips to an exact file size on your GPU.**
 
-<img width="1386" height="1164" alt="image" src="https://github.com/user-attachments/assets/8607424e-20b6-43e3-a51b-95d5a9ba316a" />
+<img width="1529" height="1271" alt="image" src="https://github.com/user-attachments/assets/714c153a-5baa-4763-8634-cfbf9af84860" />
 
 ClipShrinker is a modular Windows tool for turning big gameplay recordings into clips that fit Discord or other services, but it can do much more.
 
@@ -31,12 +31,12 @@ Optionally, [Claude](https://claude.com/claude-code) can do the editing for you:
 - **AI editing** with Claude Code (optional download, see below)
 
 ## Modular build
-<img width="646" height="813" alt="image" src="https://github.com/user-attachments/assets/3bc7d927-aaf0-40f6-9dce-de4bfa328dd1" />
+<img width="646" height="813" alt="image" src="https://github.com/user-attachments/assets/ddf4ab64-1741-4cf9-8b3a-9a2d9d77b1bb" />
 
 Switch off or even delete modules that you do not need. All modules are on by default, except AI editing, which is installed and switched on separately.
 
 ## Customizable shortcuts
-<img width="1196" height="980" alt="image" src="https://github.com/user-attachments/assets/48f3ac10-a088-46e9-b011-7d6fb6a53933" />
+<img width="1191" height="870" alt="image" src="https://github.com/user-attachments/assets/a9fca442-27f0-4cbc-83ab-adc1c47c47f3" />
 
 ## Agentic editing (optional)
 
