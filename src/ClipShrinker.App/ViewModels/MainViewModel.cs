@@ -434,7 +434,9 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var i = Clips[0].Row.Info;
             var (cw, ch) = Core.Geometry.CropSize(i.W, i.H, S.Ratio);
-            CropInfo = (cw, ch) != (i.W, i.H) ? $"{i.W}x{i.H} -> {cw}x{ch}" : "(already narrower - no crop)";
+            // 2.9.1: says what happens to the picture (only wider clips are cut, so it is always the sides)
+            CropInfo = (cw, ch) != (i.W, i.H) ? $"{i.W}x{i.H} → {cw}x{ch}, the sides are cut"
+                : $"Already {S.Crop.Split(' ')[0]} or narrower: nothing is cut.";
         }
         (ResultBig, ResultSub, ResultWarn) = S.SummaryResult(Clips.Select(c => c.Row.ToExport()).ToList());
         OnPropertyChanged(nameof(HasClips));

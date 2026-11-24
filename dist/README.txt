@@ -54,7 +54,7 @@ folder is moved into "modules" by itself). All of them are on after the first st
   press Enter. The button turns yellow while something is adjusted. Used in the preview and the export, and
   saved with projects. Denoise removes grain from dark or low-light footage; it runs on the graphics card
   (OpenCL, any recent NVIDIA, AMD or Intel driver) and on the CPU otherwise, where exports get much slower.
-  Clips that stay HDR ("Convert HDR" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
+  Clips that stay HDR ("Fix HDR colours" off) are not denoised. The Denoise row is hidden when the ffmpeg in the
   library folder has no denoise filter (an older copy): use the ffmpeg.exe and ffprobe.exe from the download.
 - Sound equalizer: five bands (60 Hz to 12 kHz, -12 to +12 dB) and Volume (-20 to +20 dB) for the whole
   export. Its equalizer button next to the sun button opens the card; type a value like 3 or -6 dB
@@ -114,14 +114,14 @@ EXPORT SETTINGS (right side)
   bitrate" means the bitrate above. Presets work with Fixed bitrate, for separate files or a single clip;
   the drop-downs are hidden otherwise (with the size limit every clip follows Max size).
 - Video: resolution (Auto, 100%, 4K, 1440p, 1080p, 720p or 50%; the fixed heights never make a clip larger
-  than it is), codec (HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
+  than it is; the open list says what each does), codec (shown as "HEVC · NVIDIA" and so on; HEVC by default; the list shows the encoders that work on this PC: NVIDIA, AMD, Intel
   or Windows on the GPU, and the Windows CPU encoder only when no graphics card encoder works; a project from
   another PC switches to the closest one; the open list marks the recommended one), centered crop to 21:9,
-  16:9, 16:10 or 4:3 (only wider clips get cut), and "Convert HDR clips to SDR".
-- Audio: Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track. ShadowPlay can
-  record game and microphone as two tracks. "Keep as separate tracks" saves both (Game audio / Microphone),
-  "Mix into one track" combines them (use this for Discord, browsers and phones), and "Mute microphone"
-  leaves the mic out.
+  16:9, 16:10 or 4:3 (only wider clips get cut), and "Fix HDR colours (convert to SDR)".
+- Audio: the audio bitrate is Original (the clips' own audio bitrate, 64k to 320k) or 128k to 320k per track.
+  ShadowPlay can record game and microphone as two tracks. "Keep separate" saves both (Game audio /
+  Microphone), "Mix all into one" combines them (use this for Discord, browsers and phones), and "Leave out
+  the microphone" leaves the mic out.
 - File names: prefix and suffix. They can hold dynamic labels that are filled in for each file: {date},
   {time}, {preset} (the clip's bitrate preset), {res} (output height, e.g. 1080p, 1440p or 4K), {size} (the
   size limit) and {codec} (HEVC or H264). Click a label button to insert it at the cursor of the box you
@@ -130,8 +130,8 @@ EXPORT SETTINGS (right side)
   so only the prefix and suffix name the file (e.g. 2026-11-15_HEVC.mp4). The tick is greyed out while
   Prefix and Suffix are both empty.
 - Saving: "Export folder" (exports are saved there without asking; when empty, a save dialog asks at every
-  export) and "Save session on exit", which keeps the open clips when you close the program and opens them
-  again on the next start.
+  export) and "Reopen these clips next time", which keeps the open clips when you close the program and opens
+  them again on the next start.
 
 EXPORT (Ctrl+E)
 With several clips, "Export as" at the top of the Export settings picks "One video" (the clips joined) or
@@ -145,7 +145,7 @@ PROJECTS
 Ctrl+S saves the clips with their trims, effects and presets, plus the export settings, as a .clipproj file.
 Ctrl+Shift+S saves under a new name and Ctrl+O opens one. Clip paths on the same drive are stored relative to
 the project, so you can move the project folder. Ctrl+Z undoes; Ctrl+Shift+Z or Ctrl+Y redoes.
-"Save session on exit" (under SAVING) reopens the clips you had open when you closed the program.
+"Reopen these clips next time" (under SAVING) reopens the clips you had open when you closed the program.
 
 NOTES
 - Single clips keep their frame rate. Joined clips use the highest frame rate among them.

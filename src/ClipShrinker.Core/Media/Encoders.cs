@@ -34,6 +34,15 @@ public static class Encoders
     public static VideoEncoder? ByKey(string key) => All.FirstOrDefault(e => e.Key == key);
     public static VideoEncoder? ByLabel(string label) => All.FirstOrDefault(e => e.Label == label);
 
+    /// <summary>2.9.1: the name shown in the Codec list ("HEVC · NVIDIA"); the label stays what settings and projects
+    /// save ("HEVC (hevc_nvenc)").</summary>
+    public static string ShownName(string label)
+    {
+        if (ByLabel(label) is not { } e) return label;
+        string kind = e.Hevc ? "HEVC" : "H.264";
+        return e.Vendor == "Windows" ? $"{kind} · Windows ({(e.Gpu ? "GPU" : "CPU")})" : $"{kind} · {e.Vendor}";
+    }
+
     /// <summary>The settings label -> encoder key. Unknown labels keep the 1.x / 2.x rule (HEVC or H.264 on NVENC).</summary>
     public static string KeyOf(string label) => ByLabel(label)?.Key ?? (label.Contains("HEVC") ? "hevc_nvenc" : "h264_nvenc");
 

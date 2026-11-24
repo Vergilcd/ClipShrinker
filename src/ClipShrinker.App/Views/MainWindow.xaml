@@ -13,6 +13,19 @@
         <app:NotConverter x:Key="Not" />
         <app:IsNullConverter x:Key="IsNull" />
         <app:HintLookupConverter x:Key="HintLookup" />
+        <app:ShownTextConverter x:Key="Shown" />
+        <!-- 2.9.1: a list item with a second line that shows only in the open list (Resolution, Audio tracks) -->
+        <Style x:Key="OpenListOnly" TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="Opacity" Value="0.65" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,1,0,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}, Converter={StaticResource IsNull}}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="TopButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="Focusable" Value="False" />
@@ -479,19 +492,29 @@
                     </DockPanel>
 
                     <TextBlock Grid.Row="3" Text="Resolution:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox x:Name="ResCombo" Grid.Row="3" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Resolution" ItemsSource="{Binding ResOptions}" SelectedItem="{Binding Res, UpdateSourceTrigger=Explicit}" />
+                    <ComboBox x:Name="ResCombo" Grid.Row="3" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Resolution" ItemsSource="{Binding ResOptions}" SelectedItem="{Binding Res, UpdateSourceTrigger=Explicit}"
+                              ToolTip="Size of the exported video. Auto keeps the full size unless the size limit leaves too little bitrate for it. 4K, 1440p, 1080p and 720p set the height and never make a clip larger than it is.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding}" />
+                                    <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=reshint}" Style="{StaticResource OpenListOnly}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Grid.Row="4" Text="Codec:" Style="{StaticResource FieldLabel}" />
                     <!-- 2.6: in the open list each codec has a short hint ("- recommended for your NVIDIA GPU"); the closed box shows
                          only the name -->
                     <ComboBox x:Name="CodecCombo" Grid.Row="4" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Codec"
                               ItemsSource="{Binding Codecs}" SelectedItem="{Binding Codec, UpdateSourceTrigger=Explicit}"
-                              ToolTip="Video encoder. Open the list for a hint on which one fits this PC best.">
+                              ToolTip="Video encoder: HEVC makes smaller files for the same quality, H.264 plays on older devices. NVIDIA, AMD and Intel encode on that graphics card. Open the list for a hint on which one fits this PC best.">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
-                                    <TextBlock Text="{Binding}" />
-                                    <TextBlock Opacity="0.65" FontSize="11" Margin="0,1,0,0">
+                                    <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=codec}" />
+                                    <TextBlock Opacity="0.65" FontSize="12" Margin="0,1,0,0">
                                         <TextBlock.Text>
                                             <MultiBinding Converter="{StaticResource HintLookup}">
                                                 <Binding />
@@ -514,23 +537,32 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <TextBlock Grid.Row="5" Text="Crop (centered):" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="5" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Crop" ItemsSource="{Binding Crops}" SelectedItem="{Binding Crop}" />
+                    <TextBlock Grid.Row="5" Text="Crop:" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Row="5" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Crop" ItemsSource="{Binding Crops}" SelectedItem="{Binding Crop}"
+                              ToolTip="Cuts the picture to this shape, keeping the middle: e.g. 16:9 from an ultrawide 21:9 recording. Clips that are already this shape or narrower are not cut." />
                     <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CropInfo}" Style="{StaticResource SmallMutedText}" Margin="0,0,0,2" />
 
-                    <CheckBox Grid.Row="7" Grid.ColumnSpan="2" Content="Convert HDR clips to SDR (tone-map)" IsChecked="{Binding Hdr}"
-                              Focusable="False" Margin="0,4" ToolTip="Fixes dark, washed-out colours of HDR recordings" />
+                    <CheckBox Grid.Row="7" Grid.ColumnSpan="2" Content="Fix HDR colours (convert to SDR)" IsChecked="{Binding Hdr}"
+                              Focusable="False" Margin="0,4" ToolTip="HDR recordings look dark and washed out on most screens and sites. This converts them to normal (SDR) colours (tone-mapping). Untick to keep HDR." />
 
                     <Separator Grid.Row="9" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
                     <TextBlock Grid.Row="10" Grid.ColumnSpan="2" Text="AUDIO SETTINGS" Style="{StaticResource SectionText}" />
 
-                    <TextBlock Grid.Row="11" Text="Bitrate per track:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate per track" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}" />
+                    <TextBlock Grid.Row="11" Text="Audio bitrate:" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Row="11" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio bitrate" ItemsSource="{Binding AudioRates}" SelectedItem="{Binding Audio}"
+                              ToolTip="Bitrate of each audio track. Original keeps the clips' own audio bitrate." />
 
                     <TextBlock Grid.Row="12" Text="Audio tracks:" Style="{StaticResource FieldLabel}" />
-                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}" />
+                    <ComboBox Grid.Row="12" Grid.Column="1" Style="{StaticResource SideCombo}" AutomationProperties.Name="Audio tracks" ItemsSource="{Binding AudioTrackModes}" SelectedItem="{Binding Atrk}"
+                              ToolTip="Mix all into one: game and microphone in one track (use this for Discord, browsers and phones; many players play only the first track). Keep separate: each track stays its own (Game audio / Microphone).">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=tracks}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                    <CheckBox Grid.Row="13" Grid.ColumnSpan="2" Content="Mute microphone (2nd audio track)" IsChecked="{Binding MuteMic}"
+                    <CheckBox Grid.Row="13" Grid.ColumnSpan="2" Content="Leave out the microphone (2nd track)" IsChecked="{Binding MuteMic}"
                               Focusable="False" Margin="0,4"
                               ToolTip="Leave out the second audio track (ShadowPlay microphone) in the preview and export" />
 
@@ -584,11 +616,11 @@
                                 </TextBox.ToolTip>
                             </TextBox>
                         </DockPanel>
-                        <TextBlock Text="Asks at export when empty." Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
+                        <TextBlock Text="Empty: asks where to save at every export." Style="{StaticResource SmallMutedText}" Margin="0,2,0,0" />
                     </StackPanel>
 
-                    <CheckBox Grid.Row="23" Grid.ColumnSpan="2" Content="Save session on exit" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,4"
-                              AutomationProperties.Name="Save session on exit"
+                    <CheckBox Grid.Row="23" Grid.ColumnSpan="2" Content="Reopen these clips next time" IsChecked="{Binding RestoreSession}" Focusable="False" Margin="0,4"
+                              AutomationProperties.Name="Reopen these clips next time"
                               ToolTip="Keep the open clips (with trims, effects and presets) when the program closes, and open them again on the next start." />
                 </Grid>
             </ScrollViewer>

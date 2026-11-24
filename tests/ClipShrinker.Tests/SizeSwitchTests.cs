@@ -111,4 +111,15 @@ public class SizeSwitchTests
         var s = AppState.FromSettings(new JsonObject { ["bitrate"] = "8", ["audio"] = "Original" });
         Assert.StartsWith("Fixed 8 Mbps video  ·  about", s.SummaryLines([Row(@"C:\v\a.mp4", 20).ToExport()])[2]);
     }
+
+    [Fact]
+    public void CodecsShowPlainNamesButSaveTheirLabels()
+    {
+        Assert.Equal("HEVC · NVIDIA", Core.Media.Encoders.ShownName("HEVC (hevc_nvenc)"));
+        Assert.Equal("H.264 · AMD", Core.Media.Encoders.ShownName("H.264 (h264_amf)"));
+        Assert.Equal("HEVC · Windows (GPU)", Core.Media.Encoders.ShownName("HEVC (Windows, GPU)"));
+        Assert.Equal("H.264 · Windows (CPU)", Core.Media.Encoders.ShownName("H.264 (Windows, CPU)"));
+        Assert.Equal("something else", Core.Media.Encoders.ShownName("something else"));
+        Assert.Contains("HEVC (hevc_nvenc)", C.Codecs);                  // what settings and projects keep saving
+    }
 }

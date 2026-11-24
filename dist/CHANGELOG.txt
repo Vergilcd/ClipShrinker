@@ -40,6 +40,12 @@ Newest version first.
   shows once an export starts instead of sitting empty above Export; the Summary lines are a size bigger;
   the file-name help is clearer; pointing at the Export folder box shows the whole path; the Sounds lane says
   "Sounds" while its start is free.
+- Changed: clearer words in the Export settings (the saved values stay the same, so older settings and projects
+  open as before): Codec shows "HEVC · NVIDIA" instead of "HEVC (hevc_nvenc)"; the open Resolution list says what
+  each choice does; "Crop:" with "Already 16:9 or narrower: nothing is cut." or "..., the sides are cut";
+  "Fix HDR colours (convert to SDR)"; "Audio bitrate"; "Mix all into one" / "Keep separate"; "Leave out the
+  microphone (2nd track)"; "Reopen these clips next time" (was "Save session on exit"). Resolution, Crop, Audio
+  bitrate and Audio tracks got tooltips.
 - Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
   aside within its section.
 - Fix: the Resolution box could show nothing after opening a project or switching between the size limit
