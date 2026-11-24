@@ -35,6 +35,13 @@ Newest version first.
   no longer mean 8 red crosses and 8 Reset zoom buttons.
 - Changed: with no clips, the effect buttons and Sounds are dimmed, and "Drop videos here" fills the clip area
   with an accent outline and an "Add videos" button.
+- Changed: smaller fixes from a design review. The effect buttons have dark text (white on blue, pink and
+  orange was hard to read); the GPU Encoding and AI agent badges are darker in light mode; the progress bar
+  shows once an export starts instead of sitting empty above Export; the Summary lines are a size bigger;
+  the file-name help is clearer; pointing at the Export folder box shows the whole path; the Sounds lane says
+  "Sounds" while its start is free.
+- Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
+  aside within its section.
 - Fix: the Resolution box could show nothing after opening a project or switching between the size limit
   and a fixed bitrate (both change its list). The setting itself was right.
 - Fix: the Summary's size estimate with Fixed bitrate and Audio "Original" no longer stops with an error.

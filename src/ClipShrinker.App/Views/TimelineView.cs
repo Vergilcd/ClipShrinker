@@ -255,6 +255,26 @@ public sealed class TimelineView : Canvas
         }
     }
 
+    /// <summary>2.9.1: a speed section's box slides sideways inside its section (its middle stays between ca and cb)
+    /// until it no longer covers a box placed before it, e.g. the length box of a pause right next to it. With no
+    /// free spot it takes the one that covers least.</summary>
+    static double ClearOf(double cx, double w, double ca, double cb, double lo, double hi, List<(double L, double R)> placed)
+    {
+        double Overlap(double c) => placed.Sum(p => Math.Max(0, Math.Min(c + w / 2 + 2, p.R) - Math.Max(c - w / 2 - 2, p.L)));
+        if (placed.Count == 0 || Overlap(cx) == 0) return cx;
+        double min = Math.Max(ca, lo), max = Math.Min(cb, hi);
+        var options = new List<double> { cx };
+        foreach (var (l, r) in placed) { options.Add(r + 2 + w / 2); options.Add(l - 2 - w / 2); }
+        double best = cx, bestCost = double.MaxValue;
+        foreach (double c0 in options)
+        {
+            double c = Math.Min(Math.Max(c0, Math.Min(min, max)), Math.Max(min, max));
+            double cost = Overlap(c) * 1000 + Math.Abs(c - cx);
+            if (cost < bestCost) (best, bestCost) = (c, cost);
+        }
+        return best;
+    }
+
     /// <summary>2.9: the middle of a pause's tag (its line, kept inside the timeline).</summary>
     static double PauseTagX(TimelineEditor ed, double xp, double W0) =>
         Math.Min(Math.Max(xp, ed.Pad + 31), Math.Max(ed.Pad + 31, W0 - ed.Pad - 31));
@@ -376,7 +396,8 @@ public sealed class TimelineView : Canvas
         }
         foreach (var (sec, box) in speedBoxes) box.Visibility = Visibility.Collapsed;
         if (W0 < 2 * ed.Pad + 2) return;
-        foreach (var (sec, a, b) in vis.Concat(ed.VisP().Select(p => (Sec: p, A: p.A, B: p.A))))
+        var placed = new List<(double L, double R)>();      // 2.9.1: boxes already laid out (pauses first, they sit on their line)
+        foreach (var (sec, a, b) in ed.VisP().Select(p => (Sec: p, A: p.A, B: p.A)).Concat(vis))
         {
             if (!ed.Active) continue;
             double xa = ed.X(a, W0), xb = ed.X(b, W0);
@@ -391,6 +412,9 @@ public sealed class TimelineView : Canvas
             box.BorderBrush = Frozen(fg);
             if (!box.IsKeyboardFocusWithin) box.Text = TimelineEditor.SectionText(sec);
             double cx = sec.IsPause ? PauseTagX(ed, xa, W0) : Math.Min(Math.Max((ca + cb) / 2, ed.Pad + 30), Math.Max(ed.Pad + 30, W0 - ed.Pad - 30));
+            double bw = ed.Overlay ? 40 : 54;
+            if (!sec.IsPause) cx = ClearOf(cx, bw, ca, cb, ed.Pad + bw / 2, W0 - ed.Pad - bw / 2, placed);
+            placed.Add((cx - bw / 2, cx + bw / 2));
             if (ed.Overlay)                                  // the short 2.0 header: a smaller box
             {
                 (box.Width, box.Height, box.FontSize) = (40, 14, 10);

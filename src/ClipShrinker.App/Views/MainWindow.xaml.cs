@@ -414,11 +414,13 @@ public partial class MainWindow : Window, IDialogs
     }
 
     /// <summary>The effect buttons under the preview, labelled with their current hotkeys (rebuilt when a key changes).</summary>
+    /// 2.9.1: dark text on all four (white on the blue, pink and orange was 3.7, 3.5 and 2.8 : 1; dark is 5.7, 6.0 and 7.5 : 1),
+    /// so the buttons keep the exact colours of their sections on the timeline.
     static readonly (string Act, string Name, string Bg, string Border, string Fg, string What)[] EffectButtons =
     [
-        ("speed", "Speed Up", "#3B82F6", "#3B82F6", "#FFFFFF", "a speed-up section (blue)"),
-        ("slow", "Slow Down", "#EC4899", "#EC4899", "#FFFFFF", "a slow-down section (pink)"),
-        ("pause", "Pause", "#F97316", "#F97316", "#FFFFFF", "a pause (orange: the picture stops, then the clip goes on)"),
+        ("speed", "Speed Up", "#3B82F6", "#3B82F6", "#111111", "a speed-up section (blue)"),
+        ("slow", "Slow Down", "#EC4899", "#EC4899", "#111111", "a slow-down section (pink)"),
+        ("pause", "Pause", "#F97316", "#F97316", "#111111", "a pause (orange: the picture stops, then the clip goes on)"),
         ("zoom", "Zoom", "#F4F4F5", "#C8C8C8", "#000000", "a zoom section (white)"),
     ];
     Point? chipDown;                                           // where the mouse went down on an effect button

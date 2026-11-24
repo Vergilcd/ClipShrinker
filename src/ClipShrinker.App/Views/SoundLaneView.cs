@@ -101,6 +101,8 @@ public sealed class SoundLaneView : FrameworkElement
         }
         if (act && vm.Row.Sounds.Count == 0)
             DrawText(dc, "Sounds: drop a sound file here, or drag one from Sounds", 8, H / 2 - 7, 10, Hint);
+        else if (act && vm.Row.Sounds.Min(b => ed.X(b.At, W)) > 64)   // 2.9.1: name the lane while its start is free
+            DrawText(dc, "Sounds", 8, H / 2 - 7, 10, Hint);
         if (act)
         {
             double x = ed.X(ed.Playhead, W);

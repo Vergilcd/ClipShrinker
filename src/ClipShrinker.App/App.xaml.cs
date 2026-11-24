@@ -73,6 +73,11 @@ public partial class App : Application
         Res("CsProgressText", "#FFFFFF", "#000000");   // the caption on the export progress bar
         Res("CsDone", "#22C55E", "#16A34A");
         Res("CsHeadX", "#FF5A52", "#C42B1C");          // the red cross of the remove button
+        // 2.9.1: the top bar badges (GPU Encoding ON / OFF, AI agent connected / not): darker in light mode to stay readable
+        Res("CsBadgeOn", "#2EA043", "#1A7F37");
+        Res("CsBadgeOff", "#F0900A", "#B35900");
+        Res("CsBadgeLink", "#3B82F6", "#1D5FC2");
+        Res("CsBadgeIdle", "#8A8A8A", "#5C5C5C");
         Res("CsChipBg", "#24FFFFFF", "#0F000000");      // 2.9.1 zoom chip in a clip's title bar
         Res("CsChipBorder", "#38FFFFFF", "#2E000000");
         Res("CsChipOnAccentBg", "#2406202F", "#29000000");   // ... on the active (accent) title bar

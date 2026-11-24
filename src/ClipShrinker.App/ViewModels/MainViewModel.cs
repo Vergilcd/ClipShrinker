@@ -886,7 +886,10 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>Text in the progress bar: the percentage while exporting, then "Done in ..." / "Failed" / "Aborted".</summary>
     public string ProgressCaption => Exporting ? Core.Py.Py.F(Progress, 0) + "%" : ProgressText;
 
-    partial void OnExportingChanged(bool value) => OnPropertyChanged(nameof(ProgressCaption));
+    partial void OnExportingChanged(bool value) { OnPropertyChanged(nameof(ProgressCaption)); OnPropertyChanged(nameof(ShowProgress)); }
+    partial void OnProgressTextChanged(string value) => OnPropertyChanged(nameof(ShowProgress));
+    /// <summary>2.9.1: the progress bar is hidden until the first export (an empty bar above Export said nothing).</summary>
+    public bool ShowProgress => Exporting || ProgressText.Length > 0;
     [ObservableProperty] private ProgressLook progressLook = ProgressLook.Normal;
     [ObservableProperty] private string exportMessage = "";
     [ObservableProperty] private string? outPath;
