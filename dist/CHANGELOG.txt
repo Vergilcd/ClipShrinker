@@ -58,6 +58,8 @@ Newest version first.
 - Changed: Bitrate presets. Deleting a preset asks first and says how many clips use it (they go back to Auto
   bitrate); before, one click deleted it without a word. The delete button is the quiet bin, the window says
   "preset" everywhere ("+ Add preset", "New preset", "Edit preset"; it said "profile") and has a Close button.
+- Changed: the About window. The Readme tab is called "User guide", the link says "GitHub page", the texts are
+  a size bigger (the window opens wider so their lines still fit), and Close is the blue button like elsewhere.
 - Fix: the user guide now describes Pause (added in 2.9.0).
 - Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
   aside within its section.
