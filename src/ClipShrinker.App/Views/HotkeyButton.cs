@@ -22,6 +22,19 @@ public sealed class HotkeyButton : Button
     string emptyText = "Not set";
 
     readonly StackPanel row = new() { Orientation = Orientation.Horizontal };
+    TextBlock? pen;
+
+    /// <summary>2.9.1 (Shortcuts window): the whole row around it lights up instead of the button, and the pencil
+    /// shows only while the row is under the mouse (<see cref="SetHot"/>).</summary>
+    public bool InRow { get => inRow; init { inRow = value; Build(); } }
+    bool inRow, hot;
+
+    /// <summary>The row under the mouse (InRow): show the pencil.</summary>
+    public void SetHot(bool on)
+    {
+        hot = on;
+        if (pen is not null) pen.Opacity = on ? 1 : 0;
+    }
 
     public HotkeyButton()
     {
@@ -32,7 +45,7 @@ public sealed class HotkeyButton : Button
         Background = Brushes.Transparent;
         Template = MakeTemplate();
         Content = row;
-        MouseEnter += (_, _) => SetResourceReference(BackgroundProperty, "CsHover");
+        MouseEnter += (_, _) => { if (!inRow) SetResourceReference(BackgroundProperty, "CsHover"); };
         MouseLeave += (_, _) => Background = Brushes.Transparent;
         Build();
     }
@@ -68,12 +81,13 @@ public sealed class HotkeyButton : Button
             row.Children.Add(holder);
         }
         else foreach (var part in Parts(Chord)) row.Children.Add(Keycap(part, false));
-        var pen = new TextBlock
+        pen = new TextBlock
         {
             Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 13,
             VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 4, 0),
         };
         pen.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
+        if (inRow) pen.Opacity = hot ? 1 : 0;
         row.Children.Add(pen);
         AutomationProperties.SetName(this, string.IsNullOrEmpty(Chord) ? EmptyText : Text.ChordLabel(Chord));
     }

@@ -60,6 +60,9 @@ Newest version first.
   "preset" everywhere ("+ Add preset", "New preset", "Edit preset"; it said "profile") and has a Close button.
 - Changed: the About window. The Readme tab is called "User guide", the link says "GitHub page", the texts are
   a size bigger (the window opens wider so their lines still fit), and Close is the blue button like elsewhere.
+- Changed: the Shortcuts window (F1). Trimming moved to the left column so both columns are about as long;
+  no row wraps any more; the pencil shows only on the row under the mouse, which lights up and can be clicked
+  anywhere; the effect rows show their button colour; Close is the blue button.
 - Fix: the user guide now describes Pause (added in 2.9.0).
 - Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
   aside within its section.
