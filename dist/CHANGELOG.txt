@@ -51,6 +51,10 @@ Newest version first.
   what you hear ("Tape-wind at start and end", "Deep thump and swell"); "VHS look on the picture"; "Section
   volume" and "Whoosh volume". The play buttons are gone: hold a volume slider to listen. A sample (normal
   sound, the effect, normal again) loops at that volume while you drag, and stops when you let go.
+- Changed: the Modules window. The delete button is a quiet bin that turns red only when pointed at (it still
+  asks first), each switch says On or Off and a switched-off module is dimmed, and "Changelog" is a link in the
+  version line, so more modules fit without scrolling. AI editing's description no longer says "Development
+  version" (a built-in module's description is now refreshed when it changes, also without a new version).
 - Fix: the user guide now describes Pause (added in 2.9.0).
 - Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
   aside within its section.

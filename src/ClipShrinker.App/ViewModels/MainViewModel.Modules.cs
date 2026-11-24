@@ -140,8 +140,11 @@ public sealed partial class MainViewModel
             bool there = Directory.Exists(AppPaths.ModuleDir(id));
             // 2.5: a built-in module from an older app version gets this version's module.json + changelog
             // 2.7: right after the plugins\ folder became modules\ the built-in texts are rewritten (they said "plugin")
+            // 2.9.1: also when the version is the same but this app's description differs (a text fix, e.g. AI editing
+            // losing "Development version.", reaches modules that are already there without a new version number)
             bool older = there && renamed || there && ModuleManifest.Read(AppPaths.ModuleDir(id)) is { } cur && EmbeddedManifest(id) is { } emb
-                         && ModuleManifest.CompareVersions(cur.Version, emb.Version) < 0;
+                         && (ModuleManifest.CompareVersions(cur.Version, emb.Version) < 0
+                             || ModuleManifest.CompareVersions(cur.Version, emb.Version) == 0 && cur.Description != emb.Description);
             if ((!there && !modulesKnown.Contains(id)) || older)
             {
                 try { WriteBuiltinFiles(id); }
