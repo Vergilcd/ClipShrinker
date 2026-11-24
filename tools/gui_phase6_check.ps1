@@ -74,7 +74,7 @@ Check ($saved.clips[0].rel -eq $null -or $saved.clips[0].rel -like "*a_1080p60.m
 
 "3. bitrate presets"
 Invoke (Find $win $A::NameProperty "Bitrate presets"); $pw = Win "Bitrate presets"
-Invoke (Find $pw $A::NameProperty "+ Add profile"); $nd = Win "New profile"
+Invoke (Find $pw $A::NameProperty "+ Add preset"); $nd = Win "New preset"
 $edits = @($nd.FindAll($TS::Descendants, (New-Object $P($A::ControlTypeProperty, $CT::Edit))))
 SetText $edits[0] "Discord"; SetText $edits[1] "4,5"
 Invoke (Find $nd $A::NameProperty "Save")

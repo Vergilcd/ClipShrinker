@@ -48,9 +48,9 @@ public static class PresetStore
         var mbps = Py.Py.ParseFloat(mbpsText.Replace(",", "."));
         if (mbps is not { } v || !(0.1 <= v && v <= 1000)) return (null, "Bitrate", "Enter the bitrate in Mbps, e.g. 20.");
         key = key.Trim().ToLowerInvariant();
-        if (name.Length == 0) return (null, "Name", "Give the profile a name.");
+        if (name.Length == 0) return (null, "Name", "Give the preset a name.");
         if (list.Where((q, i) => i != index).Any(q => string.Equals(q.Name, name, StringComparison.OrdinalIgnoreCase)))
-            return (null, "Name", "There is already a profile with this name.");
+            return (null, "Name", "There is already a preset with this name.");
         if (reserved.Contains(key)) return (null, "Hotkey", "This key already does something else - pick another one.");
         if (key.Length > 0 && list.Where((q, i) => i != index).FirstOrDefault(q => q.Key == key) is { } clash)
             return (null, "Hotkey", $"The key is already used by \"{clash.Name}\".");

@@ -55,6 +55,9 @@ Newest version first.
   asks first), each switch says On or Off and a switched-off module is dimmed, and "Changelog" is a link in the
   version line, so more modules fit without scrolling. AI editing's description no longer says "Development
   version" (a built-in module's description is now refreshed when it changes, also without a new version).
+- Changed: Bitrate presets. Deleting a preset asks first and says how many clips use it (they go back to Auto
+  bitrate); before, one click deleted it without a word. The delete button is the quiet bin, the window says
+  "preset" everywhere ("+ Add preset", "New preset", "Edit preset"; it said "profile") and has a Close button.
 - Fix: the user guide now describes Pause (added in 2.9.0).
 - Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
   aside within its section.

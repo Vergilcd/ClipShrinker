@@ -87,21 +87,28 @@ public sealed class PresetsWindow : Window
             };
             edit.Click += (_, _) => Edit(idx);
             Add(edit, r, 3);
-            var del = new Button
-            {
-                Content = "", FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 11,
-                Margin = new Thickness(4, 0, 0, 0), Padding = new Thickness(0), Width = rowH, Height = rowH, MinWidth = 0, Focusable = false,
-                ToolTip = "Delete this preset",
-            };
-            del.SetResourceReference(StyleProperty, "DangerButton");     // red, the same height as Edit
+            // 2.9.1: the quiet bin of the Modules window and the clip title bars (red only when pointed at); it asks first
+            var del = new Button { Content = "", FontSize = 14, Margin = new Thickness(4, 0, 0, 0), Width = rowH, Height = rowH,
+                                   ToolTip = "Delete this preset (asks first)" };
+            del.SetResourceReference(StyleProperty, "HeadQuietX");
+            del.SetResourceReference(ForegroundProperty, "TextFillColorSecondaryBrush");
+            System.Windows.Automation.AutomationProperties.SetName(del, "Delete " + p.Name);
             del.Click += (_, _) => vm.DeletePreset(idx);
             Add(del, r, 4);
             r++;
         }
         if (vm.Presets.Count == 0) { var none = Muted("No presets yet."); none.Margin = new Thickness(0, 4, 0, 4); Add(none, r++, 0, 5); }
-        var add = new Button { Content = "+ Add profile", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 18, 0, 0), Focusable = false };
+        // 2.9.1: "preset" everywhere (it said "profile"), and a Close button like the other windows (Esc still closes)
+        var bottom = new DockPanel { Margin = new Thickness(0, 18, 0, 0), LastChildFill = false };
+        var close = new Button { Content = "Close", Padding = new Thickness(18, 5, 18, 6), Focusable = false };
+        close.SetResourceReference(StyleProperty, "AccentButtonStyle");
+        close.Click += (_, _) => Close();
+        DockPanel.SetDock(close, Dock.Right);
+        var add = new Button { Content = "+ Add preset", Focusable = false };
         add.Click += (_, _) => Edit(null);
-        Add(add, r, 0, 5);
+        bottom.Children.Add(close);
+        bottom.Children.Add(add);
+        Add(bottom, r, 0, 5);
     }
 
     /// <summary>Records a preset hotkey (null = cancelled, "" = none); taken keys show why and cannot be saved.</summary>
@@ -113,13 +120,13 @@ public sealed class PresetsWindow : Window
         return d.Result;
     }
 
-    /// <summary>The New / Edit profile dialog; the hotkey is shown as keycaps, a click records a new one.</summary>
+    /// <summary>The New / Edit preset dialog; the hotkey is shown as keycaps, a click records a new one.</summary>
     void Edit(int? index)
     {
         var cur = index is { } i ? vm.Presets[i] : new Core.Settings.Preset("", 10.0, "");
         var d = new Window
         {
-            Title = index is null ? "New profile" : "Edit profile", Owner = this, SizeToContent = SizeToContent.WidthAndHeight,
+            Title = index is null ? "New preset" : "Edit preset", Owner = this, SizeToContent = SizeToContent.WidthAndHeight,
             ResizeMode = ResizeMode.NoResize, ShowInTaskbar = false, WindowStartupLocation = WindowStartupLocation.Manual,
             Left = Left + 30, Top = Top + 40,
         };
