@@ -46,6 +46,12 @@ Newest version first.
   "Fix HDR colours (convert to SDR)"; "Audio bitrate"; "Mix all into one" / "Keep separate"; "Leave out the
   microphone (2nd track)"; "Reopen these clips next time" (was "Save session on exit"). Resolution, Crop, Audio
   bitrate and Audio tracks got tooltips.
+- Changed: the Effects window is now "Effect settings" (Timeline effects module 1.3.0). Each block is headed by
+  the same coloured button as under the preview, with its key; Pause has its own block; the sound choices say
+  what you hear ("Tape-wind at start and end", "Deep thump and swell"); "VHS look on the picture"; "Section
+  volume" and "Whoosh volume". The play buttons are gone: hold a volume slider to listen. A sample (normal
+  sound, the effect, normal again) loops at that volume while you drag, and stops when you let go.
+- Fix: the user guide now describes Pause (added in 2.9.0).
 - Fix: a speed section's box ("2x") no longer covers the length box of a pause right next to it; it moves
   aside within its section.
 - Fix: the Resolution box could show nothing after opening a project or switching between the size limit

@@ -381,7 +381,7 @@ public sealed partial class MainViewModel : ObservableObject
     void RefreshRife()
     {
         RifeStatus = RifeBusy.Length > 0 ? RifeBusy
-            : RifeInstalled ? "RIFE is installed (used when exporting; the preview shows blending)"
+            : RifeInstalled ? "RIFE is installed. Used in the export; the preview shows blending."
             : "RIFE is not installed" + (Text.InterpKey(S.SlowInterp) == "rife" ? " - exports use frame blending" : "");
         OnPropertyChanged(nameof(RifeInstalled));
         OnPropertyChanged(nameof(ShowRifeButton));

@@ -1,6 +1,14 @@
 TIMELINE EFFECTS - CHANGELOG
 ============================
 
+1.3.0 (Clip Shrinker 2.9.1)
+- The Effects window is now "Effect settings" (the gear button under the preview, or F2). Each block is headed
+  by the same coloured button as under the preview, with its key, and Pause has its own block.
+- The sound choices say what you hear: "Tape-wind at start and end" / "Just the sped-up sound", "Deep thump and
+  swell" / "Just the slowed sound". "VHS look on the picture"; "Section volume" and "Whoosh volume".
+- The play buttons are gone: hold a volume slider to listen. A sample loops at that volume while you drag it
+  and stops when you let go.
+
 1.2.0 (Clip Shrinker 2.9.0)
 - New: Pause (an orange line, P): the picture stops on that frame for the length typed in its box, then the
   clip goes on from there. The clip's own sound is silent meanwhile; Sound track sounds keep playing.

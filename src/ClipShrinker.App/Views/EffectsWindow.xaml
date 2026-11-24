@@ -2,28 +2,24 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:app="clr-namespace:ClipShrinker.App"
-        Title="Effects (Timeline effects module)" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False"
+        Title="Effect settings" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False"
         Background="{DynamicResource ApplicationBackgroundBrush}">
+    <!-- 2.9.1: each block is headed by the same coloured button as under the preview (with its key), Pause has its own
+         block, the sound options say what you hear, and holding a volume slider plays a looping sample at that volume
+         (the play buttons are gone). Only the shown words changed: settings and projects keep their saved values. -->
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <app:NotConverter x:Key="Not" />
-        <app:IsNullConverter x:Key="IsNull" />
-        <Style x:Key="SampleButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Content" Value="&#xE768;" />
-            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
-            <Setter Property="Margin" Value="8,0,0,0" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="MinWidth" Value="0" />
-            <Setter Property="Focusable" Value="False" />
-            <Setter Property="IsEnabled" Value="{Binding SampleBusy, Converter={StaticResource IsNull}}" />
-            <Setter Property="Command" Value="{Binding PlayEffectSampleCommand}" />
-            <Setter Property="ToolTip" Value="Play a short sample with the current settings: normal sound, then the effect, then normal again (uses the selected clip's sound at the playhead)" />
-        </Style>
+        <app:ShownTextConverter x:Key="Shown" />
         <Style x:Key="FxCombo" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
             <Setter Property="Width" Value="300" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Margin" Value="0,3" />
         </Style>
+        <!-- a sound drop-down: the saved value, shown in words that say what you hear -->
+        <DataTemplate x:Key="FxSoundItem">
+            <TextBlock Text="{Binding Converter={StaticResource Shown}, ConverterParameter=fxsound}" />
+        </DataTemplate>
         <Style x:Key="FxLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
             <Setter Property="Margin" Value="0,5,14,5" />
         </Style>
@@ -33,10 +29,20 @@
             <Setter Property="Maximum" Value="200" />
             <Setter Property="TickFrequency" Value="5" />
             <Setter Property="IsSnapToTickEnabled" Value="True" />
+            <Setter Property="IsMoveToPointEnabled" Value="True" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
+        <!-- the block head: the effect's own button colours, its name and key -->
+        <Style x:Key="FxHead" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="9,3,10,4" />
+            <Setter Property="Margin" Value="0,14,0,8" />
+            <Setter Property="TextElement.Foreground" Value="#111111" />
+        </Style>
     </Window.Resources>
-    <StackPanel Margin="20">
+    <StackPanel Margin="20,6,20,20">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -51,61 +57,99 @@
                 <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- (rows 0 - 2 held the APP section until 2.3; "Save session on exit" is in the Export panel now) -->
-            <!-- (rows 3 - 6 held CLIP TRANSITIONS until 2.4; since 2.5 they are the Transition drop-down next to "Clear all clips") -->
-            <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="SPEED UP" Style="{StaticResource SectionText}" />
-            <TextBlock Grid.Row="8" Text="Sound:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="8" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding FastAudioOptions}" SelectedItem="{Binding FastAudio}" />
-            <TextBlock Grid.Row="9" Text="Volume:" Style="{StaticResource FxLabel}" />
-            <Grid Grid.Row="9" Grid.Column="1" Width="300" HorizontalAlignment="Left" Margin="0,5"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <Slider Style="{StaticResource Vol}" Value="{Binding FastVol}" Tag="70" MouseDoubleClick="Vol_DoubleClick"
-                        ToolTip="Loudness of this sound in the sections (100% = unchanged, double-click = default 70%)" />
-                <TextBlock Grid.Column="1" Text="{Binding FastVol, StringFormat={}{0}%}" Width="44" TextAlignment="Right" VerticalAlignment="Center" /><Button Grid.Column="2" Style="{StaticResource SampleButton}" CommandParameter="fast" />
+            <!-- SPEED UP -->
+            <Border Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource FxHead}" Background="#3B82F6" BorderBrush="#3B82F6">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Speed Up" FontWeight="SemiBold" />
+                    <TextBlock Text="|" Opacity="0.5" Margin="7,0,7,1" />
+                    <TextBlock x:Name="SpeedKey" />
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Row="1" Text="Sound:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding FastAudioOptions}" SelectedItem="{Binding FastAudio}"
+                      ItemTemplate="{StaticResource FxSoundItem}" AutomationProperties.Name="Speed up sound"
+                      ToolTip="What sped-up sections sound like: the clip's sound sped up, with a tape-wind sound at the start and the end, or without it, or silent" />
+            <TextBlock Grid.Row="2" Text="Section volume:" Style="{StaticResource FxLabel}" />
+            <Grid Grid.Row="2" Grid.Column="1" Width="300" HorizontalAlignment="Left" Margin="0,5"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Slider Style="{StaticResource Vol}" Value="{Binding FastVol}" Tag="fast:70" AutomationProperties.Name="Speed up section volume"
+                        PreviewMouseLeftButtonDown="Vol_Down" PreviewMouseLeftButtonUp="Vol_Up" LostMouseCapture="Vol_Lost" MouseDoubleClick="Vol_DoubleClick"
+                        ToolTip="How loud sped-up sections are (100% = unchanged). Hold the slider to listen: a sample loops at this volume while you drag. Double-click = default 70%." />
+                <TextBlock Grid.Column="1" Text="{Binding FastVol, StringFormat={}{0}%}" Width="44" TextAlignment="Right" VerticalAlignment="Center" />
             </Grid>
-            <TextBlock Grid.Row="10" Text="Pitch:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="10" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding FastPitchOptions}" SelectedItem="{Binding FastPitch}" />
-            <CheckBox Grid.Row="11" Grid.ColumnSpan="2" Content="VHS visual effect on sped-up sections" IsChecked="{Binding Vhs}" Focusable="False" Margin="0,3" />
+            <TextBlock Grid.Row="3" Text="Pitch:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="3" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding FastPitchOptions}" SelectedItem="{Binding FastPitch}" />
+            <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Content="VHS look on the picture" IsChecked="{Binding Vhs}" Focusable="False" Margin="0,3"
+                      ToolTip="Sped-up sections get a worn videotape look: grain, colour fringes and a rolling bar, strongest at their start and end" />
 
-            <Separator Grid.Row="12" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-            <TextBlock Grid.Row="13" Grid.ColumnSpan="2" Text="SLOW MOTION" Style="{StaticResource SectionText}" />
-            <TextBlock Grid.Row="14" Text="Sound:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="14" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowAudioOptions}" SelectedItem="{Binding SlowAudio}" />
-            <TextBlock Grid.Row="15" Text="Volume:" Style="{StaticResource FxLabel}" />
-            <Grid Grid.Row="15" Grid.Column="1" Width="300" HorizontalAlignment="Left" Margin="0,5"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <Slider Style="{StaticResource Vol}" Value="{Binding SlowVol}" Tag="150" MouseDoubleClick="Vol_DoubleClick"
-                        ToolTip="Loudness of this sound in the sections (100% = unchanged, double-click = default 150%)" />
-                <TextBlock Grid.Column="1" Text="{Binding SlowVol, StringFormat={}{0}%}" Width="44" TextAlignment="Right" VerticalAlignment="Center" /><Button Grid.Column="2" Style="{StaticResource SampleButton}" CommandParameter="slow" />
+            <!-- SLOW DOWN -->
+            <Separator Grid.Row="5" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+            <Border Grid.Row="6" Grid.ColumnSpan="2" Style="{StaticResource FxHead}" Background="#EC4899" BorderBrush="#EC4899">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Slow Down" FontWeight="SemiBold" />
+                    <TextBlock Text="|" Opacity="0.5" Margin="7,0,7,1" />
+                    <TextBlock x:Name="SlowKey" />
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Row="7" Text="Sound:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="7" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowAudioOptions}" SelectedItem="{Binding SlowAudio}"
+                      ItemTemplate="{StaticResource FxSoundItem}" AutomationProperties.Name="Slow down sound"
+                      ToolTip="What slow-motion sections sound like: the clip's sound slowed, with a deep thump at the start and a swell at the end, or without it, or silent" />
+            <TextBlock Grid.Row="8" Text="Section volume:" Style="{StaticResource FxLabel}" />
+            <Grid Grid.Row="8" Grid.Column="1" Width="300" HorizontalAlignment="Left" Margin="0,5"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Slider Style="{StaticResource Vol}" Value="{Binding SlowVol}" Tag="slow:150" AutomationProperties.Name="Slow down section volume"
+                        PreviewMouseLeftButtonDown="Vol_Down" PreviewMouseLeftButtonUp="Vol_Up" LostMouseCapture="Vol_Lost" MouseDoubleClick="Vol_DoubleClick"
+                        ToolTip="How loud slow-motion sections are (100% = unchanged). Hold the slider to listen: a sample loops at this volume while you drag. Double-click = default 150%." />
+                <TextBlock Grid.Column="1" Text="{Binding SlowVol, StringFormat={}{0}%}" Width="44" TextAlignment="Right" VerticalAlignment="Center" />
             </Grid>
-            <TextBlock Grid.Row="16" Text="Pitch:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="16" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowPitchOptions}" SelectedItem="{Binding SlowPitch}" />
-            <TextBlock Grid.Row="17" Text="Smoothing:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="17" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowInterpOptions}" SelectedItem="{Binding SlowInterp}" />
-            <StackPanel Grid.Row="18" Grid.ColumnSpan="2" Margin="0,2,0,2">
+            <TextBlock Grid.Row="9" Text="Pitch:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="9" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowPitchOptions}" SelectedItem="{Binding SlowPitch}" />
+            <TextBlock Grid.Row="10" Text="Smoothing:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="10" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding SlowInterpOptions}" SelectedItem="{Binding SlowInterp}" />
+            <StackPanel Grid.Row="11" Grid.Column="1" Margin="0,0,0,2">
                 <Button Content="Download RIFE (about 12 MB)" HorizontalAlignment="Left" Margin="0,2,0,4" Focusable="False" Command="{Binding DownloadRifeCommand}"
                         IsEnabled="{Binding RifeDownloading, Converter={StaticResource Not}}"
                         Visibility="{Binding ShowRifeButton, Converter={StaticResource BoolToVis}}"
                         ToolTip="Downloads rife-ncnn-vulkan (MIT license) from GitHub into the modules\timeline-effects\rife folder" />
-                <TextBlock Text="{Binding RifeStatus}" Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" MaxWidth="460" HorizontalAlignment="Left" />
-                <ProgressBar Width="330" Height="6" HorizontalAlignment="Left" Margin="0,4,0,0" Maximum="100" Value="{Binding RifePct}"
+                <TextBlock Text="{Binding RifeStatus}" Style="{StaticResource SmallMutedText}" TextWrapping="Wrap" MaxWidth="300" HorizontalAlignment="Left" />
+                <ProgressBar Width="300" Height="6" HorizontalAlignment="Left" Margin="0,4,0,0" Maximum="100" Value="{Binding RifePct}"
                              Visibility="{Binding RifeDownloading, Converter={StaticResource BoolToVis}}" />
             </StackPanel>
 
-            <Separator Grid.Row="19" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
-            <TextBlock Grid.Row="20" Grid.ColumnSpan="2" Text="ZOOM" Style="{StaticResource SectionText}" />
-            <TextBlock Grid.Row="21" Text="Motion:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="21" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding ZoomFxOptions}" SelectedItem="{Binding ZoomFx}" />
-            <TextBlock Grid.Row="22" Text="Motion length (s):" Style="{StaticResource FxLabel}" />
-            <TextBox Grid.Row="22" Grid.Column="1" Width="70" HorizontalAlignment="Left" Margin="0,3" Text="{Binding ZoomLen, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock Grid.Row="23" Text="Sound:" Style="{StaticResource FxLabel}" />
-            <ComboBox Grid.Row="23" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding ZoomSndOptions}" SelectedItem="{Binding ZoomSnd}" />
-            <TextBlock Grid.Row="24" Text="Volume:" Style="{StaticResource FxLabel}" />
-            <Grid Grid.Row="24" Grid.Column="1" Width="300" HorizontalAlignment="Left" Margin="0,5"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <Slider Style="{StaticResource Vol}" Value="{Binding ZoomVol}" Tag="80" MouseDoubleClick="Vol_DoubleClick"
-                        ToolTip="Loudness of this sound in the sections (100% = unchanged, double-click = default 80%)" />
-                <TextBlock Grid.Column="1" Text="{Binding ZoomVol, StringFormat={}{0}%}" Width="44" TextAlignment="Right" VerticalAlignment="Center" /><Button Grid.Column="2" Style="{StaticResource SampleButton}" CommandParameter="zoom" />
+            <!-- PAUSE (2.9.1: no settings, but its own block, so nobody looks for them) -->
+            <Separator Grid.Row="12" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+            <Border Grid.Row="13" Grid.ColumnSpan="2" Style="{StaticResource FxHead}" Background="#F97316" BorderBrush="#F97316">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Pause" FontWeight="SemiBold" />
+                    <TextBlock Text="|" Opacity="0.5" Margin="7,0,7,1" />
+                    <TextBlock x:Name="PauseKey" />
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Row="14" Grid.ColumnSpan="2" Style="{StaticResource SmallMutedText}" FontSize="12" TextWrapping="Wrap" MaxWidth="440" HorizontalAlignment="Left"
+                       Text="No settings: the picture holds one frame, the clip's own sound is silent, and sounds you added keep playing." />
+
+            <!-- ZOOM -->
+            <Separator Grid.Row="15" Grid.ColumnSpan="2" Style="{StaticResource SideDivider}" />
+            <Border Grid.Row="16" Grid.ColumnSpan="2" Style="{StaticResource FxHead}" Background="#F4F4F5" BorderBrush="#C8C8C8">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Zoom" FontWeight="SemiBold" />
+                    <TextBlock Text="|" Opacity="0.5" Margin="7,0,7,1" />
+                    <TextBlock x:Name="ZoomKey" />
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Row="17" Text="Motion:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="17" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding ZoomFxOptions}" SelectedItem="{Binding ZoomFx}" />
+            <TextBlock Grid.Row="18" Text="Motion length (s):" Style="{StaticResource FxLabel}" />
+            <TextBox Grid.Row="18" Grid.Column="1" Width="70" HorizontalAlignment="Left" Margin="0,3" Text="{Binding ZoomLen, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Grid.Row="19" Text="Sound:" Style="{StaticResource FxLabel}" />
+            <ComboBox Grid.Row="19" Grid.Column="1" Style="{StaticResource FxCombo}" ItemsSource="{Binding ZoomSndOptions}" SelectedItem="{Binding ZoomSnd}" />
+            <TextBlock Grid.Row="20" Text="Whoosh volume:" Style="{StaticResource FxLabel}" />
+            <Grid Grid.Row="20" Grid.Column="1" Width="300" HorizontalAlignment="Left" Margin="0,5"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Slider Style="{StaticResource Vol}" Value="{Binding ZoomVol}" Tag="zoom:80" AutomationProperties.Name="Whoosh volume"
+                        PreviewMouseLeftButtonDown="Vol_Down" PreviewMouseLeftButtonUp="Vol_Up" LostMouseCapture="Vol_Lost" MouseDoubleClick="Vol_DoubleClick"
+                        ToolTip="How loud the whoosh of zoom sections is. Hold the slider to listen: a sample loops at this volume while you drag. Double-click = default 80%." />
+                <TextBlock Grid.Column="1" Text="{Binding ZoomVol, StringFormat={}{0}%}" Width="44" TextAlignment="Right" VerticalAlignment="Center" />
             </Grid>
         </Grid>
         <Button Content="Done" HorizontalAlignment="Right" Margin="0,16,0,0" Padding="18,5,18,6"

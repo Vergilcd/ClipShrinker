@@ -179,13 +179,20 @@ public sealed partial class MainViewModel
     public void BracketMoved() => ActiveClip?.NotifyChanged();
 
     // ------------------------------------------------------------------ effect sound samples
+    // 2.9.1: no play buttons any more. Holding a volume slider in Effect settings loops a sample of that effect (normal
+    // sound, the effect, normal again) that follows the slider; letting go stops it. The sample is rendered twice, at
+    // 0 % and 100 % of the effect's volume (LoopSampleStream mixes between them), and kept until a setting changes.
     int sampleGen;
-    [ObservableProperty] private string? sampleBusy;          // the kind being prepared ("fast" / "slow" / "zoom")
+    Media.WaveOut? samplePlayer;
+    readonly Dictionary<string, (string Quiet, string Loud)> sampleCache = [];
 
-    /// <summary>A short sample of the sped-up / slow-mo / zoom sound with the current settings.</summary>
-    [RelayCommand]
-    void PlayEffectSample(string kind)
+    /// <summary>The volume slider of this kind ("fast" / "slow" / "zoom") as 0..2.</summary>
+    double SampleVolume(string kind) => (kind switch { "fast" => S.FastVol, "slow" => S.SlowVol, _ => S.ZoomVol }) / 100.0;
+
+    /// <summary>Starts the looping sample while the slider of this kind is held.</summary>
+    public void StartEffectSample(string kind)
     {
+        StopEffectSample();
         StopPlayback();
         var row = ActiveClip ?? Clips.FirstOrDefault();
         string? path = null;
@@ -199,24 +206,60 @@ public sealed partial class MainViewModel
             t0 = Math.Max(0.0, Math.Min(t0, c.Info.Dur - need));
         }
         int gen = ++sampleGen;
-        SampleBusy = kind;
-        string output = Path.Combine(Path.GetTempPath(), $"clipshrinker_{Environment.ProcessId}_sample{gen}.wav");
         var fx = PreviewPlan.Effects(S, []);
+        var (fx0, fx1) = kind switch
+        {
+            "fast" => (fx with { FastVol = 0 }, fx with { FastVol = 100 }),
+            "slow" => (fx with { SlowVol = 0 }, fx with { SlowVol = 100 }),
+            _ => (fx with { ZoomVol = 0 }, fx with { ZoomVol = 100 }),
+        };
+        string key = $"{kind}|{path}|{t0:0.###}|{fx0}";
+        if (sampleCache.TryGetValue(key, out var have) && File.Exists(have.Quiet) && File.Exists(have.Loud))
+        {
+            PlaySampleLoop(kind, have);
+            return;
+        }
+        string Out(string tag) => Path.Combine(Path.GetTempPath(), $"clipshrinker_{Environment.ProcessId}_sample{gen}{tag}.wav");
+        var files = (Quiet: Out("q"), Loud: Out("l"));
         Task.Run(() =>
         {
             bool ok = false;
-            try { ok = Tools.Capture(PreviewCommands.EffectSample(kind, path, t0, output, fx)).Code == 0 && File.Exists(output); }
-            catch (System.ComponentModel.Win32Exception) { }
+            try
+            {
+                var a = Task.Run(() => Tools.Capture(PreviewCommands.EffectSample(kind, path, t0, files.Quiet, fx0)).Code == 0);
+                var b = Task.Run(() => Tools.Capture(PreviewCommands.EffectSample(kind, path, t0, files.Loud, fx1)).Code == 0);
+                ok = a.Result && b.Result && File.Exists(files.Quiet) && File.Exists(files.Loud);
+            }
+            catch (AggregateException e) when (e.InnerException is System.ComponentModel.Win32Exception) { }
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
-                if (SampleBusy == kind) SampleBusy = null;
                 if (!ok) { Dialogs.Toast("Could not make the sound sample"); return; }
-                if (gen != sampleGen) return;
-                try { new SoundPlayer(output).Play(); } catch (Exception e) when (e is IOException or InvalidOperationException) { }
-                Dialogs.Toast("Playing a sample: normal sound, then the effect, then normal again" +
-                              (path is null ? " (no clip with sound loaded - a test melody is used)" : ""));
+                sampleCache[key] = files;
+                if (gen != sampleGen) return;                    // let go before it was ready
+                PlaySampleLoop(kind, files);
             });
         });
+        if (path is null) Dialogs.Toast("No clip with sound loaded: the sample uses a test melody");
+    }
+
+    void PlaySampleLoop(string kind, (string Quiet, string Loud) files)
+    {
+        try
+        {
+            var stream = new Media.LoopSampleStream(files.Quiet, files.Loud, () => SampleVolume(kind));
+            samplePlayer = new Media.WaveOut();
+            samplePlayer.Feed(stream);
+            samplePlayer.Start();
+        }
+        catch (Exception e) when (e is IOException or InvalidDataException) { samplePlayer = null; }
+    }
+
+    /// <summary>Stops the sample (the slider was let go).</summary>
+    public void StopEffectSample()
+    {
+        sampleGen++;
+        samplePlayer?.Stop();
+        samplePlayer = null;
     }
 
     // ------------------------------------------------------------------ transition hover preview

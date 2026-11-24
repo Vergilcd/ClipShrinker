@@ -87,16 +87,22 @@ arrow: click it to show the whole clip again. The X at the end of a title bar re
 EFFECTS (the band above the thumbnails - Timeline effects module)
 - S adds a speed-up section (blue), D a slow-down section (pink) at the playhead. Type the speed in the box on
   its header: 4 is four times faster, 0.5 is half speed (0.1 to 100, Enter confirms).
+- P adds a pause (orange line) at the playhead: the picture stops on that frame for the length typed in its
+  box (seconds), then the clip goes on from the same frame, so nothing is cut and the clip gets longer. The
+  clip's own sound is silent during it; sounds you added on the Sounds lane keep playing. Drag the line to move
+  it; right-click or Backspace removes it. It can sit inside a speed section.
 - Z adds a zoom section (white, header at the bottom of the timeline). While the playhead is inside it, a
   bracket on the preview marks the zoomed area; drag it to move it or drag its corners to resize it.
-- The Speed Up, Slow Down and Zoom buttons under the preview do the same: click one to add the effect at the
+- The Speed Up, Slow Down, Pause and Zoom buttons under the preview do the same: click one to add the effect at the
   playhead of the active clip, or drag it onto any clip's timeline to add it where you drop it.
 - Drag a section's edge lines to resize it, or its header or body to move it. Click to select a section;
   Delete or Backspace removes it, and right-click removes the one under the mouse. Sections can't overlap and
   stay inside the trimmed part.
 
 The line under a clip's title shows its length after editing. Pitch, frame blending, RIFE AI slow motion and
-zoom motion are set in the effect settings (the gear button after Sounds, or F2). RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
+zoom motion are set in the effect settings (the gear button after Sounds, or F2). Hold a volume slider there
+to listen: a sample (normal sound, the effect, normal again) loops at that volume while you drag, and stops when
+you let go. RIFE (modules\timeline-effects\rife) needs a GPU with Vulkan support.
 
 EXPORT SETTINGS (right side)
 - Size: the switch at the top picks "Size limit" or "Fixed bitrate". Size limit: "Max size (MB)" applies

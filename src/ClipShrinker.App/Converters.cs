@@ -48,6 +48,11 @@ public sealed class ShownTextConverter : IValueConverter
         {
             "codec" => Core.Media.Encoders.ShownName(v),
             "tracks" => v switch { "Mix into one track" => "Mix all into one", "Keep as separate tracks" => "Keep separate", _ => v },
+            "fxsound" => v switch                                // Effect settings: what the section sounds like
+            {
+                "VHS effect with sound" => "Tape-wind at start and end", "Normal sped-up sound" => "Just the sped-up sound",
+                "Slow-mo effect with sound" => "Deep thump and swell", "Normal slow-mo sound" => "Just the slowed sound", _ => v,
+            },
             "reshint" => v switch
             {
                 "Auto" => "full size; smaller if the size limit is tight",
