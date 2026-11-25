@@ -4,6 +4,19 @@ Made with Claude (Anthropic) by Vergil. Open source under MIT, see LICENSE.txt.
 Newest version first.
 
 
+2.9.5
+- Fixed: when an export failed or was stopped, Clip Shrinker deleted the file it was going to replace. If you
+  picked an existing file in "Save as" and said yes to replacing it, a failed export left you with neither the
+  old file nor a new one. The old file now stays until the new one is finished.
+- Fixed: settings, bitrate presets and projects are saved to a temporary file first and then swapped in, so a
+  crash or a full disk while saving no longer leaves a half-written file. If settings.json is damaged anyway,
+  it is kept as settings.json.broken instead of being overwritten with the defaults.
+- Fixed: Install or Update in AI editing closed the app when the download list was not JSON (for example a
+  hotel or airport Wi-Fi login page). It now says the list could not be read.
+- Fixed: AI editing switched speech to text to the CPU for the rest of the session after any error. It now
+  does that only when the graphics card was the problem.
+- AI editing 0.7.1: see modules\ai-agent\CHANGELOG.txt.
+
 2.9.1
 - Changed: the size limit and the fixed bitrate are now two sides of a switch at the top of the Export
   settings ("Size limit | Fixed bitrate"), and only the picked one's box is shown. Before, a number left in

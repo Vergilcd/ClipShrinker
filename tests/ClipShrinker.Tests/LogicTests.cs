@@ -271,6 +271,10 @@ public class StoreTests
         Assert.Equal(want.EnumerateObject().Select(p => p.Name), got.Select(p => p.Key));
         foreach (var p in want.EnumerateObject())
             Assert.True(System.Text.Json.Nodes.JsonNode.DeepEquals(System.Text.Json.Nodes.JsonNode.Parse(p.Value.GetRawText()), got[p.Name]), p.Name);
-        Assert.Empty(SettingsStore.Load(Path.Combine(Fixtures.FilesDir, "presets_broken.json")));
+        // (2.9.5: a damaged file gets a .broken copy next to it, so load a temp copy, not the fixture itself)
+        string tmp = Path.Combine(Path.GetTempPath(), $"cs-broken-{Guid.NewGuid():N}.json");
+        File.Copy(Path.Combine(Fixtures.FilesDir, "presets_broken.json"), tmp);
+        try { Assert.Empty(SettingsStore.Load(tmp)); }
+        finally { File.Delete(tmp); File.Delete(tmp + ".broken"); }
     }
 }

@@ -4,7 +4,7 @@ namespace ClipShrinker.Core;
 public static class C
 {
     public const string AppName = "ClipShrinker";
-    public const string AppVersion = "2.9.1";
+    public const string AppVersion = "2.9.5";
     public const string AppId = "ClipShrinker.Desktop.App";
     public const string ProjectExt = ".clipproj";
     public const string RepoUrl = "https://github.com/Vergilcd/ClipShrinker";

@@ -63,7 +63,7 @@ public static class PresetStore
         {
             var arr = new JsonArray(presets.Select(p => (JsonNode)new JsonObject
                 { ["name"] = p.Name, ["mbps"] = p.Mbps, ["key"] = p.Key }).ToArray());
-            File.WriteAllText(path, new JsonObject { ["presets"] = arr }.ToJsonString(SettingsStore.JsonOut));
+            SafeFile.WriteAllText(path, new JsonObject { ["presets"] = arr }.ToJsonString(SettingsStore.JsonOut));
         }
         catch (IOException) { }
         catch (UnauthorizedAccessException) { }
@@ -130,7 +130,13 @@ public static class SettingsStore
         {
             return JsonNode.Parse(File.ReadAllText(path)) as JsonObject ?? [];
         }
-        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException)
+        catch (JsonException)
+        {
+            // 2.9.5: keep the damaged file next to it (the next save would overwrite it with the defaults)
+            try { File.Copy(path, path + ".broken", overwrite: true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            return [];
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
             return [];
         }
@@ -140,9 +146,35 @@ public static class SettingsStore
     {
         try
         {
-            File.WriteAllText(path, settings.ToJsonString(JsonOut));
+            SafeFile.WriteAllText(path, settings.ToJsonString(JsonOut));
         }
         catch (IOException) { }
         catch (UnauthorizedAccessException) { }
+    }
+}
+
+/// <summary>2.9.5: writes a file whole or not at all: the text goes to "name.tmp" first and is then moved over the
+/// old file (a rename on the same disk), so a crash or a full disk mid-write leaves the old file as it was.</summary>
+public static class SafeFile
+{
+    public static void WriteAllText(string path, string text)
+    {
+        string tmp = path + ".tmp";
+        try
+        {
+            using (var f = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var w = new StreamWriter(f, new System.Text.UTF8Encoding(false)))
+            {
+                w.Write(text);
+                w.Flush();
+                f.Flush(flushToDisk: true);
+            }
+            File.Move(tmp, path, overwrite: true);
+        }
+        catch
+        {
+            try { File.Delete(tmp); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            throw;
+        }
     }
 }

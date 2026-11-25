@@ -15,7 +15,7 @@ public class AgentTests
         public List<TimelineClip> Rows = [new("C:/v/a.mp4", new MediaInfo(1920, 1080, 60, 30, 1, 8e6, 0, null, null, null))];
         public List<string> Edits = [];
         public Tools Tools { get; } = new(null, null);
-        public bool Live => true;
+        public bool Live { get; set; } = true;
         public string? ProjectPath => null;
         public IReadOnlyList<TimelineClip> Clips => Rows.ToList();
         public AppState State { get; } = AppState.FromSettings(null);
@@ -115,6 +115,73 @@ public class AgentTests
         Assert.Contains("guide {\"topic\": \"subtitles\"}", AgentTools.Instructions);
         var bad = AgentTools.Call(new FakeHost(), "guide", new JsonObject { ["topic"] = "nope" });
         Assert.True(bad["isError"]!.GetValue<bool>());
+    }
+
+    // ------------------------------------------------------------------ 2.9.5 (review fixes)
+    [Fact]
+    public void BadNumbersAreRefusedNotApplied()
+    {
+        var h = new FakeHost();
+        var r = AgentTools.Call(h, "set_trim", new JsonObject { ["clip"] = 1, ["start"] = "NaN", ["end"] = 20 });
+        Assert.True(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.False(double.IsNaN(h.Rows[0].Start));
+        r = AgentTools.Call(h, "set_trim", new JsonObject { ["clip"] = 1, ["start"] = 1, ["end"] = "Infinity" });
+        Assert.True(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.Empty(h.Edits);
+    }
+
+    [Fact]
+    public void NullTimeIsAnErrorNotACrash()
+    {
+        var r = AgentTools.Call(new FakeHost(), "frames", new JsonObject { ["clip"] = 1, ["times"] = new JsonArray(null, 2) });
+        Assert.True(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.Contains("times must be numbers", TextOf(r));
+    }
+
+    [Fact]
+    public void WrongResolutionChangesNothing()
+    {
+        var h = new FakeHost();
+        string pre = h.State.Prefix;
+        var r = AgentTools.Call(h, "set_export_settings", new JsonObject { ["prefix"] = "x_{date}", ["size"] = 33, ["resolution"] = "potato" });
+        Assert.True(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.Equal(pre, h.State.Prefix);
+        Assert.NotEqual("33", h.State.Size);
+        Assert.Empty(h.SettingChanges);
+        // the bitrate given in the same call picks the list the resolution is checked against
+        r = AgentTools.Call(h, "set_export_settings", new JsonObject { ["bitrate"] = "20", ["resolution"] = "original" });
+        Assert.False(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.Equal("Original", h.State.Res);
+    }
+
+    [Fact]
+    public void FileNameRulesNeedTheOpenApp()
+    {
+        var h = new FakeHost { Live = false };
+        var r = AgentTools.Call(h, "set_export_settings", new JsonObject { ["suffix"] = "ranked", ["size"] = 40 });
+        Assert.True(r["isError"]!.GetValue<bool>(), TextOf(r));
+        Assert.Contains("app settings", TextOf(r));
+        Assert.Empty(h.SettingChanges);
+        r = AgentTools.Call(h, "set_export_settings", new JsonObject { ["size"] = 40 });       // project settings still work
+        Assert.False(r["isError"]!.GetValue<bool>(), TextOf(r));
+    }
+
+    [Fact]
+    public void ExportDoesNotReplaceAFileUnasked()
+    {
+        string f = Path.Combine(Path.GetTempPath(), $"cs-overwrite-{Guid.NewGuid():N}.mp4");
+        File.WriteAllText(f, "old");
+        try
+        {
+            var r = AgentTools.Call(new FakeHost(), "export", new JsonObject { ["out"] = f });
+            Assert.True(r["isError"]!.GetValue<bool>(), TextOf(r));
+            Assert.Contains("already exists", TextOf(r));
+            r = AgentTools.Call(new FakeHost(), "export", new JsonObject { ["out"] = f, ["overwrite"] = true });
+            Assert.False(r["isError"]!.GetValue<bool>(), TextOf(r));
+            r = AgentTools.Call(new FakeHost(), "export", new JsonObject { ["out"] = Path.GetDirectoryName(f) });   // a folder: auto name
+            Assert.False(r["isError"]!.GetValue<bool>(), TextOf(r));
+        }
+        finally { File.Delete(f); }
     }
 
     static string TextOf(JsonObject r) => string.Join("\n", r["content"]!.AsArray().Select(c => c!["text"]?.GetValue<string>()));

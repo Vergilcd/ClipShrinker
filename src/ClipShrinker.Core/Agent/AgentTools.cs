@@ -154,7 +154,8 @@ public static partial class AgentTools
         Tool("export", "Export with the app's export settings (only when the user asks). In the open app the progress shows " +
              "there. Can take minutes.",
              Schema(("out", "string", "Output .mp4 file or folder (default: the export folder, or next to the first clip)", false),
-                    ("mode", "string", "\"join\" or \"separate\" when there are several clips (default: the last choice)", false))),
+                    ("mode", "string", "\"join\" or \"separate\" when there are several clips (default: the last choice)", false),
+                    ("overwrite", "boolean", "Replace an existing file given in out. Only after the user said yes to replacing it", false))),
     ];
 
     /// <summary>Runs one tool. Errors the agent can fix come back as isError content, not exceptions.</summary>
@@ -200,15 +201,26 @@ public static partial class AgentTools
         {
             return Content([Text($"{name} failed: {e.Message}")], isError: true);
         }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            // 2.9.5: a bug in one tool (frames with times [null] threw a NullReferenceException) must not take down
+            // the helper or the app's pipe connection: report it as a failed call instead
+            return Content([Text($"{name} failed ({e.GetType().Name}): {e.Message}")], isError: true);
+        }
         finally { CultureInfo.CurrentCulture = culture; }
     }
 
     // ------------------------------------------------------------------ arguments
     static string Str(JsonObject a, string k) => a[k] is JsonValue v && v.TryGetValue(out string? s) && s.Length > 0 ? s : throw new AgentToolError(k + " is required");
-    static double? Num(JsonObject a, string k) => a[k] is not JsonValue v ? null
-        : v.TryGetValue(out double d) ? d : v.TryGetValue(out int i) ? i : v.TryGetValue(out long l) ? l
-        : v.TryGetValue(out float f) ? f : v.TryGetValue(out decimal m) ? (double)m
-        : v.TryGetValue(out string? s) && double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double x) ? x : null;
+    static double? Num(JsonObject a, string k)
+    {
+        if (a[k] is not JsonValue v) return null;
+        double? d = v.TryGetValue(out double dd) ? dd : v.TryGetValue(out int i) ? i : v.TryGetValue(out long l) ? l
+            : v.TryGetValue(out float f) ? f : v.TryGetValue(out decimal m) ? (double)m
+            : v.TryGetValue(out string? s) && double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double x) ? x : null;
+        // 2.9.5: "NaN" / "Infinity" parse as doubles but are no time or setting (set_trim "NaN" set a NaN start)
+        return d is { } n && !double.IsFinite(n) ? throw new AgentToolError($"{k} must be a number") : d;
+    }
     static int? Int(JsonObject a, string k) => Num(a, k) is { } d ? (int)Math.Round(d) : null;
     static List<string> Strs(JsonObject a, string k) =>
         (a[k] as JsonArray ?? throw new AgentToolError(k + " is required")).Select(x => x?.GetValue<string>() ?? "").Where(x => x.Length > 0).ToList();
@@ -304,7 +316,7 @@ public static partial class AgentTools
     static JsonObject Frames(IAgentHost h, JsonObject a)
     {
         var r = ClipArg(h, a);
-        var times = (a["times"] as JsonArray ?? throw new AgentToolError("times is required")).Select(t => Num(new JsonObject { ["t"] = t!.DeepClone() }, "t") ?? throw new AgentToolError("times must be numbers")).Take(8).ToList();
+        var times = (a["times"] as JsonArray ?? throw new AgentToolError("times is required")).Select(t => Num(new JsonObject { ["t"] = t?.DeepClone() }, "t") ?? throw new AgentToolError("times must be numbers")).Take(8).ToList();
         int w = Math.Clamp(Int(a, "width") ?? 640, 160, 1280);
         var (fw, fh) = ClipAnalysis.Fit(r.Info.W, r.Info.H, w);
         var st = h.State;
@@ -449,6 +461,12 @@ public static partial class AgentTools
         if (h.Clips.Count == 0) throw new AgentToolError("There are no clips to export.");
         string? output = a["out"] is JsonValue v && v.TryGetValue(out string? o) && o.Length > 0 ? o : null;
         string? mode = a["mode"] is JsonValue m && m.TryGetValue(out string? md) ? md : null;
+        // 2.9.5: an explicit file name never replaces an existing file unasked (the agent's input may come from
+        // transcribed speech or downloaded text). Automatic names already skip taken ones ("name (2).mp4").
+        bool overwrite = a["overwrite"] is JsonValue ov && ov.TryGetValue(out bool ow) && ow;
+        if (output is not null && !overwrite && !Directory.Exists(output) && Path.HasExtension(output) && File.Exists(Path.GetFullPath(output)))
+            throw new AgentToolError($"{Path.GetFullPath(output)} already exists. Ask the user whether to replace it, then call " +
+                                     "export again with overwrite: true, or give another name or a folder.");
         var (text, ok) = h.Export(output, mode);
         return Content([Text(text)], isError: !ok);
     }

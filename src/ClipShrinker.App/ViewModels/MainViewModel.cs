@@ -967,13 +967,11 @@ public sealed partial class MainViewModel : ObservableObject
             var done = new List<(string Out, long Size)>();
             var errors = new List<string>();
             var t0 = Stopwatch.StartNew();
-            string? current = null;
             try
             {
                 for (int k = 0; k < jobs.Count; k++)
                 {
                     var job = jobs[k];
-                    current = job.Out;
                     string tag = jobs.Count > 1 ? $"[{k + 1}/{jobs.Count}] " : "";
                     try
                     {
@@ -982,8 +980,10 @@ public sealed partial class MainViewModel : ObservableObject
                     }
                     catch (Exception e) when (e is not ExportCancelledException)
                     {
+                        // 2.9.5: no delete here. The encoder writes .partN.mp4 files and only moves the finished one
+                        // onto job.Out, so job.Out is still the file that was there before (an old export the user
+                        // chose to overwrite) - deleting it lost that file with nothing in its place.
                         errors.Add($"{Path.GetFileName(job.Out)}: {e.Message}");
-                        try { File.Delete(job.Out); } catch (IOException) { }
                     }
                 }
                 var (_, line) = ExportPlanner.Report(jobs, st, done, errors);
@@ -1008,7 +1008,7 @@ public sealed partial class MainViewModel : ObservableObject
             }
             catch (ExportCancelledException)
             {
-                if (current is not null) try { File.Delete(current); } catch (IOException) { }
+                // the encoder already removed its .part files; the output file is untouched (see above)
                 Ui(() =>
                 {
                     ExportMessage = "The export was stopped - the unfinished file was deleted";

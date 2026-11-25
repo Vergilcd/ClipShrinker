@@ -1,4 +1,4 @@
-CLIP SHRINKER 2.9.1
+CLIP SHRINKER 2.9.5
 ===================
 
 GETTING STARTED

@@ -71,6 +71,9 @@ public class AiModuleTests : IDisposable
         Assert.Throws<InvalidDataException>(() => AiManifest.Parse("{\"parts\":[]}"));
         Assert.Throws<InvalidDataException>(() => AiManifest.Parse(m.ToJson().Replace("\"helper.zip\"", "\"..\\\\x.zip\"")));
         Assert.Throws<InvalidDataException>(() => AiManifest.Parse(m.ToJson().Replace("\"dest\": \"models\"", "\"dest\": \"..\"")));
+        // 2.9.5: a drive-relative name and a page that is no JSON (Wi-Fi login) are refused the same way
+        Assert.Throws<InvalidDataException>(() => AiManifest.Parse(m.ToJson().Replace("\"helper.zip\"", "\"C:x.zip\"")));
+        Assert.Throws<InvalidDataException>(() => AiManifest.Parse("<html><body>Log in to the hotel Wi-Fi</body></html>"));
     }
 
     [Fact]

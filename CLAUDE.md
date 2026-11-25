@@ -121,6 +121,12 @@ The Python 1.0.x app (tkinter) is in the `v1.0.8` tag; a frozen copy is `tools/r
   versions load it as 0.1x. Sounds: TimelineClip.SoundEnd / Sounds.SrcEnd give a sound's end in source time through
   speed sections and pauses (SoundBlock.End = At + Len is only right at 1x); SoundLaneView draws and drags with it.
 
+- 2.9.5 review fixes: the export never deletes job.Out after a failure (the encoder only moves a finished .part over
+  it, so job.Out is still the user's old file). Settings / presets / projects save through Settings.SafeFile (.tmp
+  then move); a damaged settings.json is copied to settings.json.broken. AgentTools.Call turns any exception into
+  an isError result, and Mcp.SafeCall wraps the helper's calls too. Agent export refuses an existing "out" file
+  without overwrite: true. Speech.GpuFailed is set only when the CPU retry works.
+
 ## Testing
 - `dotnet test` runs the unit and fixture tests. `tools/make_test_clips.py` regenerates tests/media.
 - GUI checks: `tools/gui_export_check.ps1` (`-Exe` for the packaged exe) and `tools/gui_phase6_check.ps1` (backs up

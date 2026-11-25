@@ -73,5 +73,5 @@ public static class ProjectSave
     }
 
     public static void Save(string path, JsonObject data) =>
-        File.WriteAllText(path, data.ToJsonString(SettingsStore.JsonOut));
+        SafeFile.WriteAllText(path, data.ToJsonString(SettingsStore.JsonOut));      // (2.9.5: whole or not at all)
 }

@@ -18,7 +18,11 @@ public sealed record AiManifest(string ModuleVersion, string MinApp, IReadOnlyLi
 {
     public static AiManifest Parse(string json)
     {
-        var o = JsonNode.Parse(json) as JsonObject ?? throw new InvalidDataException("the AI editing manifest is not a JSON object");
+        // 2.9.5: text that is no JSON (a Wi-Fi login page, say) is InvalidDataException like every other bad manifest;
+        // as a JsonException it got past the callers' catch and closed the app during Install / Update
+        JsonObject o;
+        try { o = JsonNode.Parse(json) as JsonObject ?? throw new InvalidDataException("the AI editing manifest is not a JSON object"); }
+        catch (JsonException e) { throw new InvalidDataException("the AI editing download list is not valid JSON (" + e.Message + ")", e); }
         static string S(JsonNode? n, string key, string def = "") =>
             n?[key] is JsonValue v && v.TryGetValue<string>(out var s) ? s.Trim() : def;
         var parts = new List<AiPart>();
@@ -29,7 +33,8 @@ public sealed record AiManifest(string ModuleVersion, string MinApp, IReadOnlyLi
             string id = S(po, "id"), file = S(po, "file"), sha = S(po, "sha256").ToLowerInvariant(), kind = S(po, "kind", "file"), dest = S(po, "dest");
             if (id.Length == 0 || file.Length == 0 || size < 0 || sha.Length != 64 || kind is not ("zip" or "file")
                 || dest is not (AiModule.HelperFolder or AiModule.FfmpegFolder or AiModule.ModelsFolder)
-                || file.Contains('/') || file.Contains('\\') || file.Contains(".."))
+                || file != Path.GetFileName(file) || file.Contains(':') || file.Contains("..")    // (2.9.5: "C:x" left the folder)
+                || file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
                 throw new InvalidDataException($"the AI editing manifest has a bad part ({(id.Length > 0 ? id : "no id")})");
             var fb = (po["fallbacks"] as JsonArray ?? []).Select(x => x is JsonValue xv && xv.TryGetValue<string>(out var u) ? u : null)
                                                          .Where(u => u is { Length: > 0 }).Cast<string>().ToList();

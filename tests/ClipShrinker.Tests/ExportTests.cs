@@ -129,4 +129,19 @@ public class ExportTests
         }
         m.AssertNone();
     }
+
+    /// <summary>2.9.5: a failed export leaves the file it would have replaced alone. The app relied on the encoder
+    /// never touching the output before the end, but then deleted the output itself - the user's old file.</summary>
+    [Fact]
+    public void FailedExportKeepsTheOldFile()
+    {
+        var x = E.EnumerateArray().First(e => e.GetProperty("fake").Opt("fail_all")?.GetBoolean() == true);
+        var fake = new Fake([1.0], false, failAll: true);
+        string output = x.GetProperty("out").GetString()!;
+        fake.Files[output] = 12345;                                            // the export the user chose to overwrite
+        var clips = x.GetProperty("clips").EnumerateArray().Select(c => c.GetProperty("clip").Clip()).ToList();
+        Assert.Throws<ExportException>(() => new Encoder(fake, fake).Encode(output, clips, Settings(x.GetProperty("st"))));
+        Assert.Equal(12345, fake.Files[output]);
+        Assert.Single(fake.Files);                                             // no .part file left behind
+    }
 }

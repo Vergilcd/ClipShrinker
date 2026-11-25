@@ -1,6 +1,17 @@
 AI EDITING - CHANGELOG
 ======================
 
+0.7.1 (Clip Shrinker 2.9.5)
+- export no longer replaces an existing file named in "out" unless the call says overwrite: true (Claude is
+  told to ask you first). Automatic names were already safe: they get " (2)" and so on.
+- Numbers such as "NaN" or "Infinity" are refused instead of being used as a time or a setting.
+- A tool that hits an unexpected error reports it instead of stopping the helper (frames with an empty time
+  stopped it).
+- set_export_settings checks every value before it changes anything; a wrong resolution used to leave the
+  prefix and other values already changed.
+- Without the open app, prefix, suffix and keep_name are refused with a note: a project file does not keep
+  them, so before they were "changed" and then lost.
+
 0.7.0 (Clip Shrinker 2.9.0)
 - add_section can add a pause (kind "pause", from = the frame that stays, length = seconds); clear_sections
   can remove only pauses. Clip info lists pauses, and a sound's end time now follows speed sections and pauses.
