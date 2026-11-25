@@ -22,7 +22,11 @@ public sealed partial class MainViewModel
     {
         AiModule.CleanOld(AppPaths.ExeDir);
         bool installed = AiItem?.Installed == true;
-        string today = DateTime.Now.ToString("yyyy-MM-dd");
+        // 2.9.5: the once-a-day mark also holds the app version and the download source, so the first start of a new
+        // Clip Shrinker (which may come with a new AI editing version) and a CLIPSHRINKER_AI_SOURCE folder check again
+        // the same day. Before, a check in the morning hid an update published later until the next day.
+        string today = $"{DateTime.Now:yyyy-MM-dd} {Core.C.AppVersion}" +
+                       (AiModule.Source == AiModule.DefaultSource ? "" : " " + AiModule.Source);
         if (installed && Core.Py.PyJson.Str(settings["ai_update_checked"]) == today) return;
         _ = Task.Run(async () =>
         {

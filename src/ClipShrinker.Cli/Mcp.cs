@@ -53,11 +53,21 @@ public static class Mcp
                 }),
                 "ping" => Result(id, new JsonObject()),
                 "tools/list" => Result(id, new JsonObject { ["tools"] = AgentTools.List() }),
-                "tools/call" => Result(id, CallTool(msg, link, files)),
+                "tools/call" => Result(id, SafeCall(msg, link, files)),
                 _ => Error(id, -32601, "Method not found: " + method),
             });
         }
         return 0;
+    }
+
+    /// <summary>2.9.5: anything a call throws (also a bad "params" shape) becomes a failed result, not a dead helper.</summary>
+    static JsonObject SafeCall(JsonObject msg, AgentPipeClient link, FileHost files)
+    {
+        try { return CallTool(msg, link, files); }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            return AgentTools.Content([AgentTools.Text($"The call failed ({e.GetType().Name}): {e.Message}")], isError: true);
+        }
     }
 
     static JsonObject CallTool(JsonObject msg, AgentPipeClient link, FileHost files)
@@ -122,7 +132,7 @@ public static class Mcp
             : AppContext.BaseDirectory.TrimEnd('\\', '/');
         public bool? ModuleOn(string id) => null;
 
-        void Save() => File.WriteAllText(ProjectPath!, ProjectSave.Data(rows, Math.Min(active, Math.Max(0, rows.Count - 1)), State, ProjectPath)
+        void Save() => ClipShrinker.Core.Settings.SafeFile.WriteAllText(ProjectPath!, ProjectSave.Data(rows, Math.Min(active, Math.Max(0, rows.Count - 1)), State, ProjectPath)
                                                        .ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
 
         public string OpenProject(string path)

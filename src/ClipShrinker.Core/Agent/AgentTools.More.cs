@@ -152,11 +152,13 @@ public static partial class AgentTools
             if (!(size > 0) || size > 100_000) throw new AgentToolError("size must be a number of MB above 0.");
             Do($"size {size:0.##} MB", () => s.Size = size.ToString("0.##", CultureInfo.InvariantCulture));
         }
+        bool fixedAfter = s.BitrateMbps() is not null;                      // which resolution list applies after this call
         if (OptStr(a, "bitrate") is { } br)
         {
             string b = br.Trim().Replace(",", ".").Replace("Mbps", "", StringComparison.OrdinalIgnoreCase).Trim();
             if (b.Length > 0 && !(double.TryParse(b, NumberStyles.Float, CultureInfo.InvariantCulture, out var mb) && mb > 0 && mb <= 500))
                 throw new AgentToolError("bitrate must be Mbps (e.g. 20), or \"\" to use the size limit.");
+            fixedAfter = b.Length > 0;
             Do(b.Length > 0 ? $"bitrate {b} Mbps" : "bitrate cleared (size limit)", () =>
             {
                 if (b.Length > 0) { s.Bitrate = b; s.FixedRate = true; }      // the Export panel switches to Fixed bitrate
@@ -206,11 +208,17 @@ public static partial class AgentTools
         }
         if (OptBool(a, "convert_hdr") is { } hdr) Do("convert HDR " + (hdr ? "on" : "off"), () => s.Hdr = hdr);
         if (OptBool(a, "mute_mic") is { } mm) Do("mute mic " + (mm ? "on" : "off"), () => s.MuteMic = mm);
+        // 2.9.5: the file name rules are app settings, a .clipproj does not keep them: without the open app they were
+        // "changed" and then lost. Say so, as for the export folder, before anything is applied.
+        if (!h.Live && (a["prefix"] is not null || a["suffix"] is not null || a["keep_name"] is not null))
+            throw new AgentToolError("Prefix, suffix and keep_name are app settings, not saved in a project: open Clip Shrinker " +
+                                     "to change them, or give export a full file name in out.");
         if (OptStr(a, "prefix") is { } pre) Do($"prefix \"{pre}\"", () => s.Prefix = pre);
         if (OptStr(a, "suffix") is { } suf) Do($"suffix \"{suf}\"", () => s.Suffix = suf);
         if (OptBool(a, "keep_name") is { } kn) Do("keep name " + (kn ? "on" : "off"), () => s.KeepName = kn);
         // resolution last: the bitrate decides which list it comes from
-        string? res = OptStr(a, "resolution");
+        // 2.9.5: checked here, before anything is applied (a wrong resolution used to fail after the prefix etc. were set)
+        string? res = OptStr(a, "resolution") is { } rg ? Pick("resolution", rg, fixedAfter ? C.ResBitrateMode : C.ResSizeMode) : null;
         string? folder = OptStr(a, "export_folder");
         if (folder is { Length: > 0 } && h.ExportFolder is null)
             throw new AgentToolError("The export folder is an app setting: open Clip Shrinker, or give out to export instead.");
@@ -222,9 +230,8 @@ public static partial class AgentTools
             foreach (var act in todo) act();
             if (res is not null)
             {
-                string v = Pick("resolution", res, s.BitrateMbps() is null ? C.ResSizeMode : C.ResBitrateMode);
-                s.Res = v;
-                changed.Add("resolution " + v);
+                s.Res = res;
+                changed.Add("resolution " + res);
             }
         });
         if (folder is not null)

@@ -143,14 +143,13 @@ public static class Program
         var errors = new List<string>();
         var log = new JsonArray();
         var t0 = DateTime.Now;
-        string? current = null;
+
         int code = 0;
         try
         {
             for (int k = 0; k < jobs.Count; k++)
             {
                 var (output, jclips, jst, _) = jobs[k];
-                current = output;
                 string tag = jobs.Count > 1 ? $"[{k + 1}/{jobs.Count}] " : "";
                 int first = runner.Started.Count;
                 try
@@ -160,8 +159,7 @@ public static class Program
                 }
                 catch (ExportException e)
                 {
-                    errors.Add($"{Path.GetFileName(output)}: {e.Message}");
-                    try { File.Delete(output); } catch (IOException) { }
+                    errors.Add($"{Path.GetFileName(output)}: {e.Message}");      // output untouched: the encoder works in .part files
                 }
                 finally
                 {
@@ -183,7 +181,6 @@ public static class Program
         {
             console.End();
             Console.Error.WriteLine("The export was stopped - the unfinished file was deleted");
-            if (current is not null) try { File.Delete(current); } catch (IOException) { }
             code = 130;
         }
         if (o.GetValueOrDefault("--log-commands") is { } lp)

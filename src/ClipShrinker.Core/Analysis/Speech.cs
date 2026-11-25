@@ -77,12 +77,14 @@ public static partial class Speech
             // 2.8.0-beta2: the module's ffmpeg runs whisper on the graphics card (Vulkan) when there is one, else on the CPU by
             // itself. A GPU run that fails (driver, too little video memory) is run again on the CPU, and the CPU is
             // used from then on.
+            // 2.9.5: the CPU is kept only when the CPU run works where the GPU run failed. Before, any error (a bad file,
+            // a cut-off clip) switched speech to the CPU for the rest of the session, about 6x slower.
             var (code, e) = Run(gpu: !GpuFailed);
             if (code != 0 && !GpuFailed)
             {
-                GpuFailed = true;
                 try { File.Delete(outPath); } catch (IOException) { }
                 (code, e) = Run(gpu: false);
+                if (code == 0) GpuFailed = true;
             }
             if (code != 0)
                 throw new AgentToolError("Speech recognition failed: " + (e.Length > 400 ? e[^400..] : e));
